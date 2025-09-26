@@ -1,0 +1,40 @@
+### Maven build ###
+target/
+*/target/
+
+### Maven wrapper ###
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/wrapper/maven-wrapper.properties
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+### Eclipse ###
+*.classpath
+*.project
+*.settings/
+bin/
+
+### VS Code ###
+.vscode/
+
+### Logs & temp ###
+*.log
+*.tmp
+*.bak
+
+### OS generated files ###
+.DS_Store
+Thumbs.db
+
+### Spring Boot config (optional, nếu chứa secret) ###
+application-*.yml
+application-*.properties
+
+### Docker / Deployment ###
+*.pid
+*.seed
