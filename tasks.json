@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "mvn spring-boot:run",
+      "type": "shell",
+      "command": "mvn spring-boot:run -Dspring-boot.run.fork=false -Dspring-boot.run.jvmArguments=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005\"",
+      "problemMatcher": []
+    }
+  ]
+}
