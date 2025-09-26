@@ -23,7 +23,6 @@ public class User extends AbstractEntity { // Extend AbstractEntity
     @Enumerated(EnumType.STRING)
     @Column(name = "kyc_status", nullable = false)
     private KycStatus kycStatus = KycStatus.UNVERIFIED;
-
     @ElementCollection
     @CollectionTable(name = "user_wallets", joinColumns = @JoinColumn(name = "user_id"))
     private List<Wallet> wallets = new ArrayList<>();

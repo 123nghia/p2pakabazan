@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "mvn spring-boot:run",
+      "label": "mvn spring-boot:run p2p_p2p",
       "type": "shell",
-      "command": "mvn spring-boot:run -Dspring-boot.run.fork=false -Dspring-boot.run.jvmArguments=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005\"",
+      "command": "mvn spring-boot:run -pl p2p_p2p -Dspring-boot.run.fork=false -Dspring-boot.run.jvmArguments=\"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005\"",
       "problemMatcher": []
     }
   ]
