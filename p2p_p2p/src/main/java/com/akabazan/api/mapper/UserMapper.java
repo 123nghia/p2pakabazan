@@ -23,13 +23,13 @@ public class UserMapper {
             return w;
         }).collect(Collectors.toList()));
 
-        dto.setLoginHistory(user.getLoginHistory().stream().map(login -> {
-            UserDTO.LoginHistoryDTO l = new UserDTO.LoginHistoryDTO();
-            l.setIp(login.getIp());
-            l.setDevice(login.getDevice());
-            l.setTimestamp(login.getTimestamp());
-            return l;
-        }).collect(Collectors.toList()));
+        // dto.setLoginHistory(user.getLoginHistory().stream().map(login -> {
+        //     UserDTO.LoginHistoryDTO l = new UserDTO.LoginHistoryDTO();
+        //     l.setIp(login.getIp());
+        //     l.setDevice(login.getDevice());
+        //     l.setTimestamp(login.getTimestamp());
+        //     return l;
+        // }).collect(Collectors.toList()));
 
         return dto;
     }

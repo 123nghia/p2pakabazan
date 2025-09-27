@@ -35,4 +35,7 @@ public abstract class AbstractEntity {
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
+
+      
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

@@ -8,38 +8,15 @@ import java.util.List;
 
 public interface OrderService {
 
-    /**
-     * Tạo một order mới
-     */
+    /** Tạo một order mới */
     OrderDTO createOrder(OrderDTO orderDTO);
 
-    /**
-     * Lấy danh sách order theo filter
-     */
+    /** Lấy danh sách order theo filter */
     List<OrderDTO> getOrders(String type, String token, String paymentMethod, String sortByPrice);
 
-    /**
-     * Tạo trade từ một order
-     */
-    TradeDTO createTrade(TradeDTO tradeDTO);
+    void cancelOrder(Long orderId);
 
-    /**
-     * Xác nhận đã thanh toán trade
-     */
-    TradeDTO confirmPayment(Long tradeId);
+    void closeOrder(Long orderId);
 
-    /**
-     * Xác nhận đã nhận hàng/tài sản trong trade
-     */
-    TradeDTO confirmReceived(Long tradeId);
-
-    /**
-     * Gửi tin nhắn chat trong trade
-     */
-    TradeDTO sendChatMessage(Long tradeId, ChatMessageDTO messageDTO);
-
-    /**
-     * Mở tranh chấp trong trade
-     */
-    TradeDTO openDispute(Long tradeId, String reason, String evidence);
+    void expireOrders();
 }

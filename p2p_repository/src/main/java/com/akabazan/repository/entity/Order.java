@@ -1,62 +1,96 @@
 package com.akabazan.repository.entity;
 
-
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import com.akabazan.repository.constant.OrderStatus;
 
 @Entity
 @Table(name = "orders")
 public class Order extends AbstractEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(nullable = false)
+    private String type; // BUY / SELL
 
-    @Column(name = "type", nullable = false)
-    private String type;
+    @Column(nullable = false)
+    private String token; // BTC, USDT, ETH
 
-    @Column(name = "token", nullable = false)
-    private String token;
+    @Column(nullable = false)
+    private Double amount; // số token
 
-    @Column(name = "amount", nullable = false)
-    private double amount;
+    @Column(nullable = false)
+    private Double price; // giá 1 token theo fiat
 
-    @Column(name = "price", nullable = false)
-    private double price;
+    @Column(nullable = false)
+    private Double minLimit;
 
-    @Column(name = "payment_method", nullable = false)
+    @Column(nullable = false)
+    private Double maxLimit;
+
+    @Column(nullable = false)
+    private String status = OrderStatus.OPEN.name(); // OPEN, CLOSED, CANCELLED
+
+    @Column
     private String paymentMethod;
 
-    @Column(name = "min_limit", nullable = false)
-    private double minLimit;
+    @Column
+    private String fiatAccount;
 
-    @Column(name = "max_limit", nullable = false)
-    private double maxLimit;
+     private Double availableAmount; // Số lượng còn lại có thể giao dịch
 
-    @Column(name = "status", nullable = false)
-    private String status;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
-    // Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
+    // Tổng fiat = amount * price
+    public double getTotalFiat() {
+        return this.amount * this.price;
+    }
+
+     @Column(name = "expire_at")
+    private LocalDateTime expireAt;
+
+        @PrePersist
+       public void prePersist() {
+        if (availableAmount == null) {
+            availableAmount = amount; // Lúc tạo mới = amount ban đầu
+        }
+        if (expireAt == null) {
+            expireAt = LocalDateTime.now().plusMinutes(15); // mặc định expire sau 15 phút
+        }
+    }
+      public LocalDateTime getExpireAt() {
+        return expireAt;
+    }
+
+    public void setExpireAt(LocalDateTime expireAt) {
+        this.expireAt = expireAt;
+    }
+
+    // Getters & Setters
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
-    public double getAmount() { return amount; }
-    public void setAmount(double amount) { this.amount = amount; }
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
-    public String getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
-    public double getMinLimit() { return minLimit; }
-    public void setMinLimit(double minLimit) { this.minLimit = minLimit; }
-    public double getMaxLimit() { return maxLimit; }
-    public void setMaxLimit(double maxLimit) { this.maxLimit = maxLimit; }
+    public Double getAmount() { return amount; }
+    public void setAmount(Double amount) { this.amount = amount; }
+    public Double getPrice() { return price; }
+    public void setPrice(Double price) { this.price = price; }
+    public Double getMinLimit() { return minLimit; }
+    public void setMinLimit(Double minLimit) { this.minLimit = minLimit; }
+    public Double getMaxLimit() { return maxLimit; }
+    public void setMaxLimit(Double maxLimit) { this.maxLimit = maxLimit; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getFiatAccount() { return fiatAccount; }
+    public void setFiatAccount(String fiatAccount) { this.fiatAccount = fiatAccount; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+
+    public Double getAvailableAmount() { return availableAmount; }
+    public void setAvailableAmount(Double availableAmount) { this.availableAmount = availableAmount; }
+
 }
