@@ -1,23 +1,21 @@
 package com.akabazan.service.impl;
 
-import com.akabazan.repository.OrderRepository;
-import com.akabazan.repository.TradeRepository;
-import com.akabazan.repository.UserRepository;
 import com.akabazan.common.constant.ErrorCode;
-import com.akabazan.repository.constant.OrderStatus;
-import com.akabazan.repository.constant.TradeStatus;
-import com.akabazan.repository.entity.Order;
-import com.akabazan.repository.entity.Trade;
-import com.akabazan.repository.entity.User;
-import com.akabazan.service.OrderService;
-import com.akabazan.service.dto.OrderDTO;
-import com.akabazan.service.dto.TradeDTO;
-import com.akabazan.service.dto.ChatMessageDTO;
-import com.akabazan.service.dto.OrderMapper;
-import com.akabazan.service.dto.TradeMapper;
 import com.akabazan.common.exception.ApplicationException;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.akabazan.repository.OrderRepository;
+import com.akabazan.repository.UserRepository;
+import com.akabazan.repository.WalletRepository;
+import com.akabazan.repository.constant.OrderStatus;
+import com.akabazan.repository.entity.Order;
+import com.akabazan.repository.entity.User;
+import com.akabazan.repository.entity.Wallet;
+import com.akabazan.service.OrderService;
+import com.akabazan.service.UserService;
+import com.akabazan.service.dto.OrderDTO;
+import com.akabazan.service.dto.OrderMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,48 +25,126 @@ import java.util.stream.Collectors;
 public class OrderServiceImpl implements OrderService {
 
     private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
     private final OrderRepository orderRepository;
-    private final TradeRepository tradeRepository;
+   
 
     public OrderServiceImpl(UserRepository userRepository,
-                            OrderRepository orderRepository,
-                            TradeRepository tradeRepository) {
+                            WalletRepository walletRepository,
+                            OrderRepository orderRepository
+                            ) {
         this.userRepository = userRepository;
+        this.walletRepository = walletRepository;
         this.orderRepository = orderRepository;
-        this.tradeRepository = tradeRepository;
+      
+    }
+
+    private User getCurrentUser() {
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findById(Long.valueOf(userId))
+                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
+    }
+    @Override
+    @Transactional
+   public OrderDTO createOrder(OrderDTO orderDTO) {
+    User user = getCurrentUser();
+     orderDTO.setType("SELL");
+    if (user.getKycStatus() != User.KycStatus.VERIFIED)
+        throw new ApplicationException(ErrorCode.KYC_REQUIRED);
+
+
+    // Chỉ SELL mới được tạo order
+    // if (!"SELL".equalsIgnoreCase(orderDTO.getType())) {
+    //     throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
+    // }
+
+    // Lấy ví và check balance
+    Wallet wallet = walletRepository.lockByUserIdAndToken(user.getId(), orderDTO.getToken())
+            .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+
+    if (wallet.getAvailableBalance() < orderDTO.getAmount())
+        throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
+
+    // Lock số dư
+    wallet.setAvailableBalance(wallet.getAvailableBalance() - orderDTO.getAmount());
+    walletRepository.save(wallet);
+
+    // Tạo order
+    Order order = new Order();
+    order.setUser(user);
+    order.setType("SELL"); // mặc định uppercase
+    order.setToken(orderDTO.getToken());
+    order.setAmount(orderDTO.getAmount());
+    order.setAvailableAmount(orderDTO.getAmount());
+    order.setPrice(orderDTO.getPrice());
+    order.setMinLimit(orderDTO.getMinLimit());
+    order.setMaxLimit(orderDTO.getMaxLimit());
+    order.setPaymentMethod(orderDTO.getPaymentMethod());
+    order.setFiatAccount(orderDTO.getFiatAccount());
+    order.setStatus(OrderStatus.OPEN.name());
+    order.setExpireAt(LocalDateTime.now().plusMinutes(15));
+
+    return OrderMapper.toDTO(orderRepository.save(order));
+}
+
+    @Override
+    @Transactional
+    public void cancelOrder(Long orderId) {
+        User seller = getCurrentUser();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getUser().getId().equals(seller.getId()))
+            throw new ApplicationException(ErrorCode.UNAUTHORIZED);
+
+        if (!OrderStatus.OPEN.name().equals(order.getStatus()))
+            throw new ApplicationException(ErrorCode.ORDER_CLOSED);
+
+        // Hoàn lại availableBalance nếu là SELL order
+        if ("SELL".equalsIgnoreCase(order.getType()) && order.getAvailableAmount() > 0) {
+            Wallet wallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
+                    .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+            wallet.setAvailableBalance(wallet.getAvailableBalance() + order.getAvailableAmount());
+            walletRepository.save(wallet);
+        }
+
+        order.setStatus(OrderStatus.CANCELLED.name());
+        orderRepository.save(order);
+    }
+
+    @Transactional
+    public void expireOrders() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Order> expiredOrders = orderRepository.findAllByStatusAndExpireAtBefore(OrderStatus.OPEN.name(), now);
+
+        for (Order order : expiredOrders) {
+            if ("SELL".equalsIgnoreCase(order.getType()) && order.getAvailableAmount() > 0) {
+                Wallet wallet = walletRepository.findByUserIdAndToken(order.getUser().getId(), order.getToken())
+                        .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+                wallet.setAvailableBalance(wallet.getAvailableBalance() + order.getAvailableAmount());
+                walletRepository.save(wallet);
+            }
+
+            order.setStatus(OrderStatus.EXPIRED.name());
+            orderRepository.save(order);
+        }
     }
 
     @Override
-    public OrderDTO createOrder(OrderDTO orderDTO) {
-        User user = getCurrentUser();
+    @Transactional
+    public void closeOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
-        if (user.getKycStatus() != User.KycStatus.VERIFIED) {
-            throw new ApplicationException(ErrorCode.KYC_REQUIRED);
+        if ("SELL".equalsIgnoreCase(order.getType()) && order.getAvailableAmount() > 0) {
+            Wallet wallet = walletRepository.lockByUserIdAndToken(order.getUser().getId(), order.getToken())
+                    .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+            wallet.setAvailableBalance(wallet.getAvailableBalance() + order.getAvailableAmount());
+            walletRepository.save(wallet);
         }
 
-        if ("SELL".equalsIgnoreCase(orderDTO.getType())) {
-            User.Wallet wallet = user.getWallets().stream()
-                    .filter(w -> w.getToken().equalsIgnoreCase(orderDTO.getToken()))
-                    .findFirst()
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE));
-
-            if (wallet.getBalance() < orderDTO.getAmount()) {
-                throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
-            }
-        }
-
-        Order order = new Order();
-        order.setUser(user);
-        order.setType(orderDTO.getType().toUpperCase());
-        order.setToken(orderDTO.getToken());
-        order.setAmount(orderDTO.getAmount());
-        order.setPrice(orderDTO.getPrice());
-        order.setPaymentMethod(orderDTO.getPaymentMethod());
-        order.setMinLimit(orderDTO.getMinLimit());
-        order.setMaxLimit(orderDTO.getMaxLimit());
-        order.setStatus(OrderStatus.OPEN.name());
-
-        return OrderMapper.toDTO(orderRepository.save(order));
+        order.setStatus(OrderStatus.CLOSED.name());
+        orderRepository.save(order);
     }
 
     @Override
@@ -91,141 +167,4 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public TradeDTO createTrade(TradeDTO tradeDTO) {
-        User buyer = getCurrentUser();
-        Order order = orderRepository.findById(tradeDTO.getOrderId())
-                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
-
-        if (!OrderStatus.OPEN.name().equals(order.getStatus())) {
-            throw new ApplicationException(ErrorCode.ORDER_CLOSED);
-        }
-
-        if (tradeDTO.getAmount() < order.getMinLimit() || tradeDTO.getAmount() > order.getMaxLimit()) {
-            throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
-        }
-
-        User seller = order.getUser();
-
-        if ("SELL".equalsIgnoreCase(order.getType())) {
-            User.Wallet wallet = seller.getWallets().stream()
-                    .filter(w -> w.getToken().equalsIgnoreCase(order.getToken()))
-                    .findFirst()
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE));
-
-            if (wallet.getBalance() < tradeDTO.getAmount()) {
-                throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
-            }
-
-            wallet.setBalance(wallet.getBalance() - tradeDTO.getAmount()); // Escrow
-            userRepository.save(seller);
-        }
-
-        Trade trade = new Trade();
-        trade.setOrder(order);
-        trade.setBuyer(buyer);
-        trade.setSeller(seller);
-        trade.setAmount(tradeDTO.getAmount());
-        trade.setEscrow("SELL".equalsIgnoreCase(order.getType()));
-        trade.setStatus(TradeStatus.PENDING);
-
-        return TradeMapper.toDTO(tradeRepository.save(trade));
-    }
-
-    @Override
-    public TradeDTO confirmPayment(Long tradeId) {
-        Trade trade = tradeRepository.findById(tradeId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
-
-        if (trade.getStatus() != TradeStatus.PENDING) {
-            throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
-        }
-
-        trade.setStatus(TradeStatus.PAID);
-        return TradeMapper.toDTO(tradeRepository.save(trade));
-    }
-
-    @Override
-    public TradeDTO confirmReceived(Long tradeId) {
-        Trade trade = tradeRepository.findById(tradeId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
-
-        if (trade.getStatus() != TradeStatus.PAID) {
-            throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
-        }
-
-        Order order = trade.getOrder();
-        User buyer = trade.getBuyer();
-
-        User.Wallet buyerWallet = buyer.getWallets().stream()
-                .filter(w -> w.getToken().equalsIgnoreCase(order.getToken()))
-                .findFirst()
-                .orElseGet(() -> {
-                    User.Wallet newWallet = new User.Wallet();
-                    newWallet.setToken(order.getToken());
-                    newWallet.setAddress("generated-address-" + buyer.getId());
-                    newWallet.setBalance(0.0);
-                    buyer.getWallets().add(newWallet);
-                    return newWallet;
-                });
-
-        buyerWallet.setBalance(buyerWallet.getBalance() + trade.getAmount());
-        userRepository.save(buyer);
-
-        trade.setStatus(TradeStatus.COMPLETED);
-        order.setAmount(order.getAmount() - trade.getAmount());
-
-        if (order.getAmount() <= 0) {
-            order.setStatus(OrderStatus.CLOSED.name());
-        }
-
-        orderRepository.save(order);
-        return TradeMapper.toDTO(tradeRepository.save(trade));
-    }
-
-    @Override
-    public TradeDTO sendChatMessage(Long tradeId, ChatMessageDTO messageDTO) {
-        Trade trade = tradeRepository.findById(tradeId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
-
-        String[] suspiciousKeywords = {"scam", "otp", "wrong transfer"};
-        for (String keyword : suspiciousKeywords) {
-            if (messageDTO.getMessage().toLowerCase().contains(keyword)) {
-                System.out.println("Suspicious message detected: " + messageDTO.getMessage());
-            }
-        }
-
-        Trade.ChatMessage chatMessage = new Trade.ChatMessage();
-        chatMessage.setSenderId(getCurrentUser().getId());
-        chatMessage.setMessage(messageDTO.getMessage());
-        chatMessage.setTimestamp(LocalDateTime.now());
-
-        trade.getChat().add(chatMessage);
-        return TradeMapper.toDTO(tradeRepository.save(trade));
-    }
-
-    @Override
-    public TradeDTO openDispute(Long tradeId, String reason, String evidence) {
-        Trade trade = tradeRepository.findById(tradeId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
-
-        if (trade.getStatus() == TradeStatus.DISPUTED) {
-            throw new ApplicationException(ErrorCode.ALREADY_IN_DISPUTE);
-        }
-
-        trade.setStatus(TradeStatus.DISPUTED);
-        Trade.Dispute dispute = new Trade.Dispute();
-        dispute.setReason(reason);
-        dispute.setEvidence(evidence);
-        dispute.setCreatedAt(LocalDateTime.now());
-        trade.setDispute(dispute);
-
-        return TradeMapper.toDTO(tradeRepository.save(trade));
-    }
-
-    private User getCurrentUser() {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findById(Long.valueOf(userId))
-                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-    }
 }

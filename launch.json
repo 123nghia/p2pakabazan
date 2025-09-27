@@ -3,14 +3,11 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Debug Spring Boot (mvn spring-boot:run)",
-      "request": "launch",
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "mainClass": "",
-      "args": [],
-      "vmArgs": "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005",
-      "preLaunchTask": "mvn spring-boot:run"
+      "name": "Debug Spring Boot p2p_p2p",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005,
+      "preLaunchTask": "mvn spring-boot:run p2p_p2p"
     }
   ]
 }

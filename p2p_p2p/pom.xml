@@ -4,14 +4,12 @@
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-
     <parent>
         <groupId>com.akabazan</groupId>
         <artifactId>p2p-trading-system</artifactId>
         <version>1.0-SNAPSHOT</version>
       
     </parent>
-
     <artifactId>p2p_p2p</artifactId>
     <packaging>jar</packaging>
 
@@ -39,6 +37,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        <version>2.2.0</version>
+    </dependency>
+
         <!-- Dependency modules -->
         <dependency>
             <groupId>com.akabazan</groupId>
@@ -55,15 +59,12 @@
             <artifactId>p2p_service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-        
-
         <!-- Database -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>

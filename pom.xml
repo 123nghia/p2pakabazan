@@ -10,6 +10,7 @@
   <version>1.0-SNAPSHOT</version>
   
 
+
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
@@ -21,6 +22,7 @@
       <module>p2p_service</module>
     <module>p2p_repository</module>
     <module>p2p_p2p</module>
+    
     
     </modules>
   <dependencies>
