@@ -8,8 +8,6 @@ import com.akabazan.service.OrderService;
 import com.akabazan.service.TradeService;
 import com.akabazan.service.dto.OrderDTO;
 import com.akabazan.service.dto.TradeDTO;
-
-import com.akabazan.service.dto.ChatMessageDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/p2p")
 @CrossOrigin(origins = "http://localhost:5500") // Cho phép FE gọi
+
 public class P2PController {
   
     private final OrderService orderService;

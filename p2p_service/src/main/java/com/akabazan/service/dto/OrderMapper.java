@@ -1,41 +1,58 @@
 package com.akabazan.service.dto;
 
 import com.akabazan.repository.entity.Order;
+import com.akabazan.repository.entity.FiatAccount;
+import com.akabazan.repository.entity.User;
+
 public class OrderMapper {
 
-    public static OrderDTO toDTO(Order order) {
+    public static OrderDTO toDto(Order order) {
+        if (order == null) return null;
+
         OrderDTO dto = new OrderDTO();
         dto.setId(order.getId());
         dto.setType(order.getType());
         dto.setToken(order.getToken());
         dto.setAmount(order.getAmount());
         dto.setPrice(order.getPrice());
-        dto.setPaymentMethod(order.getPaymentMethod());
-        dto.setFiatAccount(order.getFiatAccount()); // map fiatAccount
         dto.setMinLimit(order.getMinLimit());
         dto.setMaxLimit(order.getMaxLimit());
         dto.setStatus(order.getStatus());
-        dto.setUserId(order.getUser() != null ? order.getUser().getId() : null);
+        dto.setPaymentMethod(order.getPaymentMethod());
+        dto.setPriceMode(order.getPriceMode());
+        dto.setAvailableAmount(order.getAvailableAmount());
+        dto.setExpireAt(order.getExpireAt());
+
+        if (order.getFiatAccount() != null) {
+            dto.setFiatAccountId(order.getFiatAccount().getId());
+        }
+        if (order.getUser() != null) {
+            dto.setUserId(order.getUser().getId());
+        }
+
         return dto;
     }
 
-    public static Order toEntity(OrderDTO dto, Order order) {
-        if (order == null) {
-            order = new Order();
-        }
+    public static Order toEntity(OrderDTO dto, FiatAccount fiatAccount, User user) {
+        if (dto == null) return null;
+
+        Order order = new Order();
+        order.setId(dto.getId());
         order.setType(dto.getType());
         order.setToken(dto.getToken());
         order.setAmount(dto.getAmount());
         order.setPrice(dto.getPrice());
-        order.setPaymentMethod(dto.getPaymentMethod());
-        order.setFiatAccount(dto.getFiatAccount());
         order.setMinLimit(dto.getMinLimit());
         order.setMaxLimit(dto.getMaxLimit());
         order.setStatus(dto.getStatus());
+        order.setPaymentMethod(dto.getPaymentMethod());
+        order.setPriceMode(dto.getPriceMode());
+        order.setAvailableAmount(dto.getAvailableAmount());
+        order.setExpireAt(dto.getExpireAt());
+
+        order.setFiatAccount(fiatAccount);
+        order.setUser(user);
+
         return order;
     }
-
-
-
-
 }

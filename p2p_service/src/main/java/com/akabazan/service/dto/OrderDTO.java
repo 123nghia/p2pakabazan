@@ -1,49 +1,83 @@
-package com.akabazan.service.dto;
+        package com.akabazan.service.dto;
 
-public class OrderDTO {
-    private Long id;
-    private String type;           // BUY / SELL
-    private String token;          // BTC, USDT, ETH
-    private Double amount;         // số token
-    private Double price;          // giá 1 token theo fiat
-    private String paymentMethod;  // BANK_TRANSFER, MOMO, ZALOPAY...
-    private String fiatAccount;    // tài khoản nhận fiat
-    private Double minLimit;       // giới hạn min
-    private Double maxLimit;       // giới hạn max
-    private String status;         // OPEN / CLOSED / CANCELLED
-    private Long userId;           // id của user tạo order
+        import java.time.LocalDateTime;
 
-    // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+        public class OrderDTO {
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+        private Long id;
 
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
+        private String type; // BUY / SELL
+        private String token; // BTC, USDT, ETH
+        private Double amount;
+        private Double price;
+        private Double minLimit;
+        private Double maxLimit;
+        private String status; // OPEN, CLOSED, CANCELLED
+        private String paymentMethod;
+        private String priceMode; // MARKET hoặc CUSTOM
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+        private Double availableAmount;
+        private LocalDateTime expireAt;
 
-    public Double getPrice() { return price; }
-    public void setPrice(Double price) { this.price = price; }
+        // flatten từ fiatAccount và user
+        private Long fiatAccountId;
+        private Long userId;
 
-    public String getPaymentMethod() { return paymentMethod; }
-    public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
-    public String getFiatAccount() { return fiatAccount; }
-    public void setFiatAccount(String fiatAccount) { this.fiatAccount = fiatAccount; }
+        private String bankName;
+        private String bankAccount;
+        private String accountHolder;
 
-    public Double getMinLimit() { return minLimit; }
-    public void setMinLimit(Double minLimit) { this.minLimit = minLimit; }
+        // getters & setters
+        public String getBankName() { return bankName; }
+        public void setBankName(String bankName) { this.bankName = bankName; }
 
-    public Double getMaxLimit() { return maxLimit; }
-    public void setMaxLimit(Double maxLimit) { this.maxLimit = maxLimit; }
+        public String getBankAccount() { return bankAccount; }
+        public void setBankAccount(String bankAccount) { this.bankAccount = bankAccount; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+        public String getAccountHolder() { return accountHolder; }
+        public void setAccountHolder(String accountHolder) { this.accountHolder = accountHolder; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
-}
+        // Getter & Setter
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+
+        public String getType() { return type; }
+        public void setType(String type) { this.type = type; }
+
+        public String getToken() { return token; }
+        public void setToken(String token) { this.token = token; }
+
+        public Double getAmount() { return amount; }
+        public void setAmount(Double amount) { this.amount = amount; }
+
+        public Double getPrice() { return price; }
+        public void setPrice(Double price) { this.price = price; }
+
+        public Double getMinLimit() { return minLimit; }
+        public void setMinLimit(Double minLimit) { this.minLimit = minLimit; }
+
+        public Double getMaxLimit() { return maxLimit; }
+        public void setMaxLimit(Double maxLimit) { this.maxLimit = maxLimit; }
+
+        public String getStatus() { return status; }
+        public void setStatus(String status) { this.status = status; }
+
+        public String getPaymentMethod() { return paymentMethod; }
+        public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+
+        public String getPriceMode() { return priceMode; }
+        public void setPriceMode(String priceMode) { this.priceMode = priceMode; }
+
+        public Double getAvailableAmount() { return availableAmount; }
+        public void setAvailableAmount(Double availableAmount) { this.availableAmount = availableAmount; }
+
+        public LocalDateTime getExpireAt() { return expireAt; }
+        public void setExpireAt(LocalDateTime expireAt) { this.expireAt = expireAt; }
+
+        public Long getFiatAccountId() { return fiatAccountId; }
+        public void setFiatAccountId(Long fiatAccountId) { this.fiatAccountId = fiatAccountId; }
+
+        public Long getUserId() { return userId; }
+        public void setUserId(Long userId) { this.userId = userId; }
+        }

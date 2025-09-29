@@ -11,7 +11,6 @@ public class OrderMapper {
         dto.setAmount(request.getAmount());
         dto.setPrice(request.getPrice());
         dto.setPaymentMethod(request.getPaymentMethod());
-        dto.setFiatAccount(request.getFiatAccount());
         dto.setMinLimit(request.getMinLimit());
         dto.setMaxLimit(request.getMaxLimit());
         return dto;

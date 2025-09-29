@@ -31,12 +31,16 @@ public class Order extends AbstractEntity {
     private String status = OrderStatus.OPEN.name(); // OPEN, CLOSED, CANCELLED
 
     @Column
-    private String paymentMethod;
+    private String paymentMethod; // Bank transfer, MoMo, PayPal...
 
-    @Column
-    private String fiatAccount;
+    @Column(name = "price_mode", nullable = false)
+    private String priceMode; // MARKET hoặc CUSTOM
 
-     private Double availableAmount; // Số lượng còn lại có thể giao dịch
+    @ManyToOne
+    @JoinColumn(name = "fiat_account_id")
+    private FiatAccount fiatAccount; // Tài khoản ngân hàng/ví được liên kết
+
+    private Double availableAmount; // Số lượng còn lại có thể giao dịch
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -47,11 +51,11 @@ public class Order extends AbstractEntity {
         return this.amount * this.price;
     }
 
-     @Column(name = "expire_at")
+    @Column(name = "expire_at")
     private LocalDateTime expireAt;
 
-        @PrePersist
-       public void prePersist() {
+    @PrePersist
+    public void prePersist() {
         if (availableAmount == null) {
             availableAmount = amount; // Lúc tạo mới = amount ban đầu
         }
@@ -59,38 +63,45 @@ public class Order extends AbstractEntity {
             expireAt = LocalDateTime.now().plusMinutes(15); // mặc định expire sau 15 phút
         }
     }
-      public LocalDateTime getExpireAt() {
-        return expireAt;
-    }
-
-    public void setExpireAt(LocalDateTime expireAt) {
-        this.expireAt = expireAt;
-    }
 
     // Getters & Setters
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
+
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
+
     public Double getAmount() { return amount; }
     public void setAmount(Double amount) { this.amount = amount; }
+
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
+
     public Double getMinLimit() { return minLimit; }
     public void setMinLimit(Double minLimit) { this.minLimit = minLimit; }
+
     public Double getMaxLimit() { return maxLimit; }
     public void setMaxLimit(Double maxLimit) { this.maxLimit = maxLimit; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
-    public String getFiatAccount() { return fiatAccount; }
-    public void setFiatAccount(String fiatAccount) { this.fiatAccount = fiatAccount; }
+
+    public FiatAccount getFiatAccount() { return fiatAccount; }
+    public void setFiatAccount(FiatAccount fiatAccount) { this.fiatAccount = fiatAccount; }
+
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
-
 
     public Double getAvailableAmount() { return availableAmount; }
     public void setAvailableAmount(Double availableAmount) { this.availableAmount = availableAmount; }
 
+    public LocalDateTime getExpireAt() { return expireAt; }
+    public void setExpireAt(LocalDateTime expireAt) { this.expireAt = expireAt; }
+
+
+    public String getPriceMode() { return priceMode; }
+public void setPriceMode(String priceMode) { this.priceMode = priceMode; }
 }

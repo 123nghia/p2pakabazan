@@ -2,10 +2,12 @@ package com.akabazan.service.impl;
 
 import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.exception.ApplicationException;
+import com.akabazan.repository.FiatAccountRepository;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.UserRepository;
 import com.akabazan.repository.WalletRepository;
 import com.akabazan.repository.constant.OrderStatus;
+import com.akabazan.repository.entity.FiatAccount;
 import com.akabazan.repository.entity.Order;
 import com.akabazan.repository.entity.User;
 import com.akabazan.repository.entity.Wallet;
@@ -27,15 +29,17 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final WalletRepository walletRepository;
     private final OrderRepository orderRepository;
-   
+   private FiatAccountRepository fiatAccountRepository;
 
     public OrderServiceImpl(UserRepository userRepository,
                             WalletRepository walletRepository,
-                            OrderRepository orderRepository
+                            OrderRepository orderRepository,
+                            FiatAccountRepository fiatAccountRepository
                             ) {
         this.userRepository = userRepository;
         this.walletRepository = walletRepository;
         this.orderRepository = orderRepository;
+        this.fiatAccountRepository = fiatAccountRepository;
       
     }
 
@@ -47,7 +51,29 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
    public OrderDTO createOrder(OrderDTO orderDTO) {
+
     User user = getCurrentUser();
+
+
+    FiatAccount fiatAccount = fiatAccountRepository 
+    .findByUserAndBankNameAndAccountNumberAndAccountHolder(
+            user,
+            orderDTO.getBankName(),
+            orderDTO.getBankAccount(),
+            orderDTO.getAccountHolder()
+    )
+    .orElseGet(() -> {
+        // 2. Nếu chưa có thì tạo mới
+        FiatAccount newAcc = new FiatAccount();
+        newAcc.setUser(user);
+        newAcc.setBankName(orderDTO.getBankName());
+        newAcc.setAccountNumber(orderDTO.getBankAccount());
+        newAcc.setAccountHolder(orderDTO.getAccountHolder());
+        newAcc.setPaymentType(orderDTO.getPaymentMethod());
+        return fiatAccountRepository.save(newAcc);
+    });
+
+
      orderDTO.setType("SELL");
     if (user.getKycStatus() != User.KycStatus.VERIFIED)
         throw new ApplicationException(ErrorCode.KYC_REQUIRED);
@@ -80,11 +106,11 @@ public class OrderServiceImpl implements OrderService {
     order.setMinLimit(orderDTO.getMinLimit());
     order.setMaxLimit(orderDTO.getMaxLimit());
     order.setPaymentMethod(orderDTO.getPaymentMethod());
-    order.setFiatAccount(orderDTO.getFiatAccount());
+    order.setFiatAccount(fiatAccount);
     order.setStatus(OrderStatus.OPEN.name());
     order.setExpireAt(LocalDateTime.now().plusMinutes(15));
-
-    return OrderMapper.toDTO(orderRepository.save(order));
+    Order saved = orderRepository.save(order);
+    return OrderMapper.toDto(saved);
 }
 
     @Override
@@ -163,7 +189,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orders.stream()
-                .map(OrderMapper::toDTO)
+                .map(OrderMapper::toDto)
                 .collect(Collectors.toList());
     }
 
