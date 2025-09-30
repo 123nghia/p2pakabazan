@@ -22,10 +22,10 @@ public class Order extends AbstractEntity {
     private Double price; // giá 1 token theo fiat
 
     @Column(nullable = false)
-    private Double minLimit;
+    private Double minLimit=0.0;
 
     @Column(nullable = false)
-    private Double maxLimit;
+    private Double maxLimit=100.00;
 
     @Column(nullable = false)
     private String status = OrderStatus.OPEN.name(); // OPEN, CLOSED, CANCELLED
@@ -34,7 +34,7 @@ public class Order extends AbstractEntity {
     private String paymentMethod; // Bank transfer, MoMo, PayPal...
 
     @Column(name = "price_mode", nullable = false)
-    private String priceMode; // MARKET hoặc CUSTOM
+    private String priceMode ="CUSTOM";
 
     @ManyToOne
     @JoinColumn(name = "fiat_account_id")

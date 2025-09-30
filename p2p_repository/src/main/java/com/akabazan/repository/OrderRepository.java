@@ -21,4 +21,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("paymentMethod") String paymentMethod);
        
             List<Order> findAllByStatusAndExpireAtBefore(String status, LocalDateTime time);
+              List<Order> findByUserId(Long userId);
+
+
+            
 }

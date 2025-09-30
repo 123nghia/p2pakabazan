@@ -1,6 +1,7 @@
         package com.akabazan.service.dto;
 
         import java.time.LocalDateTime;
+import java.util.List;
 
         public class OrderDTO {
 
@@ -8,8 +9,8 @@
 
         private String type; // BUY / SELL
         private String token; // BTC, USDT, ETH
-        private Double amount;
-        private Double price;
+        private Double amount=0.0;
+        private Double price=0.0;
         private Double minLimit;
         private Double maxLimit;
         private String status; // OPEN, CLOSED, CANCELLED
@@ -27,6 +28,7 @@
         private String bankName;
         private String bankAccount;
         private String accountHolder;
+       
 
         // getters & setters
         public String getBankName() { return bankName; }
@@ -80,4 +82,8 @@
 
         public Long getUserId() { return userId; }
         public void setUserId(Long userId) { this.userId = userId; }
+
+           private List<TradeDTO> trades;
+             public List<TradeDTO> getTrades() { return trades; }
+                public void setTrades(List<TradeDTO> trades) { this.trades = trades; }
         }

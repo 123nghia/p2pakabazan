@@ -9,6 +9,7 @@ public interface TradeService {
     TradeDTO confirmPayment(Long tradeId);
 
     TradeDTO confirmReceived(Long tradeId);
+    TradeDTO cancelTrade(Long tradeId);
 
 
 }

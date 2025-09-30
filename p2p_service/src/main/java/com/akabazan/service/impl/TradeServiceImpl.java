@@ -143,4 +143,42 @@ public TradeDTO createTrade(TradeDTO tradeDTO) {
         u.setId(Long.valueOf(userId));
         return u;
     }
+
+       @Override
+@Transactional
+public TradeDTO cancelTrade(Long tradeId) {
+    User currentUser = getCurrentUser();
+
+    Trade trade = tradeRepository.findById(tradeId)
+            .orElseThrow(() -> new RuntimeException("Trade not found"));
+
+    // Buyer hoặc Seller đều có quyền huỷ
+    if (!trade.getBuyer().getId().equals(currentUser.getId()) &&
+        !trade.getSeller().getId().equals(currentUser.getId())) {
+        throw new RuntimeException("You are not allowed to cancel this trade");
+    }
+
+    // Chỉ huỷ được khi đang PENDING
+    if (trade.getStatus() != TradeStatus.PENDING) {
+        throw new RuntimeException("Trade cannot be canceled at this stage");
+    }
+
+    // Hoàn coin lại cho seller
+    Wallet sellerWallet = walletRepository.findByUserIdAndToken(
+            trade.getSeller().getId(),
+            trade.getOrder().getToken()
+    ).orElseThrow(() -> new RuntimeException("Seller wallet not found"));
+
+    sellerWallet.setAvailableBalance(
+            sellerWallet.getAvailableBalance() + trade.getAmount()
+    );
+    walletRepository.save(sellerWallet);
+
+    // Cập nhật trạng thái
+    trade.setStatus(TradeStatus.CANCELED);
+    tradeRepository.save(trade);
+
+    return TradeMapper.toDTO(trade);
+}
+
 }

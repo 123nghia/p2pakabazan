@@ -48,70 +48,85 @@ public class OrderServiceImpl implements OrderService {
         return userRepository.findById(Long.valueOf(userId))
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
     }
-    @Override
-    @Transactional
-   public OrderDTO createOrder(OrderDTO orderDTO) {
 
+@Override
+@Transactional
+public OrderDTO createOrder(OrderDTO orderDTO) {
     User user = getCurrentUser();
-    orderDTO.setMinLimit(10.00);
-    orderDTO.setMaxLimit(100.00);
 
-    FiatAccount fiatAccount = fiatAccountRepository 
-    .findByUserAndBankNameAndAccountNumberAndAccountHolder(
-            user,
-            orderDTO.getBankName(),
-            orderDTO.getBankAccount(),
-            orderDTO.getAccountHolder()
-    )
-    .orElseGet(() -> {
-        // 2. Nếu chưa có thì tạo mới
-        FiatAccount newAcc = new FiatAccount();
-        newAcc.setUser(user);
-        newAcc.setBankName(orderDTO.getBankName());
-        newAcc.setAccountNumber(orderDTO.getBankAccount());
-        newAcc.setAccountHolder(orderDTO.getAccountHolder());
-        newAcc.setPaymentType(orderDTO.getPaymentMethod());
-        return fiatAccountRepository.save(newAcc);
-    });
-
-
-     orderDTO.setType("SELL");
-    if (user.getKycStatus() != User.KycStatus.VERIFIED)
+    if (user.getKycStatus() != User.KycStatus.VERIFIED) {
         throw new ApplicationException(ErrorCode.KYC_REQUIRED);
+    }
 
+    // Default limit nếu chưa set
+    if (orderDTO.getMinLimit() == null) {
+        orderDTO.setMinLimit(10.00);
+    }
+    if (orderDTO.getMaxLimit() == null) {
+        orderDTO.setMaxLimit(100.00);
+    }
 
-    // Chỉ SELL mới được tạo order
-    // if (!"SELL".equalsIgnoreCase(orderDTO.getType())) {
-    //     throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
-    // }
+    // Normalize type (BUY / SELL)
+    String orderType = orderDTO.getType() == null ? "SELL" : orderDTO.getType().toUpperCase();
+    if (!orderType.equals("BUY") && !orderType.equals("SELL")) {
+        throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
+    }
 
-    // Lấy ví và check balance
-    Wallet wallet = walletRepository.lockByUserIdAndToken(user.getId(), orderDTO.getToken())
-            .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+    FiatAccount fiatAccount = fiatAccountRepository
+            .findByUserAndBankNameAndAccountNumberAndAccountHolder(
+                    user,
+                    orderDTO.getBankName(),
+                    orderDTO.getBankAccount(),
+                    orderDTO.getAccountHolder()
+            )
+            .orElseGet(() -> {
+                FiatAccount newAcc = new FiatAccount();
+                newAcc.setUser(user);
+                newAcc.setBankName(orderDTO.getBankName());
+                newAcc.setAccountNumber(orderDTO.getBankAccount());
+                newAcc.setAccountHolder(orderDTO.getAccountHolder());
+                newAcc.setPaymentType(orderDTO.getPaymentMethod());
+                return fiatAccountRepository.save(newAcc);
+            });
 
-    if (wallet.getAvailableBalance() < orderDTO.getAmount())
-        throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
+    // Nếu là SELL thì cần lock coin
+    if ("SELL".equals(orderType)) {
+        Wallet wallet = walletRepository.lockByUserIdAndToken(user.getId(), orderDTO.getToken())
+                .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
 
-    // Lock số dư
-    wallet.setAvailableBalance(wallet.getAvailableBalance() - orderDTO.getAmount());
-    walletRepository.save(wallet);
+        if (wallet.getAvailableBalance() < orderDTO.getAmount()) {
+            throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
+        }
+
+        wallet.setAvailableBalance(wallet.getAvailableBalance() - orderDTO.getAmount());
+        walletRepository.save(wallet);
+    }
 
     // Tạo order
     Order order = new Order();
     order.setUser(user);
-    order.setType("SELL"); // mặc định uppercase
+    order.setType(orderType);
     order.setToken(orderDTO.getToken());
     order.setAmount(orderDTO.getAmount());
     order.setAvailableAmount(orderDTO.getAmount());
     order.setPrice(orderDTO.getPrice());
-    order.setMinLimit(10.00);
-    order.setMaxLimit(100.00);
+    order.setMinLimit(orderDTO.getMinLimit());
+    order.setMaxLimit(orderDTO.getMaxLimit());
     order.setPaymentMethod(orderDTO.getPaymentMethod());
     order.setFiatAccount(fiatAccount);
     order.setStatus(OrderStatus.OPEN.name());
     order.setExpireAt(LocalDateTime.now().plusMinutes(15));
+
     Order saved = orderRepository.save(order);
-    return OrderMapper.toDto(saved);
+
+    // Map sang DTO trả về
+    OrderDTO result = OrderMapper.toDto(saved);
+    result.setFiatAccountId(fiatAccount.getId());
+    result.setBankName(fiatAccount.getBankName());
+    result.setBankAccount(fiatAccount.getAccountNumber());
+    result.setAccountHolder(fiatAccount.getAccountHolder());
+
+    return result;
 }
 
     @Override

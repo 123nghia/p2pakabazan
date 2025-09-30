@@ -38,6 +38,8 @@ public class P2PController {
     return ResponseEntity.ok(result);
     }
 
+
+
     @GetMapping("/orders")
     public ResponseEntity<List<OrderDTO>> getOrders(
             @RequestParam(required = false) String type,
@@ -79,6 +81,41 @@ public class P2PController {
         TradeDTO result = tradeService.confirmReceived(tradeId);
         return ResponseEntity.ok(result);
     }
+
+
+     @GetMapping("/orders/buyers")
+    public ResponseEntity<List<OrderDTO>> getBuyOrders(
+            @RequestParam(required = false) String token,
+            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) String sortByPrice
+    ) {
+        List<OrderDTO> orders = orderService.getOrders("BUY", token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(orders);
+    }
+
+    /**
+     * Danh sách người bán (SELL orders)
+     */
+    @GetMapping("/orders/sellers")
+    public ResponseEntity<List<OrderDTO>> getSellOrders(
+            @RequestParam(required = false) String token,
+            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) String sortByPrice
+    ) {
+        List<OrderDTO> orders = orderService.getOrders("SELL", token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(orders);
+    }
+
+
+    @PostMapping("/trades/{tradeId}/cancel")
+    public ResponseEntity<TradeDTO> cancelTrade(@PathVariable Long tradeId) {
+
+    TradeDTO result = tradeService.cancelTrade(tradeId);
+    return ResponseEntity.ok(result);
+    }
+
+
+       
 
    
 }
