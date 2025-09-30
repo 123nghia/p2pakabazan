@@ -1,16 +1,9 @@
 package com.akabazan.api.controller;
 
-import com.akabazan.api.request.LoginRequest;
-import com.akabazan.service.AuthService;
 import com.akabazan.service.MarketService;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import com.akabazan.service.OrderService;
+import com.akabazan.service.dto.OrderDTO;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +13,11 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:5500") // Cho phép FE gọi
 public class MarketController {
     private final MarketService marketService;
+    private final OrderService orderService;
 
-    public MarketController(MarketService marketService) {
+    public MarketController(MarketService marketService, OrderService orderService) {
         this.marketService = marketService;
+        this.orderService = orderService;
     }
 
     @GetMapping("/price")
@@ -39,6 +34,22 @@ public class MarketController {
             return ResponseEntity.status(500).body(null);
         }
     }
-}
- 
 
+    @GetMapping("/orders/buy")
+    public ResponseEntity<List<OrderDTO>> getPublicBuyOrders(
+            @RequestParam(required = false) String token,
+            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) String sortByPrice) {
+        List<OrderDTO> orders = orderService.getOrders("BUY", token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/orders/sell")
+    public ResponseEntity<List<OrderDTO>> getPublicSellOrders(
+            @RequestParam(required = false) String token,
+            @RequestParam(required = false) String paymentMethod,
+            @RequestParam(required = false) String sortByPrice) {
+        List<OrderDTO> orders = orderService.getOrders("SELL", token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(orders);
+    }
+}
