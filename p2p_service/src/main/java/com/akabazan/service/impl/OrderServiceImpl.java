@@ -53,7 +53,8 @@ public class OrderServiceImpl implements OrderService {
    public OrderDTO createOrder(OrderDTO orderDTO) {
 
     User user = getCurrentUser();
-
+    orderDTO.setMinLimit(10.00);
+    orderDTO.setMaxLimit(100.00);
 
     FiatAccount fiatAccount = fiatAccountRepository 
     .findByUserAndBankNameAndAccountNumberAndAccountHolder(
@@ -103,8 +104,8 @@ public class OrderServiceImpl implements OrderService {
     order.setAmount(orderDTO.getAmount());
     order.setAvailableAmount(orderDTO.getAmount());
     order.setPrice(orderDTO.getPrice());
-    order.setMinLimit(orderDTO.getMinLimit());
-    order.setMaxLimit(orderDTO.getMaxLimit());
+    order.setMinLimit(10.00);
+    order.setMaxLimit(100.00);
     order.setPaymentMethod(orderDTO.getPaymentMethod());
     order.setFiatAccount(fiatAccount);
     order.setStatus(OrderStatus.OPEN.name());

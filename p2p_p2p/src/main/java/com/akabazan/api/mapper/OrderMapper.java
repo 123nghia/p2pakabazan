@@ -13,6 +13,11 @@ public class OrderMapper {
         dto.setPaymentMethod(request.getPaymentMethod());
         dto.setMinLimit(request.getMinLimit());
         dto.setMaxLimit(request.getMaxLimit());
+        dto.setBankName(request.getBankName());
+        dto.setBankAccount(request.getBankAccount());
+        dto.setAccountHolder(request.getAccountHolder());
+        dto.setPriceMode(request.getPriceMode());
+
         return dto;
     }
 }
