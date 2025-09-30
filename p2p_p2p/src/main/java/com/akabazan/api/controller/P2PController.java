@@ -51,6 +51,12 @@ public class P2PController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/orders/{orderId}/trades")
+    public ResponseEntity<List<TradeDTO>> getTradesByOrder(@PathVariable Long orderId) {
+        List<TradeDTO> trades = tradeService.getTradesByOrder(orderId);
+        return ResponseEntity.ok(trades);
+    }
+
     /**
      * Người bán hủy order (chỉ khi chưa có trade).
      */

@@ -1,212 +1,59 @@
 package com.akabazan.service.impl;
 
-import com.akabazan.common.constant.ErrorCode;
-import com.akabazan.common.exception.ApplicationException;
-import com.akabazan.repository.FiatAccountRepository;
-import com.akabazan.repository.OrderRepository;
-import com.akabazan.repository.UserRepository;
-import com.akabazan.repository.WalletRepository;
-import com.akabazan.repository.constant.OrderStatus;
-import com.akabazan.repository.entity.FiatAccount;
-import com.akabazan.repository.entity.Order;
-import com.akabazan.repository.entity.User;
-import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.OrderService;
-import com.akabazan.service.UserService;
 import com.akabazan.service.dto.OrderDTO;
-import com.akabazan.service.dto.OrderMapper;
+import com.akabazan.service.order.usecase.CancelOrderUseCase;
+import com.akabazan.service.order.usecase.CloseOrderUseCase;
+import com.akabazan.service.order.usecase.CreateOrderUseCase;
+import com.akabazan.service.order.usecase.ExpireOrdersUseCase;
+import com.akabazan.service.order.usecase.GetOrdersQuery;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    private final UserRepository userRepository;
-    private final WalletRepository walletRepository;
-    private final OrderRepository orderRepository;
-   private FiatAccountRepository fiatAccountRepository;
+    private final CreateOrderUseCase createOrderUseCase;
+    private final CancelOrderUseCase cancelOrderUseCase;
+    private final CloseOrderUseCase closeOrderUseCase;
+    private final ExpireOrdersUseCase expireOrdersUseCase;
+    private final GetOrdersQuery getOrdersQuery;
 
-    public OrderServiceImpl(UserRepository userRepository,
-                            WalletRepository walletRepository,
-                            OrderRepository orderRepository,
-                            FiatAccountRepository fiatAccountRepository
-                            ) {
-        this.userRepository = userRepository;
-        this.walletRepository = walletRepository;
-        this.orderRepository = orderRepository;
-        this.fiatAccountRepository = fiatAccountRepository;
-      
-    }
-
-    private User getCurrentUser() {
-        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findById(Long.valueOf(userId))
-                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-    }
-
-@Override
-@Transactional
-public OrderDTO createOrder(OrderDTO orderDTO) {
-    User user = getCurrentUser();
-
-    if (user.getKycStatus() != User.KycStatus.VERIFIED) {
-        throw new ApplicationException(ErrorCode.KYC_REQUIRED);
-    }
-
-    // Default limit nếu chưa set
-    if (orderDTO.getMinLimit() == null) {
-        orderDTO.setMinLimit(10.00);
-    }
-    if (orderDTO.getMaxLimit() == null) {
-        orderDTO.setMaxLimit(100.00);
-    }
-
-    // Normalize type (BUY / SELL)
-    String orderType = orderDTO.getType() == null ? "SELL" : orderDTO.getType().toUpperCase();
-    if (!orderType.equals("BUY") && !orderType.equals("SELL")) {
-        throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
-    }
-
-    FiatAccount fiatAccount = fiatAccountRepository
-            .findByUserAndBankNameAndAccountNumberAndAccountHolder(
-                    user,
-                    orderDTO.getBankName(),
-                    orderDTO.getBankAccount(),
-                    orderDTO.getAccountHolder()
-            )
-            .orElseGet(() -> {
-                FiatAccount newAcc = new FiatAccount();
-                newAcc.setUser(user);
-                newAcc.setBankName(orderDTO.getBankName());
-                newAcc.setAccountNumber(orderDTO.getBankAccount());
-                newAcc.setAccountHolder(orderDTO.getAccountHolder());
-                newAcc.setPaymentType(orderDTO.getPaymentMethod());
-                return fiatAccountRepository.save(newAcc);
-            });
-
-    // Nếu là SELL thì cần lock coin
-    if ("SELL".equals(orderType)) {
-        Wallet wallet = walletRepository.lockByUserIdAndToken(user.getId(), orderDTO.getToken())
-                .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-
-        if (wallet.getAvailableBalance() < orderDTO.getAmount()) {
-            throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
-        }
-
-        wallet.setAvailableBalance(wallet.getAvailableBalance() - orderDTO.getAmount());
-        walletRepository.save(wallet);
-    }
-
-    // Tạo order
-    Order order = new Order();
-    order.setUser(user);
-    order.setType(orderType);
-    order.setToken(orderDTO.getToken());
-    order.setAmount(orderDTO.getAmount());
-    order.setAvailableAmount(orderDTO.getAmount());
-    order.setPrice(orderDTO.getPrice());
-    order.setMinLimit(orderDTO.getMinLimit());
-    order.setMaxLimit(orderDTO.getMaxLimit());
-    order.setPaymentMethod(orderDTO.getPaymentMethod());
-    order.setFiatAccount(fiatAccount);
-    order.setStatus(OrderStatus.OPEN.name());
-    order.setExpireAt(LocalDateTime.now().plusMinutes(15));
-
-    Order saved = orderRepository.save(order);
-
-    // Map sang DTO trả về
-    OrderDTO result = OrderMapper.toDto(saved);
-    result.setFiatAccountId(fiatAccount.getId());
-    result.setBankName(fiatAccount.getBankName());
-    result.setBankAccount(fiatAccount.getAccountNumber());
-    result.setAccountHolder(fiatAccount.getAccountHolder());
-
-    return result;
-}
-
-    @Override
-    @Transactional
-    public void cancelOrder(Long orderId) {
-        User seller = getCurrentUser();
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
-
-        if (!order.getUser().getId().equals(seller.getId()))
-            throw new ApplicationException(ErrorCode.UNAUTHORIZED);
-
-        if (!OrderStatus.OPEN.name().equals(order.getStatus()))
-            throw new ApplicationException(ErrorCode.ORDER_CLOSED);
-
-        // Hoàn lại availableBalance nếu là SELL order
-        if ("SELL".equalsIgnoreCase(order.getType()) && order.getAvailableAmount() > 0) {
-            Wallet wallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-            wallet.setAvailableBalance(wallet.getAvailableBalance() + order.getAvailableAmount());
-            walletRepository.save(wallet);
-        }
-
-        order.setStatus(OrderStatus.CANCELLED.name());
-        orderRepository.save(order);
-    }
-
-    @Transactional
-    public void expireOrders() {
-        LocalDateTime now = LocalDateTime.now();
-        List<Order> expiredOrders = orderRepository.findAllByStatusAndExpireAtBefore(OrderStatus.OPEN.name(), now);
-
-        for (Order order : expiredOrders) {
-            if ("SELL".equalsIgnoreCase(order.getType()) && order.getAvailableAmount() > 0) {
-                Wallet wallet = walletRepository.findByUserIdAndToken(order.getUser().getId(), order.getToken())
-                        .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-                wallet.setAvailableBalance(wallet.getAvailableBalance() + order.getAvailableAmount());
-                walletRepository.save(wallet);
-            }
-
-            order.setStatus(OrderStatus.EXPIRED.name());
-            orderRepository.save(order);
-        }
+    public OrderServiceImpl(CreateOrderUseCase createOrderUseCase,
+                            CancelOrderUseCase cancelOrderUseCase,
+                            CloseOrderUseCase closeOrderUseCase,
+                            ExpireOrdersUseCase expireOrdersUseCase,
+                            GetOrdersQuery getOrdersQuery) {
+        this.createOrderUseCase = createOrderUseCase;
+        this.cancelOrderUseCase = cancelOrderUseCase;
+        this.closeOrderUseCase = closeOrderUseCase;
+        this.expireOrdersUseCase = expireOrdersUseCase;
+        this.getOrdersQuery = getOrdersQuery;
     }
 
     @Override
-    @Transactional
-    public void closeOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
-
-        if ("SELL".equalsIgnoreCase(order.getType()) && order.getAvailableAmount() > 0) {
-            Wallet wallet = walletRepository.lockByUserIdAndToken(order.getUser().getId(), order.getToken())
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-            wallet.setAvailableBalance(wallet.getAvailableBalance() + order.getAvailableAmount());
-            walletRepository.save(wallet);
-        }
-
-        order.setStatus(OrderStatus.CLOSED.name());
-        orderRepository.save(order);
+    public OrderDTO createOrder(OrderDTO orderDTO) {
+        return createOrderUseCase.create(orderDTO);
     }
 
     @Override
     public List<OrderDTO> getOrders(String type, String token, String paymentMethod, String sortByPrice) {
-        List<Order> orders = orderRepository.findByStatusAndTypeAndTokenAndPaymentMethod(
-                OrderStatus.OPEN.name(),
-                type != null ? type.toUpperCase() : null,
-                token,
-                paymentMethod
-        );
-
-        if ("asc".equalsIgnoreCase(sortByPrice)) {
-            orders.sort((o1, o2) -> Double.compare(o1.getPrice(), o2.getPrice()));
-        } else if ("desc".equalsIgnoreCase(sortByPrice)) {
-            orders.sort((o1, o2) -> Double.compare(o2.getPrice(), o1.getPrice()));
-        }
-
-        return orders.stream()
-                .map(OrderMapper::toDto)
-                .collect(Collectors.toList());
+        return getOrdersQuery.get(type, token, paymentMethod, sortByPrice);
     }
 
+    @Override
+    public void cancelOrder(Long orderId) {
+        cancelOrderUseCase.cancel(orderId);
+    }
+
+    @Override
+    public void closeOrder(Long orderId) {
+        closeOrderUseCase.close(orderId);
+    }
+
+    @Override
+    public void expireOrders() {
+        expireOrdersUseCase.expire();
+    }
 }

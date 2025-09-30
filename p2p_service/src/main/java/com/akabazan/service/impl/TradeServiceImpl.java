@@ -21,6 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TradeServiceImpl implements TradeService {
@@ -41,8 +43,8 @@ public class TradeServiceImpl implements TradeService {
     }
 
     @Override
-@Transactional
-public TradeDTO createTrade(TradeDTO tradeDTO) {
+    @Transactional
+    public TradeDTO createTrade(TradeDTO tradeDTO) {
     User buyer = getCurrentUser();
 
     // Lock order tránh oversell
@@ -144,9 +146,9 @@ public TradeDTO createTrade(TradeDTO tradeDTO) {
         return u;
     }
 
-       @Override
-@Transactional
-public TradeDTO cancelTrade(Long tradeId) {
+    @Override
+    @Transactional
+    public TradeDTO cancelTrade(Long tradeId) {
     User currentUser = getCurrentUser();
 
     Trade trade = tradeRepository.findById(tradeId)
@@ -175,10 +177,22 @@ public TradeDTO cancelTrade(Long tradeId) {
     walletRepository.save(sellerWallet);
 
     // Cập nhật trạng thái
-    trade.setStatus(TradeStatus.CANCELED);
+    trade.setStatus(TradeStatus.CANCELLED);
     tradeRepository.save(trade);
 
-    return TradeMapper.toDTO(trade);
-}
+        return TradeMapper.toDTO(trade);
+    }
+
+    @Override
+    @Transactional
+    public List<TradeDTO> getTradesByOrder(Long orderId) {
+        orderRepository.findById(orderId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
+
+        return tradeRepository.findByOrderId(orderId)
+                .stream()
+                .map(TradeMapper::toDTO)
+                .collect(Collectors.toList());
+    }
 
 }

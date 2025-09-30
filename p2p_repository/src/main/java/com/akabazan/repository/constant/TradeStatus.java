@@ -5,5 +5,5 @@ public enum TradeStatus {
     CONFIRMED,  // seller xác nhận đã nhận tiền
     DISPUTED,   // tranh chấp
     COMPLETED,   // giao dịch hoàn tất,
-    CANCELED    // tạo trade nhưng chưa thanh toán
+    CANCELLED    // tạo trade nhưng chưa thanh toán
 }

@@ -5,6 +5,8 @@ import com.akabazan.service.dto.DisputeDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/p2p")
 @CrossOrigin(origins = "http://localhost:5500")
@@ -24,5 +26,11 @@ public class DisputeController {
 
         DisputeDTO result = disputeService.openDispute(tradeId, reason, evidence);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/trades/{tradeId}/disputes")
+    public ResponseEntity<List<DisputeDTO>> getDisputesByTrade(@PathVariable Long tradeId) {
+        List<DisputeDTO> disputes = disputeService.getDisputesByTrade(tradeId);
+        return ResponseEntity.ok(disputes);
     }
 }

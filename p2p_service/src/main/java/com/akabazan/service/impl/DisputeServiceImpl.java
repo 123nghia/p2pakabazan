@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class DisputeServiceImpl implements DisputeService {
@@ -45,5 +47,16 @@ public class DisputeServiceImpl implements DisputeService {
         dispute.setCreatedAt(LocalDateTime.now());
 
         return DisputeMapper.toDTO(disputeRepository.save(dispute));
+    }
+
+    @Override
+    public List<DisputeDTO> getDisputesByTrade(Long tradeId) {
+        tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
+
+        return disputeRepository.findByTradeId(tradeId)
+                .stream()
+                .map(DisputeMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }
