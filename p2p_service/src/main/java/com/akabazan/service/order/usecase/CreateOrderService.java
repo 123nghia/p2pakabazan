@@ -111,9 +111,13 @@ public class CreateOrderService implements CreateOrderUseCase {
         order.setAmount(command.getAmount());
         order.setAvailableAmount(command.getAmount());
         order.setPrice(command.getPrice());
+        order.setFiat(command.getFiat());
         order.setMinLimit(command.getMinLimit());
         order.setMaxLimit(command.getMaxLimit());
         order.setPaymentMethod(command.getPaymentMethod());
+        if (command.getPriceMode() != null) {
+            order.setPriceMode(command.getPriceMode());
+        }
         order.setFiatAccount(fiatAccount);
         order.setStatus(OrderStatus.OPEN.name());
         order.setExpireAt(LocalDateTime.now().plusMinutes(ORDER_EXPIRATION_MINUTES));

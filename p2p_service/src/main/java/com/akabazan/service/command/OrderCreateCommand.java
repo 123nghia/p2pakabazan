@@ -6,6 +6,7 @@ public class OrderCreateCommand {
     private String token;
     private Double amount;
     private Double price;
+    private String fiat;
     private String paymentMethod;
     private Double minLimit;
     private Double maxLimit;
@@ -44,6 +45,14 @@ public class OrderCreateCommand {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public String getFiat() {
+        return fiat;
+    }
+
+    public void setFiat(String fiat) {
+        this.fiat = fiat;
     }
 
     public String getPaymentMethod() {

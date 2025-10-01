@@ -21,6 +21,9 @@ public class Order extends AbstractEntity {
     @Column(nullable = false)
     private Double price; // giá 1 token theo fiat
 
+    @Column(nullable = false, length = 10)
+    private String fiat; // Ví dụ: VND, USD
+
     @Column(nullable = false)
     private Double minLimit=0.0;
 
@@ -76,6 +79,9 @@ public class Order extends AbstractEntity {
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
+
+    public String getFiat() { return fiat; }
+    public void setFiat(String fiat) { this.fiat = fiat; }
 
     public Double getMinLimit() { return minLimit; }
     public void setMinLimit(Double minLimit) { this.minLimit = minLimit; }

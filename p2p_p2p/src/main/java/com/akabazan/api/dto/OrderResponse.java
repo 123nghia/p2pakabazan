@@ -10,6 +10,7 @@ public class OrderResponse {
     private String token;
     private Double amount;
     private Double price;
+    private String fiat;
     private Double minLimit;
     private Double maxLimit;
     private String status;
@@ -62,6 +63,14 @@ public class OrderResponse {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public String getFiat() {
+        return fiat;
+    }
+
+    public void setFiat(String fiat) {
+        this.fiat = fiat;
     }
 
     public Double getMinLimit() {

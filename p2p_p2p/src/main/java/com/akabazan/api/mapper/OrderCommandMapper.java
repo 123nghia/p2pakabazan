@@ -14,6 +14,7 @@ public final class OrderCommandMapper {
         command.setToken(request.getToken());
         command.setAmount(request.getAmount());
         command.setPrice(request.getPrice());
+        command.setFiat(request.getFiat());
         command.setPaymentMethod(request.getPaymentMethod());
         command.setMinLimit(request.getMinLimit());
         command.setMaxLimit(request.getMaxLimit());

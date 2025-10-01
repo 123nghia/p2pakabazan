@@ -5,6 +5,7 @@ public class OrderRequest {
     private String token;         // BTC, USDT, ETH
     private Double amount;        // Số token
     private Double price;         // Giá 1 token theo fiat
+    private String fiat;          // Mã tiền pháp định (VD: VND, USD)
     private String priceMode;     // "MARKET" hoặc "CUSTOM"
 
     // Fiat Account Info
@@ -29,6 +30,9 @@ public class OrderRequest {
 
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
+
+    public String getFiat() { return fiat; }
+    public void setFiat(String fiat) { this.fiat = fiat; }
 
     public String getPriceMode() { return priceMode; }
     public void setPriceMode(String priceMode) { this.priceMode = priceMode; }

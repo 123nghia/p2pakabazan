@@ -22,6 +22,7 @@ public final class OrderResponseMapper {
         response.setToken(result.getToken());
         response.setAmount(result.getAmount());
         response.setPrice(result.getPrice());
+        response.setFiat(result.getFiat());
         response.setMinLimit(result.getMinLimit());
         response.setMaxLimit(result.getMaxLimit());
         response.setStatus(result.getStatus());

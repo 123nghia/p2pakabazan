@@ -10,6 +10,7 @@ public class OrderResult {
     private String token; // BTC, USDT, ETH
     private Double amount = 0.0;
     private Double price = 0.0;
+    private String fiat;
     private Double minLimit;
     private Double maxLimit;
     private String status; // OPEN, CLOSED, CANCELLED
@@ -67,6 +68,14 @@ public class OrderResult {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public String getFiat() {
+        return fiat;
+    }
+
+    public void setFiat(String fiat) {
+        this.fiat = fiat;
     }
 
     public Double getMinLimit() {

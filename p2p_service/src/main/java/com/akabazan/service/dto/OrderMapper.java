@@ -20,6 +20,7 @@ public class OrderMapper {
         dto.setToken(order.getToken());
         dto.setAmount(order.getAmount());
         dto.setPrice(order.getPrice());
+        dto.setFiat(order.getFiat());
         dto.setMinLimit(order.getMinLimit());
         dto.setMaxLimit(order.getMaxLimit());
         dto.setStatus(order.getStatus());
@@ -53,6 +54,7 @@ public class OrderMapper {
         dto.setToken(order.getToken());
         dto.setAmount(order.getAmount());
         dto.setPrice(order.getPrice());
+        dto.setFiat(order.getFiat());
         dto.setMinLimit(order.getMinLimit());
         dto.setMaxLimit(order.getMaxLimit());
         dto.setStatus(order.getStatus());
@@ -91,6 +93,7 @@ public class OrderMapper {
         order.setToken(dto.getToken());
         order.setAmount(dto.getAmount());
         order.setPrice(dto.getPrice());
+        order.setFiat(dto.getFiat());
         order.setMinLimit(dto.getMinLimit());
         order.setMaxLimit(dto.getMaxLimit());
         order.setStatus(dto.getStatus());
