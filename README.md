@@ -1,40 +1,116 @@
-# P2P Trading System - Backend
+# P2P Trading System – Backend
 
-## 📌 Giới thiệu
-Đây là hệ thống backend cho ứng dụng **P2P Trading System**, được xây dựng bằng **Spring Boot (multi-module)**, kết nối **PostgreSQL**, hỗ trợ **JWT Authentication** và cung cấp RESTful API.
+## 1. Mục tiêu dự án
+Nền tảng backend hỗ trợ giao dịch tài sản số theo mô hình P2P. Hệ thống cung cấp API cho:
+- Quản lý quảng cáo mua/bán (order) và khớp lệnh (trade) theo thời gian thực.
+- Tra cứu thị trường P2P Binance để tham chiếu giá.
+- Xử lý ví người dùng, chat giao dịch, tranh chấp và đồng bộ với hệ thống ngoài.
+- Bảo vệ tài nguyên bằng JWT, phân quyền request và ghi nhận lịch sử hoạt động.
 
-Cấu trúc dự án được tổ chức theo dạng **multi-module Maven**:
-- `p2p_common` : chứa các class, constant, DTO, util dùng chung.
-- `p2p_repository` : quản lý entity, repository, kết nối database.
-- `p2p_service` : chứa business logic, service layer.
-- `p2p_security` : quản lý xác thực, JWT, filter, config security.
-- `p2p_p2p` : module chính khởi động Spring Boot (`main class`), expose API.
+## 2. Công nghệ & thư viện chính
+| Nhóm | Công nghệ |
+|------|-----------|
+| Ngôn ngữ | Java 17 |
+| Framework | Spring Boot 3.1 (Web, Validation) |
+| Persist | Spring Data JPA (Hibernate), Flyway |
+| Bảo mật | Spring Security, JWT (jjwt 0.11.x) |
+| CSDL | PostgreSQL |
+| Tài liệu | springdoc-openapi 2.2 + Swagger UI |
+| Build | Maven multi-module, JDK toolchain |
+| Hỗ trợ khác | GZIP handling, RestTemplate, MapStruct/Lombok (có thể bổ sung) |
 
----
+## 3. Cấu trúc module Maven
+```
+├── pom.xml                 # BOM cấp cao, khai báo modules
+├── p2p_common/             # Hằng số, exception, tiện ích dùng chung
+├── p2p_repository/         # Entity, repository, migration (Flyway)
+├── p2p_service/            # Domain service, use-case, Command/Result
+├── p2p_security/           # Filter JWT, SecurityConfig, SecretKey bean
+└── p2p_p2p/                # Ứng dụng Spring Boot expose REST API
+```
+### Luồng logic cơ bản
+1. Request tới `p2p_p2p` → controller nhận payload → mapper chuyển sang `*Command`.
+2. `p2p_service` xử lý nghiệp vụ (gọi repository, tích hợp Binance, lock wallet...).
+3. Service trả về `*Result` → controller map thành response DTO.
+4. `p2p_security` kiểm tra JWT trước khi vào controller (ngoại trừ endpoint public).
 
-## 🏗️ Công nghệ sử dụng
-- **Java 17+**
-- **Spring Boot 3+**
-- **Spring Data JPA (Hibernate)**
-- **Spring Security + JWT**
-- **PostgreSQL**
-- **Maven Multi-Module**
-- **Docker (optional)**
+## 4. Tích hợp nổi bật
+- **Binance P2P**: `BinanceP2PMarketService` gọi API Binance, giải nén gzip, chuẩn hóa JSON.
+- **Integration API**: `/api/integration/users/sync` đồng bộ user + wallet từ hệ thống ngoài và trả JWT.
+- **Flyway**: bật mặc định (`spring.flyway.enabled=true`), migration đặt tại `classpath:db/migration`.
+- **Swagger UI**: truy cập `http://localhost:8080/api/swagger-ui/index.html`.
 
----
+## 5. Thiết lập môi trường
+### Yêu cầu
+- JDK 17+
+- Maven 3.8+
+- PostgreSQL 14+ (tạo database `p2p_trading`)
 
-## ⚙️ Cấu hình
-
-File cấu hình chính nằm ở `p2p_p2p/src/main/resources/application.properties`:
-
+### Cấu hình local
+Sửa `p2p_p2p/src/main/resources/application.properties` hoặc export biến môi trường tương đương:
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/p2p_trading
 spring.datasource.username=postgres
 spring.datasource.password=123
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-
-jwt.secret=mysupersecuresecretkey_which_is_at_least_32_chars
-
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.show-sql=false
+spring.flyway.enabled=true
 spring.mvc.servlet.path=/api
+jwt.secret=mysupersecuresecretkey_which_is_at_least_32_chars
+```
+> **Lưu ý:** đặt `ddl-auto=none` khi dùng Flyway để tránh xung đột schema.
+
+## 6. Cách chạy & luồng hoạt động
+```bash
+# Đóng gói toàn bộ modules
+mvn clean install
+
+# Khởi động ứng dụng (module p2p_p2p)
+mvn -pl p2p_p2p -am spring-boot:run
+
+# Hoặc chạy từ jar đã build
+java -jar p2p_p2p/target/p2p_p2p-1.0-SNAPSHOT.jar
+```
+Ứng dụng lắng nghe tại `http://localhost:8080/api`.
+
+### Luồng khởi động nội bộ
+1. Spring Boot nạp cấu hình datasource, JWT, servlet path `/api`.
+2. `p2p_security` khởi tạo `SecretKey`, cấu hình `SecurityFilterChain`, `JwtAuthenticationFilter`.
+3. `p2p_repository` quét entity, chạy Flyway migration, dựng `EntityManagerFactory`.
+4. `p2p_service` khởi tạo service/use-case, bao gồm luồng giao dịch, ví, tranh chấp, Binance.
+5. `p2p_p2p` publish REST controller; springdoc sinh OpenAPI → truy cập `/api/swagger-ui/index.html`.
+
+### Luồng xử lý request tiêu chuẩn
+1. Client gửi request (ví dụ `POST /api/p2p/orders`) với JWT.
+2. Filter JWT xác thực, inject principal vào `SecurityContext`.
+3. Controller nhận payload → mapper chuyển thành `*Command`.
+4. Service thực thi transaction: lock/bỏ lock wallet, cập nhật order, gọi repository hoặc Binance.
+5. Service trả `*Result` → controller map sang response DTO và trả về `ResponseEntity`.
+
+### Endpoint nổi bật
+- `/market/price` – giá tham chiếu Binance (BinanceP2PMarketService).
+- `/p2p/orders` – quản lý order; `/p2p/orders/{orderId}/trades` – danh sách trade.
+- `/p2p/trades` – tạo trade; `/p2p/trades/{id}/confirm-payment`, `/confirm-received`, `/cancel` – workflow thanh toán.
+- `/p2p/trades/{id}/chat` – chat buyer/seller.
+- `/integration/users/sync` – đồng bộ user & wallet từ hệ thống ngoài và phát hành JWT.
+
+## 7. Quy ước code & kiến trúc
+- **Command / Result / Response**: phân tầng rõ ràng, tránh lẫn lộn DTO giữa controller và service.
+- **Transaction boundary**: `@Transactional` tại service đảm bảo atomicity (create trade, dispute...).
+- **Locking**: dùng `PESSIMISTIC_WRITE` khi lấy order, `SellerFundsManager` lock/unlock `availableBalance` của ví.
+- **Validation**: `jakarta.validation` trên payload, custom exception (`ApplicationException`) với `ErrorCode`.
+- **Logging & Monitoring**: nên bật Spring Boot logging, xem xét bổ sung Actuator cho prod.
+
+## 8. Kiểm thử & mở rộng
+- Viết test tại `src/test/java` cho từng module; có thể dùng Testcontainers cho PostgreSQL.
+- Container hóa bằng Docker (viết Dockerfile cho module `p2p_p2p`, mount file cấu hình).
+- Theo dõi rate-limit Binance, cân nhắc caching/queue để giảm số lần gọi.
+
+## 9. Lộ trình phát triển
+- Hoàn thiện workflow tranh chấp (notify, phân quyền xử lý).
+- Tích hợp notification service (email/websocket) cho trạng thái trade.
+- Bổ sung audit log / lịch sử giao dịch.
+- Tối ưu hiệu năng truy vấn (pagination, caching order/trade).
+
+---
+**Liên hệ:** đội ngũ Akabazan Backend.
