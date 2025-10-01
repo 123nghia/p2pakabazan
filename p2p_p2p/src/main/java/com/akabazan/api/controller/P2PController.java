@@ -125,9 +125,5 @@ public class P2PController {
     TradeResult result = tradeService.cancelTrade(tradeId);
     return ResponseEntity.ok(TradeResponseMapper.from(result));
     }
-
-
-       
-
    
 }

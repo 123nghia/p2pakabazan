@@ -44,7 +44,7 @@ public class TradeServiceImpl implements TradeService {
     }
 
   @Override
-@Transactional
+    @Transactional
     public TradeResult createTrade(TradeCreateCommand command) {
     User buyer = getCurrentUser();
 
@@ -64,21 +64,32 @@ public class TradeServiceImpl implements TradeService {
 
     // Giảm availableAmount của order
     order.setAvailableAmount(order.getAvailableAmount() - command.getAmount());
-    if (order.getAvailableAmount() <= 0) {
-        order.setStatus(OrderStatus.CLOSED.name());
-    }
+    // if (order.getAvailableAmount() <= 0) {
+    //     order.setStatus(OrderStatus.CLOSED.name());
+    // }
     orderRepository.save(order);
 
     // Tạo trade
     Trade trade = new Trade();
     trade.setOrder(order);
+
+
+
+    if ("SELL".equalsIgnoreCase(order.getType())) {
+    // Người tạo trade là buyer
     trade.setBuyer(buyer);
     trade.setSeller(order.getUser());
+    trade.setEscrow(true); // coin đã lock từ seller
+    } else if ("BUY".equalsIgnoreCase(order.getType())) {
+    // Người tạo trade là seller
+    trade.setSeller(buyer);
+    trade.setBuyer(order.getUser());
+    trade.setEscrow(false); // buyer chưa có coin lock
+    }
+
     trade.setAmount(command.getAmount());
-    trade.setEscrow("SELL".equalsIgnoreCase(order.getType())); // true nếu SELL
     trade.setStatus(TradeStatus.PENDING);
     trade.setCreatedAt(LocalDateTime.now());
-
     tradeRepository.save(trade);
 
     return TradeMapper.toResult(trade);
@@ -130,17 +141,34 @@ public TradeResult confirmReceived(Long tradeId) {
     buyerWallet.setAvailableBalance(buyerWallet.getAvailableBalance() + trade.getAmount());
     walletRepository.save(buyerWallet);
 
-    // Seller: trừ balance thực
-    Wallet sellerWallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
+    // Seller: trừ balance thực và cập nhật lại lượng lock
+     Wallet sellerWallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
             .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+
     sellerWallet.setBalance(sellerWallet.getBalance() - trade.getAmount());
+    sellerWallet.setAvailableBalance(sellerWallet.getAvailableBalance() - trade.getAmount());
     walletRepository.save(sellerWallet);
 
     // Cập nhật order.availableAmount
-    order.setAvailableAmount(order.getAvailableAmount() - trade.getAmount());
-    if (order.getAvailableAmount() <= 0) {
-        order.setStatus(OrderStatus.CLOSED.name());
-    }
+    //order.setAvailableAmount(order.getAvailableAmount() - trade.getAmount());
+      if (order.getAvailableAmount() <= 0) {
+        // Không còn coin khả dụng để tạo trade mới
+        order.setAvailableAmount(0.0);
+
+        // Kiểm tra tất cả trade của order
+        boolean allTradesCompleted = tradeRepository
+                .findByOrderId(order.getId())
+                .stream()
+                .allMatch(t -> t.getStatus() == TradeStatus.COMPLETED 
+                            || t.getStatus() == TradeStatus.CANCELLED);
+
+        if (allTradesCompleted) {
+            order.setStatus(OrderStatus.CLOSED.name());
+        } else {
+            // Có trade vẫn còn PAID/PENDING
+            order.setStatus(OrderStatus.OPEN.name()); 
+        }
+        }
     orderRepository.save(order);
 
     // Hoàn tất trade

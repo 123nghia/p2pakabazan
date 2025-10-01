@@ -24,8 +24,8 @@ public class MarketController {
 
     @GetMapping("/price")
     public ResponseEntity<Double> getPrice(
-            @RequestParam String token,
-            @RequestParam String fiat,
+            @RequestParam(defaultValue = "USDT") String token,
+            @RequestParam(defaultValue = "VND") String fiat,
             @RequestParam(defaultValue = "SELL") String tradeType,
             @RequestParam(defaultValue = "5") int top) {
 
