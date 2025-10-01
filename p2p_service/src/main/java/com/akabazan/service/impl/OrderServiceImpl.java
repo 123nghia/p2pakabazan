@@ -1,7 +1,7 @@
 package com.akabazan.service.impl;
 
 import com.akabazan.service.OrderService;
-import com.akabazan.service.dto.OrderDTO;
+import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.order.usecase.CancelOrderUseCase;
 import com.akabazan.service.order.usecase.CloseOrderUseCase;
 import com.akabazan.service.order.usecase.CreateOrderUseCase;
@@ -33,12 +33,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderDTO createOrder(OrderDTO orderDTO) {
-        return createOrderUseCase.create(orderDTO);
+    public OrderResult createOrder(OrderResult orderResult) {
+        return createOrderUseCase.create(orderResult);
     }
 
     @Override
-    public List<OrderDTO> getOrders(String type, String token, String paymentMethod, String sortByPrice) {
+    public List<OrderResult> getOrders(String type, String token, String paymentMethod, String sortByPrice) {
         return getOrdersQuery.get(type, token, paymentMethod, sortByPrice);
     }
 

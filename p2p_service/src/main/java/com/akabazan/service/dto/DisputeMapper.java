@@ -4,14 +4,19 @@ import com.akabazan.repository.entity.Dispute;
 
 public class DisputeMapper {
 
-    public static DisputeDTO toDTO(Dispute dispute) {
-        if (dispute == null) return null;
-        DisputeDTO dto = new DisputeDTO();
-        dto.setId(dispute.getId());
-        dto.setTradeId(dispute.getTrade().getId());
-        dto.setReason(dispute.getReason());
-        dto.setEvidence(dispute.getEvidence());
-        dto.setCreatedAt(dispute.getCreatedAt());
-        return dto;
+    private DisputeMapper() {
+    }
+
+    public static DisputeResult toResult(Dispute dispute) {
+        if (dispute == null) {
+            return null;
+        }
+        DisputeResult result = new DisputeResult();
+        result.setId(dispute.getId());
+        result.setTradeId(dispute.getTrade().getId());
+        result.setReason(dispute.getReason());
+        result.setEvidence(dispute.getEvidence());
+        result.setCreatedAt(dispute.getCreatedAt());
+        return result;
     }
 }

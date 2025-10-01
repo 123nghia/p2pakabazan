@@ -1,11 +1,11 @@
 package com.akabazan.service;
-import com.akabazan.service.dto.OrderDTO;
-import com.akabazan.service.dto.UserTradesOrdersDTO;
+import com.akabazan.service.dto.OrderResult;
+import com.akabazan.service.dto.UserTradesOrdersResult;
 
 import java.util.List;
 
 public interface UserTradeOrderService {
 
     /** Tạo một order mới */
-    public UserTradesOrdersDTO getUserTradesAndOrders(Long userId);
+    public UserTradesOrdersResult getUserTradesAndOrders(Long userId);
 }

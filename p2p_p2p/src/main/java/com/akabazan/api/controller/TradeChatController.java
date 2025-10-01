@@ -1,7 +1,9 @@
 package com.akabazan.api.controller;
 
+import com.akabazan.api.dto.TradeChatResponse;
+import com.akabazan.api.mapper.TradeChatResponseMapper;
 import com.akabazan.service.TradeChatService;
-import com.akabazan.service.dto.TradeChatDTO;
+import com.akabazan.service.dto.TradeChatResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,15 +21,15 @@ public class TradeChatController {
     }
 
     @PostMapping
-    public ResponseEntity<TradeChatDTO> sendMessage(@PathVariable Long tradeId,
+    public ResponseEntity<TradeChatResponse> sendMessage(@PathVariable Long tradeId,
                                                     @RequestBody String message) {
-        TradeChatDTO dto = tradeChatService.sendMessage(tradeId, message);
-        return ResponseEntity.ok(dto);
+        TradeChatResult dto = tradeChatService.sendMessage(tradeId, message);
+        return ResponseEntity.ok(TradeChatResponseMapper.from(dto));
     }
 
     @GetMapping
-    public ResponseEntity<List<TradeChatDTO>> getMessages(@PathVariable Long tradeId) {
-        List<TradeChatDTO> messages = tradeChatService.getMessages(tradeId);
-        return ResponseEntity.ok(messages);
+    public ResponseEntity<List<TradeChatResponse>> getMessages(@PathVariable Long tradeId) {
+        List<TradeChatResult> messages = tradeChatService.getMessages(tradeId);
+        return ResponseEntity.ok(TradeChatResponseMapper.fromList(messages));
     }
 }

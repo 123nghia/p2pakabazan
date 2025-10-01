@@ -12,7 +12,7 @@ import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.User;
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.TradeService;
-import com.akabazan.service.dto.TradeDTO;
+import com.akabazan.service.dto.TradeResult;
 import com.akabazan.service.dto.TradeMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
@@ -44,43 +44,43 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     @Transactional
-    public TradeDTO createTrade(TradeDTO tradeDTO) {
+    public TradeResult createTrade(TradeResult tradeResult) {
     User buyer = getCurrentUser();
 
     // Lock order tránh oversell
-    Order order = entityManager.find(Order.class, tradeDTO.getOrderId(), LockModeType.PESSIMISTIC_WRITE);
+    Order order = entityManager.find(Order.class, tradeResult.getOrderId(), LockModeType.PESSIMISTIC_WRITE);
     if (order == null)
         throw new ApplicationException(ErrorCode.ORDER_NOT_FOUND);
 
     if (!OrderStatus.OPEN.name().equals(order.getStatus()))
         throw new ApplicationException(ErrorCode.ORDER_CLOSED);
 
-    if (tradeDTO.getAmount() < order.getMinLimit() || tradeDTO.getAmount() > order.getMaxLimit())
+    if (tradeResult.getAmount() < order.getMinLimit() || tradeResult.getAmount() > order.getMaxLimit())
         throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
 
-    if (tradeDTO.getAmount() > order.getAvailableAmount())
+    if (tradeResult.getAmount() > order.getAvailableAmount())
         throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
 
     // Chỉ giảm availableAmount của order
-    order.setAvailableAmount(order.getAvailableAmount() - tradeDTO.getAmount());
+    order.setAvailableAmount(order.getAvailableAmount() - tradeResult.getAmount());
     orderRepository.save(order);
 
     Trade trade = new Trade();
     trade.setOrder(order);
     trade.setBuyer(buyer);
     trade.setSeller(order.getUser());
-    trade.setAmount(tradeDTO.getAmount());
+    trade.setAmount(tradeResult.getAmount());
     trade.setEscrow("SELL".equalsIgnoreCase(order.getType()));
     trade.setStatus(TradeStatus.PENDING);
     trade.setCreatedAt(LocalDateTime.now());
 
-    return TradeMapper.toDTO(tradeRepository.save(trade));
+    return TradeMapper.toResult(tradeRepository.save(trade));
 }
 
 
     @Override
     @Transactional
-    public TradeDTO confirmPayment(Long tradeId) {
+    public TradeResult confirmPayment(Long tradeId) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -88,12 +88,12 @@ public class TradeServiceImpl implements TradeService {
             throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
 
         trade.setStatus(TradeStatus.PAID);
-        return TradeMapper.toDTO(tradeRepository.save(trade));
+        return TradeMapper.toResult(tradeRepository.save(trade));
     }
 
     @Override
     @Transactional
-    public TradeDTO confirmReceived(Long tradeId) {
+    public TradeResult confirmReceived(Long tradeId) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -133,7 +133,7 @@ public class TradeServiceImpl implements TradeService {
             order.setStatus(OrderStatus.CLOSED.name());
 
         orderRepository.save(order);
-        return TradeMapper.toDTO(tradeRepository.save(trade));
+        return TradeMapper.toResult(tradeRepository.save(trade));
     }
 
    
@@ -148,7 +148,7 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     @Transactional
-    public TradeDTO cancelTrade(Long tradeId) {
+    public TradeResult cancelTrade(Long tradeId) {
     User currentUser = getCurrentUser();
 
     Trade trade = tradeRepository.findById(tradeId)
@@ -180,18 +180,18 @@ public class TradeServiceImpl implements TradeService {
     trade.setStatus(TradeStatus.CANCELLED);
     tradeRepository.save(trade);
 
-        return TradeMapper.toDTO(trade);
+        return TradeMapper.toResult(trade);
     }
 
     @Override
     @Transactional
-    public List<TradeDTO> getTradesByOrder(Long orderId) {
+    public List<TradeResult> getTradesByOrder(Long orderId) {
         orderRepository.findById(orderId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
         return tradeRepository.findByOrderId(orderId)
                 .stream()
-                .map(TradeMapper::toDTO)
+                .map(TradeMapper::toResult)
                 .collect(Collectors.toList());
     }
 

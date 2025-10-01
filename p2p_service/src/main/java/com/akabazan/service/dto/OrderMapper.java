@@ -11,10 +11,10 @@ import com.akabazan.repository.entity.User;
 
 public class OrderMapper {
 
-    public static OrderDTO toDto(Order order) {
+    public static OrderResult toResult(Order order) {
         if (order == null) return null;
 
-        OrderDTO dto = new OrderDTO();
+        OrderResult dto = new OrderResult();
         dto.setId(order.getId());
         dto.setType(order.getType());
         dto.setToken(order.getToken());
@@ -44,10 +44,10 @@ public class OrderMapper {
         return dto;
     }
 
-     public static OrderDTO toDto(Order order,  List<Trade> trades) {
+     public static OrderResult toResult(Order order,  List<Trade> trades) {
         if (order == null) return null;
 
-        OrderDTO dto = new OrderDTO();
+        OrderResult dto = new OrderResult();
         dto.setId(order.getId());
         dto.setType(order.getType());
         dto.setToken(order.getToken());
@@ -73,16 +73,16 @@ public class OrderMapper {
             dto.setUserId(order.getUser().getId());
         }
 
-        List<TradeDTO> tradeDTOs = trades.stream()
-        .map(TradeMapper::toDTO)
+        List<TradeResult> tradeResults = trades.stream()
+        .map(TradeMapper::toResult)
         .collect(Collectors.toList());
-        dto.setTrades(tradeDTOs);
+        dto.setTrades(tradeResults);
 
 
         return dto;
     }
 
-    public static Order toEntity(OrderDTO dto, FiatAccount fiatAccount, User user) {
+    public static Order toEntity(OrderResult dto, FiatAccount fiatAccount, User user) {
         if (dto == null) return null;
 
         Order order = new Order();

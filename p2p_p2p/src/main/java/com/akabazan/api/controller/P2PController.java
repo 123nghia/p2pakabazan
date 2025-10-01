@@ -1,13 +1,17 @@
 package com.akabazan.api.controller;
 
+import com.akabazan.api.dto.OrderResponse;
+import com.akabazan.api.dto.TradeResponse;
 import com.akabazan.api.mapper.OrderMapper;
+import com.akabazan.api.mapper.OrderResponseMapper;
 import com.akabazan.api.mapper.TradeMapper;
+import com.akabazan.api.mapper.TradeResponseMapper;
 import com.akabazan.api.request.OrderRequest;
 import com.akabazan.api.request.TradeRequest;
 import com.akabazan.service.OrderService;
 import com.akabazan.service.TradeService;
-import com.akabazan.service.dto.OrderDTO;
-import com.akabazan.service.dto.TradeDTO;
+import com.akabazan.service.dto.OrderResult;
+import com.akabazan.service.dto.TradeResult;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,31 +34,31 @@ public class P2PController {
     // ====================== ORDER ======================
 
     @PostMapping("/orders")
-    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderRequest orderRequest) {
-    // Map từ OrderRequest → OrderDTO
-    OrderDTO orderDTO = OrderMapper.toDTO(orderRequest);
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
+    // Map từ OrderRequest → OrderResult
+    OrderResult orderResult = OrderMapper.toResult(orderRequest);
     // Gọi service tạo order
-    OrderDTO result = orderService.createOrder(orderDTO);
-    return ResponseEntity.ok(result);
+    OrderResult result = orderService.createOrder(orderResult);
+    return ResponseEntity.ok(OrderResponseMapper.from(result));
     }
 
 
 
     @GetMapping("/orders")
-    public ResponseEntity<List<OrderDTO>> getOrders(
+    public ResponseEntity<List<OrderResponse>> getOrders(
             @RequestParam(required = false) String type,
             @RequestParam(required = false) String token,
             @RequestParam(required = false) String paymentMethod,
             @RequestParam(required = false) String sortByPrice
     ) {
-        List<OrderDTO> orders = orderService.getOrders(type, token, paymentMethod, sortByPrice);
-        return ResponseEntity.ok(orders);
+        List<OrderResult> orders = orderService.getOrders(type, token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(OrderResponseMapper.fromList(orders));
     }
 
     @GetMapping("/orders/{orderId}/trades")
-    public ResponseEntity<List<TradeDTO>> getTradesByOrder(@PathVariable Long orderId) {
-        List<TradeDTO> trades = tradeService.getTradesByOrder(orderId);
-        return ResponseEntity.ok(trades);
+    public ResponseEntity<List<TradeResponse>> getTradesByOrder(@PathVariable Long orderId) {
+        List<TradeResult> trades = tradeService.getTradesByOrder(orderId);
+        return ResponseEntity.ok(trades.stream().map(TradeResponseMapper::from).toList());
     }
 
     /**
@@ -70,54 +74,54 @@ public class P2PController {
     // ====================== TRADE ======================
 
     @PostMapping("/trades")
-    public ResponseEntity<TradeDTO> createTrade(@RequestBody TradeRequest tradeDTO) {
-        TradeDTO dto = TradeMapper.toDTO(tradeDTO); // map từ API request sang DTO
-        TradeDTO result = tradeService.createTrade(dto);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<TradeResponse> createTrade(@RequestBody TradeRequest tradeRequest) {
+        TradeResult tradeResult = TradeMapper.toResult(tradeRequest); // map từ API request sang Result
+        TradeResult result = tradeService.createTrade(tradeResult);
+        return ResponseEntity.ok(TradeResponseMapper.from(result));
     }
 
     @PostMapping("/trades/{tradeId}/confirm-payment")
-    public ResponseEntity<TradeDTO> confirmPayment(@PathVariable Long tradeId) {
-        TradeDTO result = tradeService.confirmPayment(tradeId);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<TradeResponse> confirmPayment(@PathVariable Long tradeId) {
+        TradeResult result = tradeService.confirmPayment(tradeId);
+        return ResponseEntity.ok(TradeResponseMapper.from(result));
     }
 
     @PostMapping("/trades/{tradeId}/confirm-received")
-    public ResponseEntity<TradeDTO> confirmReceived(@PathVariable Long tradeId) {
-        TradeDTO result = tradeService.confirmReceived(tradeId);
-        return ResponseEntity.ok(result);
+    public ResponseEntity<TradeResponse> confirmReceived(@PathVariable Long tradeId) {
+        TradeResult result = tradeService.confirmReceived(tradeId);
+        return ResponseEntity.ok(TradeResponseMapper.from(result));
     }
 
 
      @GetMapping("/orders/buyers")
-    public ResponseEntity<List<OrderDTO>> getBuyOrders(
+    public ResponseEntity<List<OrderResponse>> getBuyOrders(
             @RequestParam(required = false) String token,
             @RequestParam(required = false) String paymentMethod,
             @RequestParam(required = false) String sortByPrice
     ) {
-        List<OrderDTO> orders = orderService.getOrders("BUY", token, paymentMethod, sortByPrice);
-        return ResponseEntity.ok(orders);
+        List<OrderResult> orders = orderService.getOrders("BUY", token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(OrderResponseMapper.fromList(orders));
     }
 
     /**
      * Danh sách người bán (SELL orders)
      */
     @GetMapping("/orders/sellers")
-    public ResponseEntity<List<OrderDTO>> getSellOrders(
+    public ResponseEntity<List<OrderResponse>> getSellOrders(
             @RequestParam(required = false) String token,
             @RequestParam(required = false) String paymentMethod,
             @RequestParam(required = false) String sortByPrice
     ) {
-        List<OrderDTO> orders = orderService.getOrders("SELL", token, paymentMethod, sortByPrice);
-        return ResponseEntity.ok(orders);
+        List<OrderResult> orders = orderService.getOrders("SELL", token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(OrderResponseMapper.fromList(orders));
     }
 
 
     @PostMapping("/trades/{tradeId}/cancel")
-    public ResponseEntity<TradeDTO> cancelTrade(@PathVariable Long tradeId) {
+    public ResponseEntity<TradeResponse> cancelTrade(@PathVariable Long tradeId) {
 
-    TradeDTO result = tradeService.cancelTrade(tradeId);
-    return ResponseEntity.ok(result);
+    TradeResult result = tradeService.cancelTrade(tradeId);
+    return ResponseEntity.ok(TradeResponseMapper.from(result));
     }
 
 

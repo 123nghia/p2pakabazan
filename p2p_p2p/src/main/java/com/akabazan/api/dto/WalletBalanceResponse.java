@@ -1,7 +1,6 @@
-package com.akabazan.service.dto;
+package com.akabazan.api.dto;
 
-public class WalletBalanceDTO {
-
+public class WalletBalanceResponse {
     private String token;
     private double balance;
     private double availableBalance;

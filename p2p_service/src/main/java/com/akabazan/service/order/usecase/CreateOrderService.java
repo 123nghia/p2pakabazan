@@ -9,7 +9,7 @@ import com.akabazan.repository.entity.FiatAccount;
 import com.akabazan.repository.entity.Order;
 import com.akabazan.repository.entity.User;
 import com.akabazan.service.CurrentUserService;
-import com.akabazan.service.dto.OrderDTO;
+import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.dto.OrderMapper;
 import com.akabazan.service.order.support.SellerFundsManager;
 import org.springframework.stereotype.Service;
@@ -41,23 +41,23 @@ public class CreateOrderService implements CreateOrderUseCase {
     }
 
     @Override
-    public OrderDTO create(OrderDTO orderDTO) {
+    public OrderResult create(OrderResult orderResult) {
         User user = currentUserService.getCurrentUser()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
 
         ensureKycVerified(user);
-        applyDefaultLimits(orderDTO);
+        applyDefaultLimits(orderResult);
 
-        String orderType = normalizeOrderType(orderDTO.getType());
-        FiatAccount fiatAccount = resolveFiatAccount(user, orderDTO);
+        String orderType = normalizeOrderType(orderResult.getType());
+        FiatAccount fiatAccount = resolveFiatAccount(user, orderResult);
 
         if (isSellOrder(orderType)) {
-            sellerFundsManager.lock(user, orderDTO.getToken(), orderDTO.getAmount());
+            sellerFundsManager.lock(user, orderResult.getToken(), orderResult.getAmount());
         }
 
-        Order savedOrder = orderRepository.save(buildOrder(orderDTO, user, orderType, fiatAccount));
+        Order savedOrder = orderRepository.save(buildOrder(orderResult, user, orderType, fiatAccount));
 
-        return enrichWithFiatAccount(OrderMapper.toDto(savedOrder), fiatAccount);
+        return enrichWithFiatAccount(OrderMapper.toResult(savedOrder), fiatAccount);
     }
 
     private void ensureKycVerified(User user) {
@@ -66,12 +66,12 @@ public class CreateOrderService implements CreateOrderUseCase {
         }
     }
 
-    private void applyDefaultLimits(OrderDTO orderDTO) {
-        if (orderDTO.getMinLimit() == null) {
-            orderDTO.setMinLimit(DEFAULT_MIN_LIMIT);
+    private void applyDefaultLimits(OrderResult orderResult) {
+        if (orderResult.getMinLimit() == null) {
+            orderResult.setMinLimit(DEFAULT_MIN_LIMIT);
         }
-        if (orderDTO.getMaxLimit() == null) {
-            orderDTO.setMaxLimit(DEFAULT_MAX_LIMIT);
+        if (orderResult.getMaxLimit() == null) {
+            orderResult.setMaxLimit(DEFAULT_MAX_LIMIT);
         }
     }
 
@@ -83,43 +83,43 @@ public class CreateOrderService implements CreateOrderUseCase {
         return normalized;
     }
 
-    private FiatAccount resolveFiatAccount(User user, OrderDTO orderDTO) {
+    private FiatAccount resolveFiatAccount(User user, OrderResult orderResult) {
         return fiatAccountRepository
                 .findByUserAndBankNameAndAccountNumberAndAccountHolder(
                         user,
-                        orderDTO.getBankName(),
-                        orderDTO.getBankAccount(),
-                        orderDTO.getAccountHolder()
+                        orderResult.getBankName(),
+                        orderResult.getBankAccount(),
+                        orderResult.getAccountHolder()
                 )
                 .orElseGet(() -> {
                     FiatAccount account = new FiatAccount();
                     account.setUser(user);
-                    account.setBankName(orderDTO.getBankName());
-                    account.setAccountNumber(orderDTO.getBankAccount());
-                    account.setAccountHolder(orderDTO.getAccountHolder());
-                    account.setPaymentType(orderDTO.getPaymentMethod());
+                    account.setBankName(orderResult.getBankName());
+                    account.setAccountNumber(orderResult.getBankAccount());
+                    account.setAccountHolder(orderResult.getAccountHolder());
+                    account.setPaymentType(orderResult.getPaymentMethod());
                     return fiatAccountRepository.save(account);
                 });
     }
 
-    private Order buildOrder(OrderDTO orderDTO, User user, String orderType, FiatAccount fiatAccount) {
+    private Order buildOrder(OrderResult orderResult, User user, String orderType, FiatAccount fiatAccount) {
         Order order = new Order();
         order.setUser(user);
         order.setType(orderType);
-        order.setToken(orderDTO.getToken());
-        order.setAmount(orderDTO.getAmount());
-        order.setAvailableAmount(orderDTO.getAmount());
-        order.setPrice(orderDTO.getPrice());
-        order.setMinLimit(orderDTO.getMinLimit());
-        order.setMaxLimit(orderDTO.getMaxLimit());
-        order.setPaymentMethod(orderDTO.getPaymentMethod());
+        order.setToken(orderResult.getToken());
+        order.setAmount(orderResult.getAmount());
+        order.setAvailableAmount(orderResult.getAmount());
+        order.setPrice(orderResult.getPrice());
+        order.setMinLimit(orderResult.getMinLimit());
+        order.setMaxLimit(orderResult.getMaxLimit());
+        order.setPaymentMethod(orderResult.getPaymentMethod());
         order.setFiatAccount(fiatAccount);
         order.setStatus(OrderStatus.OPEN.name());
         order.setExpireAt(LocalDateTime.now().plusMinutes(ORDER_EXPIRATION_MINUTES));
         return order;
     }
 
-    private OrderDTO enrichWithFiatAccount(OrderDTO dto, FiatAccount fiatAccount) {
+    private OrderResult enrichWithFiatAccount(OrderResult dto, FiatAccount fiatAccount) {
         dto.setFiatAccountId(fiatAccount.getId());
         dto.setBankName(fiatAccount.getBankName());
         dto.setBankAccount(fiatAccount.getAccountNumber());

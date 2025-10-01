@@ -34,6 +34,17 @@ public class AuthServiceImpl implements AuthService {
             throw new ApplicationException(ErrorCode.INVALID_CREDENTIALS);
         }
 
+        return authenticateAndGenerateToken(user);
+    }
+
+    @Override
+    public String issueToken(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
+        return authenticateAndGenerateToken(user);
+    }
+
+    private String authenticateAndGenerateToken(User user) {
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(user.getId().toString(), null, null);
         SecurityContextHolder.getContext().setAuthentication(auth);

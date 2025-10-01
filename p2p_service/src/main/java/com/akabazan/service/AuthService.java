@@ -9,4 +9,10 @@ public interface AuthService {
      * @return JWT token
      */
     String login(String email, String password);
+
+    /**
+     * Cấp JWT token trực tiếp cho user theo userId.
+     * Dùng cho các flow tích hợp khi đã xác thực ở hệ thống ngoài.
+     */
+    String issueToken(Long userId);
 }

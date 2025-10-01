@@ -1,18 +1,18 @@
 package com.akabazan.service;
 
-import com.akabazan.service.dto.TradeDTO;
+import com.akabazan.service.dto.TradeResult;
 
 import java.util.List;
 
 public interface TradeService {
 
-    TradeDTO createTrade(TradeDTO tradeDTO);
+    TradeResult createTrade(TradeResult tradeResult);
 
-    TradeDTO confirmPayment(Long tradeId);
+    TradeResult confirmPayment(Long tradeId);
 
-    TradeDTO confirmReceived(Long tradeId);
+    TradeResult confirmReceived(Long tradeId);
 
-    TradeDTO cancelTrade(Long tradeId);
+    TradeResult cancelTrade(Long tradeId);
 
-    List<TradeDTO> getTradesByOrder(Long orderId);
+    List<TradeResult> getTradesByOrder(Long orderId);
 }

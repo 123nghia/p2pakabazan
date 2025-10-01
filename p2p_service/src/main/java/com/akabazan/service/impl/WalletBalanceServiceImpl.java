@@ -6,7 +6,7 @@ import com.akabazan.repository.WalletRepository;
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.WalletBalanceService;
-import com.akabazan.service.dto.WalletBalanceDTO;
+import com.akabazan.service.dto.WalletBalanceResult;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,20 +25,20 @@ public class WalletBalanceServiceImpl implements WalletBalanceService {
     }
 
     @Override
-    public List<WalletBalanceDTO> getCurrentUserBalances() {
+    public List<WalletBalanceResult> getCurrentUserBalances() {
         Long userId = currentUserService.getCurrentUserId()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
 
         return walletRepository.findByUserId(userId).stream()
-                .map(this::toDto)
+                .map(this::toResult)
                 .collect(Collectors.toList());
     }
 
-    private WalletBalanceDTO toDto(Wallet wallet) {
-        WalletBalanceDTO dto = new WalletBalanceDTO();
-        dto.setToken(wallet.getToken());
-        dto.setBalance(wallet.getBalance());
-        dto.setAvailableBalance(wallet.getAvailableBalance());
-        return dto;
+    private WalletBalanceResult toResult(Wallet wallet) {
+        WalletBalanceResult result = new WalletBalanceResult();
+        result.setToken(wallet.getToken());
+        result.setBalance(wallet.getBalance());
+        result.setAvailableBalance(wallet.getAvailableBalance());
+        return result;
     }
 }

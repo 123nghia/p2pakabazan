@@ -1,9 +1,11 @@
 package com.akabazan.api.controller;
-import com.akabazan.api.dto.UserDTO;
+import com.akabazan.api.dto.UserResponse;
+import com.akabazan.api.dto.UserTradesOrdersResponse;
 import com.akabazan.api.mapper.UserMapper;
+import com.akabazan.api.mapper.UserTradesOrdersResponseMapper;
 import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.UserTradeOrderService;
-import com.akabazan.service.dto.UserTradesOrdersDTO;
+import com.akabazan.service.dto.UserTradesOrdersResult;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,17 +26,17 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserDTO> getCurrentUser() {
+    public ResponseEntity<UserResponse> getCurrentUser() {
         return currentUserService.getCurrentUser()
-                .map(UserMapper::toDto)
+                .map(UserMapper::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(401).build());
     }
 
     @GetMapping("/my-activities")
-    public ResponseEntity<UserTradesOrdersDTO> getMyTradesAndOrders() {
+    public ResponseEntity<UserTradesOrdersResponse> getMyTradesAndOrders() {
         var userId = currentUserService.getCurrentUserId().get();
-        UserTradesOrdersDTO result = userTradeOrderService.getUserTradesAndOrders(userId);
-        return ResponseEntity.ok(result);
+        UserTradesOrdersResult result = userTradeOrderService.getUserTradesAndOrders(userId);
+        return ResponseEntity.ok(UserTradesOrdersResponseMapper.from(result));
     }
 }

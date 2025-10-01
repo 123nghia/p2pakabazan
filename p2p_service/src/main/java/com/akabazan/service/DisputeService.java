@@ -1,12 +1,12 @@
 package com.akabazan.service;
 
-import com.akabazan.service.dto.DisputeDTO;
+import com.akabazan.service.dto.DisputeResult;
 
 import java.util.List;
 
 public interface DisputeService {
 
-    DisputeDTO openDispute(Long tradeId, String reason, String evidence);
+    DisputeResult openDispute(Long tradeId, String reason, String evidence);
 
-    List<DisputeDTO> getDisputesByTrade(Long tradeId);
+    List<DisputeResult> getDisputesByTrade(Long tradeId);
 }

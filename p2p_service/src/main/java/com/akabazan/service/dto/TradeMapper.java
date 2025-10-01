@@ -4,15 +4,18 @@ import com.akabazan.repository.entity.Trade;
 
 public class TradeMapper {
 
-    public static TradeDTO toDTO(Trade trade) {
-        TradeDTO dto = new TradeDTO();
-        dto.setId(trade.getId());
-        dto.setOrderId(trade.getOrder().getId());
-        dto.setBuyerId(trade.getBuyer().getId());
-        dto.setSellerId(trade.getSeller().getId());
-        dto.setAmount(trade.getAmount());
-        dto.setStatus(trade.getStatus().name());
-        dto.setEscrow(trade.isEscrow());
-        return dto;
+    private TradeMapper() {
+    }
+
+    public static TradeResult toResult(Trade trade) {
+        TradeResult result = new TradeResult();
+        result.setId(trade.getId());
+        result.setOrderId(trade.getOrder().getId());
+        result.setBuyerId(trade.getBuyer().getId());
+        result.setSellerId(trade.getSeller().getId());
+        result.setAmount(trade.getAmount());
+        result.setStatus(trade.getStatus().name());
+        result.setEscrow(trade.isEscrow());
+        return result;
     }
 }

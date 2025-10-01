@@ -16,10 +16,10 @@ import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.OrderService;
 import com.akabazan.service.UserService;
 import com.akabazan.service.UserTradeOrderService;
-import com.akabazan.service.dto.OrderDTO;
+import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.dto.OrderMapper;
 import com.akabazan.service.dto.TradeMapper;
-import com.akabazan.service.dto.UserTradesOrdersDTO;
+import com.akabazan.service.dto.UserTradesOrdersResult;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,13 +45,13 @@ public class UserTradeOrderServiceImpl implements UserTradeOrderService {
     }
     @Override
     @Transactional(readOnly = true)
-    public UserTradesOrdersDTO getUserTradesAndOrders(Long userId) {
+    public UserTradesOrdersResult getUserTradesAndOrders(Long userId) {
         List<Order> orders = orderRepository.findByUserId(userId);
         List<Trade> trades = tradeRepository.findByUser(userId);
 
-        return new UserTradesOrdersDTO(
-                orders.stream().map(OrderMapper::toDto).toList(),
-                trades.stream().map(TradeMapper::toDTO).toList()
+        return new UserTradesOrdersResult(
+                orders.stream().map(OrderMapper::toResult).toList(),
+                trades.stream().map(TradeMapper::toResult).toList()
         );
     }
 }

@@ -1,8 +1,10 @@
 package com.akabazan.api.controller;
 
+import com.akabazan.api.dto.OrderResponse;
+import com.akabazan.api.mapper.OrderResponseMapper;
 import com.akabazan.service.MarketService;
 import com.akabazan.service.OrderService;
-import com.akabazan.service.dto.OrderDTO;
+import com.akabazan.service.dto.OrderResult;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -36,20 +38,20 @@ public class MarketController {
     }
 
     @GetMapping("/orders/buy")
-    public ResponseEntity<List<OrderDTO>> getPublicBuyOrders(
+    public ResponseEntity<List<OrderResponse>> getPublicBuyOrders(
             @RequestParam(required = false) String token,
             @RequestParam(required = false) String paymentMethod,
             @RequestParam(required = false) String sortByPrice) {
-        List<OrderDTO> orders = orderService.getOrders("BUY", token, paymentMethod, sortByPrice);
-        return ResponseEntity.ok(orders);
+        List<OrderResult> orders = orderService.getOrders("BUY", token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(OrderResponseMapper.fromList(orders));
     }
 
     @GetMapping("/orders/sell")
-    public ResponseEntity<List<OrderDTO>> getPublicSellOrders(
+    public ResponseEntity<List<OrderResponse>> getPublicSellOrders(
             @RequestParam(required = false) String token,
             @RequestParam(required = false) String paymentMethod,
             @RequestParam(required = false) String sortByPrice) {
-        List<OrderDTO> orders = orderService.getOrders("SELL", token, paymentMethod, sortByPrice);
-        return ResponseEntity.ok(orders);
+        List<OrderResult> orders = orderService.getOrders("SELL", token, paymentMethod, sortByPrice);
+        return ResponseEntity.ok(OrderResponseMapper.fromList(orders));
     }
 }

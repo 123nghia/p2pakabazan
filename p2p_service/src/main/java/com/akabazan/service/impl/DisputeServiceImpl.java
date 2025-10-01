@@ -7,7 +7,7 @@ import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.entity.Dispute;
 import com.akabazan.repository.entity.Trade;
 import com.akabazan.service.DisputeService;
-import com.akabazan.service.dto.DisputeDTO;
+import com.akabazan.service.dto.DisputeResult;
 import com.akabazan.service.dto.DisputeMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,7 @@ public class DisputeServiceImpl implements DisputeService {
 
     @Override
     @Transactional
-    public DisputeDTO openDispute(Long tradeId, String reason, String evidence) {
+    public DisputeResult openDispute(Long tradeId, String reason, String evidence) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -46,17 +46,17 @@ public class DisputeServiceImpl implements DisputeService {
         dispute.setEvidence(evidence);
         dispute.setCreatedAt(LocalDateTime.now());
 
-        return DisputeMapper.toDTO(disputeRepository.save(dispute));
+        return DisputeMapper.toResult(disputeRepository.save(dispute));
     }
 
     @Override
-    public List<DisputeDTO> getDisputesByTrade(Long tradeId) {
+    public List<DisputeResult> getDisputesByTrade(Long tradeId) {
         tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
         return disputeRepository.findByTradeId(tradeId)
                 .stream()
-                .map(DisputeMapper::toDTO)
+                .map(DisputeMapper::toResult)
                 .collect(Collectors.toList());
     }
 }

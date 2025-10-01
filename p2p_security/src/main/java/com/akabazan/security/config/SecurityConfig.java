@@ -45,6 +45,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/market/**").permitAll()
+                .requestMatchers("/api/integration/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()   // login/register không cần token
                 .requestMatchers(
                         "/swagger-ui/**",

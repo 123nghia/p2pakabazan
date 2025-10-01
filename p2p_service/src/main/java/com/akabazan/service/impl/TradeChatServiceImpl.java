@@ -7,7 +7,7 @@ import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.TradeChat;
 import com.akabazan.service.TradeChatService;
-import com.akabazan.service.dto.TradeChatDTO;
+import com.akabazan.service.dto.TradeChatResult;
 import com.akabazan.service.dto.TradeChatMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +31,7 @@ public class TradeChatServiceImpl implements TradeChatService {
 
     @Override
     @Transactional
-    public TradeChatDTO sendMessage(Long tradeId, String message) {
+    public TradeChatResult sendMessage(Long tradeId, String message) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -41,14 +41,14 @@ public class TradeChatServiceImpl implements TradeChatService {
         chat.setMessage(message);
         chat.setTimestamp(LocalDateTime.now());
 
-        return TradeChatMapper.toDTO(tradeChatRepository.save(chat));
+        return TradeChatMapper.toResult(tradeChatRepository.save(chat));
     }
 
     @Override
-    public List<TradeChatDTO> getMessages(Long tradeId) {
+    public List<TradeChatResult> getMessages(Long tradeId) {
         return tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId)
                 .stream()
-                .map(TradeChatMapper::toDTO)
+                .map(TradeChatMapper::toResult)
                 .collect(Collectors.toList());
     }
 

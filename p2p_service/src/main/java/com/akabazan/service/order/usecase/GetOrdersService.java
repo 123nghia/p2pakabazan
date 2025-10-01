@@ -3,7 +3,7 @@ package com.akabazan.service.order.usecase;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.constant.OrderStatus;
 import com.akabazan.repository.entity.Order;
-import com.akabazan.service.dto.OrderDTO;
+import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.dto.OrderMapper;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +21,7 @@ public class GetOrdersService implements GetOrdersQuery {
     }
 
     @Override
-    public List<OrderDTO> get(String type, String token, String paymentMethod, String sortByPrice) {
+    public List<OrderResult> get(String type, String token, String paymentMethod, String sortByPrice) {
         List<Order> orders = orderRepository.findByStatusAndTypeAndTokenAndPaymentMethod(
                 OrderStatus.OPEN.name(),
                 type != null ? type.toUpperCase() : null,
@@ -32,7 +32,7 @@ public class GetOrdersService implements GetOrdersQuery {
         applySorting(sortByPrice, orders);
 
         return orders.stream()
-                .map(OrderMapper::toDto)
+                .map(OrderMapper::toResult)
                 .collect(Collectors.toList());
     }
 

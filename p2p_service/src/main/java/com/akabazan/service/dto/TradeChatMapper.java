@@ -4,13 +4,16 @@ import com.akabazan.repository.entity.TradeChat;
 
 public class TradeChatMapper {
 
-    public static TradeChatDTO toDTO(TradeChat entity) {
-        TradeChatDTO dto = new TradeChatDTO();
-        dto.setId(entity.getId());
-        dto.setTradeId(entity.getTrade().getId());
-        dto.setSenderId(entity.getSenderId());
-        dto.setMessage(entity.getMessage());
-        dto.setTimestamp(entity.getTimestamp());
-        return dto;
+    private TradeChatMapper() {
+    }
+
+    public static TradeChatResult toResult(TradeChat entity) {
+        TradeChatResult result = new TradeChatResult();
+        result.setId(entity.getId());
+        result.setTradeId(entity.getTrade().getId());
+        result.setSenderId(entity.getSenderId());
+        result.setMessage(entity.getMessage());
+        result.setTimestamp(entity.getTimestamp());
+        return result;
     }
 }

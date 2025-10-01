@@ -81,7 +81,7 @@ Các endpoint này mở, không cần token.
 | `paymentMethod` | Không | Lọc theo phương thức thanh toán |
 | `sortByPrice` | Không  | `asc` / `desc` |
 
-**200** – Mảng [`OrderDTO`](#orderdto).
+**200** – Mảng [`OrderResponse`](#orderresult).
 
 ## 3. P2P Orders & Trades (`/p2p/**`)
 
@@ -92,7 +92,7 @@ Các endpoint này yêu cầu JWT.
 `POST /api/p2p/orders`
 
 - **Body:** [`OrderRequest`](#orderrequest)
-- **201**/**200** – [`OrderDTO`](#orderdto)
+- **201**/**200** – [`OrderResponse`](#orderresult)
 
 ### Danh sách order
 
@@ -105,14 +105,14 @@ Các endpoint này yêu cầu JWT.
 | `paymentMethod` | Không | Lọc phương thức thanh toán |
 | `sortByPrice` | Không  | `asc` / `desc` |
 
-**200** – Mảng [`OrderDTO`](#orderdto).
+**200** – Mảng [`OrderResponse`](#orderresult).
 
 ### Danh sách trade theo order
 
 `GET /api/p2p/orders/{orderId}/trades`
 
 - **Path:** `orderId` – ID order
-- **200** – Mảng [`TradeDTO`](#tradedto)
+- **200** – Mảng [`TradeResponse`](#traderesult)
 
 ### Hủy order (chỉ chủ sở hữu, khi chưa có trade)
 
@@ -125,25 +125,25 @@ Các endpoint này yêu cầu JWT.
 `POST /api/p2p/trades`
 
 - **Body:** [`TradeRequest`](#traderequest)
-- **200** – [`TradeDTO`](#tradedto)
+- **200** – [`TradeResponse`](#traderesult)
 
 ### Xác nhận người mua đã thanh toán
 
 `POST /api/p2p/trades/{tradeId}/confirm-payment`
 
-- **200** – [`TradeDTO`](#tradedto)
+- **200** – [`TradeResponse`](#traderesult)
 
 ### Xác nhận người bán đã nhận tiền & giải phóng escrow
 
 `POST /api/p2p/trades/{tradeId}/confirm-received`
 
-- **200** – [`TradeDTO`](#tradedto)
+- **200** – [`TradeResponse`](#traderesult)
 
 ### Hủy trade
 
 `POST /api/p2p/trades/{tradeId}/cancel`
 
-- **200** – [`TradeDTO`](#tradedto)
+- **200** – [`TradeResponse`](#traderesult)
 
 ## 4. Dispute (`/p2p/trades/{tradeId}`)
 
@@ -156,13 +156,13 @@ Các endpoint này yêu cầu JWT.
 | `reason`   | Có | Lý do tranh chấp |
 | `evidence` | Không | Bằng chứng bổ sung (URL/ghi chú) |
 
-**200** – [`DisputeDTO`](#disputedto)
+**200** – [`DisputeResponse`](#disputeresult)
 
 ### Lịch sử tranh chấp của trade
 
 `GET /api/p2p/trades/{tradeId}/disputes`
 
-**200** – Mảng [`DisputeDTO`](#disputedto)
+**200** – Mảng [`DisputeResponse`](#disputeresult)
 
 ## 5. Trade chat (`/p2p/trades/{tradeId}/chat`)
 
@@ -171,19 +171,19 @@ Các endpoint này yêu cầu JWT.
 `POST /api/p2p/trades/{tradeId}/chat`
 
 - **Body:** chuỗi text (raw JSON string `"message"`)
-- **200** – [`TradeChatDTO`](#tradechatdto)
+- **200** – [`TradeChatResponse`](#tradechatresult)
 
 ### Lấy lịch sử chat
 
 `GET /api/p2p/trades/{tradeId}/chat`
 
-- **200** – Mảng [`TradeChatDTO`](#tradechatdto)
+- **200** – Mảng [`TradeChatResponse`](#tradechatresult)
 
 ## 6. Wallet (`/p2p/wallets`)
 
 `GET /api/p2p/wallets`
 
-- **200** – Mảng [`WalletBalanceDTO`](#walletbalancedto)`
+- **200** – Mảng [`WalletBalanceResponse`](#walletbalanceresult)`
 
 ## 7. Người dùng (`/users`)
 
@@ -191,16 +191,61 @@ Các endpoint này yêu cầu JWT.
 
 `GET /api/users/me`
 
-- **200** – [`UserDTO`](#userdto)
+- **200** – [`UserResponse`](#userresponse)
 - **401** – Nếu chưa đăng nhập
 
 ### Thống kê order & trade của tôi
 
 `GET /api/users/my-activities`
 
-- **200** – [`UserTradesOrdersDTO`](#usertradesordersdto)
+- **200** – [`UserTradesOrdersResponse`](#usertradesordersresult)
 
-## Định nghĩa DTO chính
+## 8. Tích hợp hệ thống ngoài (`/integration`)
+
+### Đồng bộ user + wallet và lấy token
+
+`POST /api/integration/users/sync`
+
+- **Auth:** mở (đề xuất bổ sung chữ ký bảo mật ở reverse proxy)
+- **Body:**
+
+```json
+{
+  "userId": "user@example.com",
+  "wallet": {
+    "token": "USDT",
+    "address": "0xabc...",
+    "balance": 1200.0,
+    "availableBalance": 1100.0
+  },
+  "kycStatus": "VERIFIED"
+}
+```
+
+- **200** –
+
+```json
+{
+  "user": { /* UserResponse */ },
+  "wallet": {
+    "id": 5,
+    "token": "USDT",
+    "address": "0xabc...",
+    "balance": 1200.0,
+    "availableBalance": 1100.0
+  },
+  "token": "<jwt>"
+}
+```
+
+**Hành vi:**
+- Nếu email chưa tồn tại → tạo user mới (password ngẫu nhiên, trạng thái mặc định).
+- Nếu đã có user → tái sử dụng user.
+- Ví được bind theo `token` (tự tạo mới hoặc cập nhật số dư hiện có).
+- Nếu `kycStatus` được cung cấp → cập nhật trạng thái KYC tương ứng.
+- Mọi trường hợp đều trả về JWT để client dùng tiếp với các endpoint yêu cầu auth.
+
+## Định nghĩa Result/Response
 
 ### OrderRequest
 
@@ -222,7 +267,7 @@ Xem chi tiết trong mã (`OrderRequest.java`). Các trường chính:
 }
 ```
 
-### OrderDTO
+### OrderResponse
 
 Trả về từ các endpoint order.
 
@@ -245,7 +290,7 @@ Trả về từ các endpoint order.
   "bankName": "Vietcombank",
   "bankAccount": "0123456789",
   "accountHolder": "Nguyen Van A",
-  "trades": [ /* danh sách TradeDTO */ ]
+  "trades": [ /* danh sách TradeResponse */ ]
 }
 ```
 
@@ -259,7 +304,7 @@ Trả về từ các endpoint order.
 }
 ```
 
-### TradeDTO
+### TradeResponse
 
 ```json
 {
@@ -273,7 +318,7 @@ Trả về từ các endpoint order.
 }
 ```
 
-### DisputeDTO
+### DisputeResponse
 
 ```json
 {
@@ -285,7 +330,7 @@ Trả về từ các endpoint order.
 }
 ```
 
-### TradeChatDTO
+### TradeChatResponse
 
 ```json
 {
@@ -297,7 +342,7 @@ Trả về từ các endpoint order.
 }
 ```
 
-### WalletBalanceDTO
+### WalletBalanceResponse
 
 ```json
 {
@@ -307,7 +352,7 @@ Trả về từ các endpoint order.
 }
 ```
 
-### UserDTO
+### UserResponse
 
 ```json
 {
@@ -324,12 +369,12 @@ Trả về từ các endpoint order.
 }
 ```
 
-### UserTradesOrdersDTO
+### UserTradesOrdersResponse
 
 ```json
 {
-  "orders": [ /* OrderDTO */ ],
-  "trades": [ /* TradeDTO */ ]
+  "orders": [ /* OrderResponse */ ],
+  "trades": [ /* TradeResponse */ ]
 }
 ```
 

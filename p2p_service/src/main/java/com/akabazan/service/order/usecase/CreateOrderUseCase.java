@@ -1,8 +1,8 @@
 package com.akabazan.service.order.usecase;
 
-import com.akabazan.service.dto.OrderDTO;
+import com.akabazan.service.dto.OrderResult;
 
 public interface CreateOrderUseCase {
 
-    OrderDTO create(OrderDTO orderDTO);
+    OrderResult create(OrderResult orderResult);
 }
