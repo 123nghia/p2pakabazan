@@ -2,14 +2,16 @@ package com.akabazan.api.controller;
 
 import com.akabazan.api.dto.OrderResponse;
 import com.akabazan.api.dto.TradeResponse;
-import com.akabazan.api.mapper.OrderMapper;
+import com.akabazan.api.mapper.OrderCommandMapper;
 import com.akabazan.api.mapper.OrderResponseMapper;
-import com.akabazan.api.mapper.TradeMapper;
+import com.akabazan.api.mapper.TradeCommandMapper;
 import com.akabazan.api.mapper.TradeResponseMapper;
 import com.akabazan.api.request.OrderRequest;
 import com.akabazan.api.request.TradeRequest;
 import com.akabazan.service.OrderService;
 import com.akabazan.service.TradeService;
+import com.akabazan.service.command.OrderCreateCommand;
+import com.akabazan.service.command.TradeCreateCommand;
 import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.dto.TradeResult;
 import org.springframework.http.ResponseEntity;
@@ -35,10 +37,10 @@ public class P2PController {
 
     @PostMapping("/orders")
     public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
-    // Map từ OrderRequest → OrderResult
-    OrderResult orderResult = OrderMapper.toResult(orderRequest);
+    // Map từ OrderRequest → Command cho service
+    OrderCreateCommand command = OrderCommandMapper.toCommand(orderRequest);
     // Gọi service tạo order
-    OrderResult result = orderService.createOrder(orderResult);
+    OrderResult result = orderService.createOrder(command);
     return ResponseEntity.ok(OrderResponseMapper.from(result));
     }
 
@@ -75,8 +77,8 @@ public class P2PController {
 
     @PostMapping("/trades")
     public ResponseEntity<TradeResponse> createTrade(@RequestBody TradeRequest tradeRequest) {
-        TradeResult tradeResult = TradeMapper.toResult(tradeRequest); // map từ API request sang Result
-        TradeResult result = tradeService.createTrade(tradeResult);
+        TradeCreateCommand command = TradeCommandMapper.toCommand(tradeRequest); // map từ API request sang Command
+        TradeResult result = tradeService.createTrade(command);
         return ResponseEntity.ok(TradeResponseMapper.from(result));
     }
 

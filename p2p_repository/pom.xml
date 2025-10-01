@@ -8,7 +8,6 @@
         <artifactId>p2p-trading-system</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-     
 
     <artifactId>p2p_repository</artifactId>
     <packaging>jar</packaging>

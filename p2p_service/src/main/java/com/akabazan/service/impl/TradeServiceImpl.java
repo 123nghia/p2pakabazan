@@ -12,8 +12,9 @@ import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.User;
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.TradeService;
-import com.akabazan.service.dto.TradeResult;
+import com.akabazan.service.command.TradeCreateCommand;
 import com.akabazan.service.dto.TradeMapper;
+import com.akabazan.service.dto.TradeResult;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
@@ -42,39 +43,45 @@ public class TradeServiceImpl implements TradeService {
         this.walletRepository = walletRepository;
     }
 
-    @Override
-    @Transactional
-    public TradeResult createTrade(TradeResult tradeResult) {
+  @Override
+@Transactional
+    public TradeResult createTrade(TradeCreateCommand command) {
     User buyer = getCurrentUser();
 
     // Lock order tránh oversell
-    Order order = entityManager.find(Order.class, tradeResult.getOrderId(), LockModeType.PESSIMISTIC_WRITE);
+    Order order = entityManager.find(Order.class, command.getOrderId(), LockModeType.PESSIMISTIC_WRITE);
     if (order == null)
         throw new ApplicationException(ErrorCode.ORDER_NOT_FOUND);
 
     if (!OrderStatus.OPEN.name().equals(order.getStatus()))
         throw new ApplicationException(ErrorCode.ORDER_CLOSED);
 
-    if (tradeResult.getAmount() < order.getMinLimit() || tradeResult.getAmount() > order.getMaxLimit())
+    if (command.getAmount() < order.getMinLimit() || command.getAmount() > order.getMaxLimit())
         throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
 
-    if (tradeResult.getAmount() > order.getAvailableAmount())
+    if (command.getAmount() > order.getAvailableAmount())
         throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
 
-    // Chỉ giảm availableAmount của order
-    order.setAvailableAmount(order.getAvailableAmount() - tradeResult.getAmount());
+    // Giảm availableAmount của order
+    order.setAvailableAmount(order.getAvailableAmount() - command.getAmount());
+    if (order.getAvailableAmount() <= 0) {
+        order.setStatus(OrderStatus.CLOSED.name());
+    }
     orderRepository.save(order);
 
+    // Tạo trade
     Trade trade = new Trade();
     trade.setOrder(order);
     trade.setBuyer(buyer);
     trade.setSeller(order.getUser());
-    trade.setAmount(tradeResult.getAmount());
-    trade.setEscrow("SELL".equalsIgnoreCase(order.getType()));
+    trade.setAmount(command.getAmount());
+    trade.setEscrow("SELL".equalsIgnoreCase(order.getType())); // true nếu SELL
     trade.setStatus(TradeStatus.PENDING);
     trade.setCreatedAt(LocalDateTime.now());
 
-    return TradeMapper.toResult(tradeRepository.save(trade));
+    tradeRepository.save(trade);
+
+    return TradeMapper.toResult(trade);
 }
 
 
@@ -83,7 +90,11 @@ public class TradeServiceImpl implements TradeService {
     public TradeResult confirmPayment(Long tradeId) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
-
+        User buyer = getCurrentUser();
+         if (!trade.getBuyer().getId().equals(buyer.getId())) {
+            throw new ApplicationException(ErrorCode.UNAUTHORIZED);
+          }
+                
         if (trade.getStatus() != TradeStatus.PENDING)
             throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
 
@@ -91,50 +102,54 @@ public class TradeServiceImpl implements TradeService {
         return TradeMapper.toResult(tradeRepository.save(trade));
     }
 
-    @Override
-    @Transactional
-    public TradeResult confirmReceived(Long tradeId) {
-        Trade trade = tradeRepository.findById(tradeId)
-                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
+   @Override
+@Transactional
+public TradeResult confirmReceived(Long tradeId) {
+    Trade trade = tradeRepository.findById(tradeId)
+            .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
-        if (trade.getStatus() != TradeStatus.PAID)
-            throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
+    if (trade.getStatus() != TradeStatus.PAID)
+        throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
 
-        Order order = trade.getOrder();
-        User buyer = trade.getBuyer();
-        User seller = trade.getSeller();
+    Order order = trade.getOrder();
+    User buyer = trade.getBuyer();
+    User seller = trade.getSeller();
 
-        // Buyer nhận token
-        Wallet buyerWallet = walletRepository.findByUserIdAndToken(buyer.getId(), order.getToken())
-                .orElseGet(() -> {
-                    Wallet w = new Wallet();
-                    w.setUser(buyer);
-                    w.setToken(order.getToken());
-                    w.setAddress("generated-address-" + buyer.getId());
-                    w.setBalance(0.0);
-                    w.setAvailableBalance(0.0);
-                    return walletRepository.save(w);
-                });
-        buyerWallet.setBalance(buyerWallet.getBalance() + trade.getAmount());
-        buyerWallet.setAvailableBalance(buyerWallet.getAvailableBalance() + trade.getAmount());
-        walletRepository.save(buyerWallet);
+    // Buyer nhận token
+    Wallet buyerWallet = walletRepository.findByUserIdAndToken(buyer.getId(), order.getToken())
+            .orElseGet(() -> {
+                Wallet w = new Wallet();
+                w.setUser(buyer);
+                w.setToken(order.getToken());
+                w.setAddress("generated-address-" + buyer.getId());
+                w.setBalance(0.0);
+                w.setAvailableBalance(0.0);
+                return walletRepository.save(w);
+            });
+    buyerWallet.setBalance(buyerWallet.getBalance() + trade.getAmount());
+    buyerWallet.setAvailableBalance(buyerWallet.getAvailableBalance() + trade.getAmount());
+    walletRepository.save(buyerWallet);
 
-        // Seller: trừ balance thực (đã escrow khi tạo order)
-        Wallet sellerWallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
-                .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-        sellerWallet.setBalance(sellerWallet.getBalance() - trade.getAmount());
-        walletRepository.save(sellerWallet);
+    // Seller: trừ balance thực
+    Wallet sellerWallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
+            .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+    sellerWallet.setBalance(sellerWallet.getBalance() - trade.getAmount());
+    walletRepository.save(sellerWallet);
 
-        // Hoàn tất trade
-        trade.setStatus(TradeStatus.COMPLETED);
-
-        // Nếu order hết hàng thì đóng
-        if (order.getAvailableAmount() <= 0)
-            order.setStatus(OrderStatus.CLOSED.name());
-
-        orderRepository.save(order);
-        return TradeMapper.toResult(tradeRepository.save(trade));
+    // Cập nhật order.availableAmount
+    order.setAvailableAmount(order.getAvailableAmount() - trade.getAmount());
+    if (order.getAvailableAmount() <= 0) {
+        order.setStatus(OrderStatus.CLOSED.name());
     }
+    orderRepository.save(order);
+
+    // Hoàn tất trade
+    trade.setStatus(TradeStatus.COMPLETED);
+    tradeRepository.save(trade);
+
+    return TradeMapper.toResult(trade);
+}
+
 
    
 
@@ -165,21 +180,27 @@ public class TradeServiceImpl implements TradeService {
         throw new RuntimeException("Trade cannot be canceled at this stage");
     }
 
-    // Hoàn coin lại cho seller
+     double refundAmount = trade.getAmount();
+
+    // 1. Hoàn coin lại cho seller (unlock funds)
     Wallet sellerWallet = walletRepository.findByUserIdAndToken(
             trade.getSeller().getId(),
             trade.getOrder().getToken()
     ).orElseThrow(() -> new RuntimeException("Seller wallet not found"));
 
     sellerWallet.setAvailableBalance(
-            sellerWallet.getAvailableBalance() + trade.getAmount()
+            sellerWallet.getAvailableBalance() + refundAmount
     );
     walletRepository.save(sellerWallet);
 
-    // Cập nhật trạng thái
+    // 2. Hoàn lại availableAmount trong order
+    Order order = trade.getOrder();
+    order.setAvailableAmount(order.getAvailableAmount() + refundAmount);
+    orderRepository.save(order);
+
+    // 3. Cập nhật trạng thái trade
     trade.setStatus(TradeStatus.CANCELLED);
     tradeRepository.save(trade);
-
         return TradeMapper.toResult(trade);
     }
 

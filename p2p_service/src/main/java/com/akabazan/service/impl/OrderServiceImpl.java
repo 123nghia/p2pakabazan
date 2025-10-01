@@ -1,6 +1,7 @@
 package com.akabazan.service.impl;
 
 import com.akabazan.service.OrderService;
+import com.akabazan.service.command.OrderCreateCommand;
 import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.order.usecase.CancelOrderUseCase;
 import com.akabazan.service.order.usecase.CloseOrderUseCase;
@@ -33,8 +34,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public OrderResult createOrder(OrderResult orderResult) {
-        return createOrderUseCase.create(orderResult);
+    public OrderResult createOrder(OrderCreateCommand command) {
+        return createOrderUseCase.create(command);
     }
 
     @Override

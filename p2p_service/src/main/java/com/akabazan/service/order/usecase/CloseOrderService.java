@@ -22,12 +22,15 @@ public class CloseOrderService implements CloseOrderUseCase {
     }
 
     @Override
+    @Transactional
     public void close(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
         if (isSellOrder(order) && order.getAvailableAmount() > 0) {
+            // Trả lại coin chưa khớp cho seller
             sellerFundsManager.release(order.getUser().getId(), order.getToken(), order.getAvailableAmount());
+            order.setAvailableAmount(0.0); // reset để nhất quán
         }
 
         order.setStatus(OrderStatus.CLOSED.name());

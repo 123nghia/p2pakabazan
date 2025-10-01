@@ -24,19 +24,23 @@ public class ExpireOrdersService implements ExpireOrdersUseCase {
     }
 
     @Override
+    @Transactional
     public void expire() {
         LocalDateTime now = LocalDateTime.now();
         List<Order> expiredOrders = orderRepository.findAllByStatusAndExpireAtBefore(OrderStatus.OPEN.name(), now);
 
         for (Order order : expiredOrders) {
             if (isSellOrder(order) && order.getAvailableAmount() > 0) {
+                // Trả lại coin cho seller
                 sellerFundsManager.release(order.getUser().getId(), order.getToken(), order.getAvailableAmount());
+                order.setAvailableAmount(0.0); // reset vì order đã hết hạn
             }
 
             order.setStatus(OrderStatus.EXPIRED.name());
             orderRepository.save(order);
         }
-    }
+}
+
 
     private boolean isSellOrder(Order order) {
         return "SELL".equalsIgnoreCase(order.getType());
