@@ -1,14 +1,20 @@
 package com.akabazan.api.controller;
-
+import com.akabazan.api.dto.AuthResponse;
 import com.akabazan.api.request.LoginRequest;
+import com.akabazan.api.request.RegisterRequest;
 import com.akabazan.service.AuthService;
+import com.akabazan.service.dto.AuthResult;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:5500") // Cho phép FE gọi
+@CrossOrigin(origins = {
+    "http://localhost:5500",
+    "http://localhost:5174"
+})
+
 public class AuthController {
 
     private final AuthService authService;
@@ -18,9 +24,18 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
-        String token = authService.login(request.getEmail(), request.getPassword());
-        return ResponseEntity.ok(token);
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResult result = authService.login(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(toResponse(result));
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        AuthResult result = authService.register(request.getEmail(), request.getPassword());
+        return ResponseEntity.ok(toResponse(result));
+    }
+
+    private AuthResponse toResponse(AuthResult result) {
+        return AuthResponse.from(result.getToken(), result.getUserId(), result.getEmail());
     }
 }
-

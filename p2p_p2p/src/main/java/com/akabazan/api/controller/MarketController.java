@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/market")
-@CrossOrigin(origins = "http://localhost:5500") // Cho phép FE gọi
+@CrossOrigin(origins = {
+    "http://localhost:5500",
+  "http://localhost:5174"
+})
+
 public class MarketController {
     private final MarketService marketService;
     private final OrderService orderService;

@@ -48,6 +48,34 @@ public class DataSeeder implements CommandLineRunner {
             walletRepository.save(buyerWallet);
 
             System.out.println("Seeded users and wallets successfully.");
+     
+            // Seller
+            User seller1 = new User();
+            seller1.setEmail("dungne@gmail.com");
+            seller1.setPassword("123");
+            seller1.setKycStatus(User.KycStatus.VERIFIED);
+            userRepository.save(seller1);
+
+            Wallet sellerWallet1 = new Wallet();
+            sellerWallet1.setUser(seller1);
+            sellerWallet1.setToken("USDT");
+            sellerWallet1.setAvailableBalance(500);
+            walletRepository.save(sellerWallet1);
+
+            // Buyer
+            User buyer1 = new User();
+            buyer1.setEmail("dungne1@gmail.com");
+            buyer1.setPassword("123");
+            buyer1.setKycStatus(User.KycStatus.VERIFIED);
+            userRepository.save(buyer1);
+
+            Wallet buyerWallet1 = new Wallet();
+            buyerWallet1.setUser(buyer1);
+            buyerWallet1.setToken("USDT");
+            buyerWallet1.setAvailableBalance(500);
+            walletRepository.save(buyerWallet1);
+
+            System.out.println("Seeded users and wallets successfully.");
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.akabazan.repository;
 import com.akabazan.repository.entity.User;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -12,4 +13,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT u FROM User u LEFT JOIN FETCH u.wallets WHERE u.id = :id")
     Optional<User> findByIdWithWallets(@Param("id") Long id);
+
+    List<User> findByRole(User.Role role);
 }

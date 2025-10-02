@@ -25,6 +25,10 @@ public class User extends AbstractEntity {
     @Column(name = "kyc_status", nullable = false)
     private KycStatus kycStatus = KycStatus.UNVERIFIED;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role = Role.TRADER;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Wallet> wallets = new ArrayList<>();
 
@@ -39,10 +43,16 @@ public class User extends AbstractEntity {
     public void setPassword(String password) { this.password = password; }
     public KycStatus getKycStatus() { return kycStatus; }
     public void setKycStatus(KycStatus kycStatus) { this.kycStatus = kycStatus; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
     public List<Wallet> getWallets() { return wallets; }
     public void setWallets(List<Wallet> wallets) { this.wallets = wallets; }
 
     public enum KycStatus {
         UNVERIFIED, PENDING, VERIFIED, REJECTED
+    }
+
+    public enum Role {
+        TRADER, MODERATOR, ADMIN
     }
 }

@@ -14,7 +14,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/p2p")
-@CrossOrigin(origins = "http://localhost:5500")
+@CrossOrigin(origins = {
+    "http://localhost:5500",
+    "http://localhost:5174"
+})
 public class WalletController {
 
     private final WalletBalanceService walletBalanceService;

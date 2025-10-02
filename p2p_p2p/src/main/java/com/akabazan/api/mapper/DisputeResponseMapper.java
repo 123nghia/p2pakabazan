@@ -19,7 +19,14 @@ public final class DisputeResponseMapper {
         response.setTradeId(result.getTradeId());
         response.setReason(result.getReason());
         response.setEvidence(result.getEvidence());
+        response.setStatus(result.getStatus());
+        response.setAssignedAdminId(result.getAssignedAdminId());
+        response.setAssignedAdminEmail(result.getAssignedAdminEmail());
+        response.setResolutionOutcome(result.getResolutionOutcome());
+        response.setResolutionNote(result.getResolutionNote());
         response.setCreatedAt(result.getCreatedAt());
+        response.setUpdatedAt(result.getUpdatedAt());
+        response.setResolvedAt(result.getResolvedAt());
         return response;
     }
 
