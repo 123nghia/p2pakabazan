@@ -1,7 +1,7 @@
 package com.akabazan.api.controller;
 
-import com.akabazan.api.dto.TradeChatResponse;
 import com.akabazan.api.mapper.TradeChatResponseMapper;
+import com.akabazan.api.reponse.TradeChatResponse;
 import com.akabazan.service.TradeChatService;
 import com.akabazan.service.dto.TradeChatResult;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import java.util.List;
   "http://localhost:5174"
 })
 
-public class TradeChatController {
+public class TradeChatController extends BaseController {
 
     private final TradeChatService tradeChatService;
 

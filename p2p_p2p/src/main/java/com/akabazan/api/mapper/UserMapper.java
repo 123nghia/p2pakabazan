@@ -1,6 +1,6 @@
 package com.akabazan.api.mapper;
 
-import com.akabazan.api.dto.UserResponse;
+import com.akabazan.api.reponse.UserResponse;
 import com.akabazan.repository.entity.User;
 import java.util.stream.Collectors;
 

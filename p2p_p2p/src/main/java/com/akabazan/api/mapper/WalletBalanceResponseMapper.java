@@ -1,6 +1,6 @@
 package com.akabazan.api.mapper;
 
-import com.akabazan.api.dto.WalletBalanceResponse;
+import com.akabazan.api.reponse.WalletBalanceResponse;
 import com.akabazan.service.dto.WalletBalanceResult;
 import java.util.List;
 import java.util.stream.Collectors;

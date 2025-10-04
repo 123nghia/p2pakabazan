@@ -1,33 +1,85 @@
 package com.akabazan.common.exception;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorResponse {
-    private int status;          // HTTP status code
-    private String error;        // Error type (Bad Request, Internal Error...)
-    private String code;         // Custom error code (from ErrorCode enum)
-    private String message;      // Human-readable message
-    private String path;         // API path
-    private LocalDateTime timestamp;
-    // Constructor với code + message
-    public ErrorResponse(int status, String error, String code, String message, String path) {
-        this.status = status;
-        this.error = error;
+    private final String status;
+    private final int code;
+    private final String message;
+    private final String errorCode;
+    private final List<FieldError> errors;
+    private final String path;
+    private final LocalDateTime timestamp;
+
+    public ErrorResponse(int code, String message, String errorCode, List<FieldError> errors, String path) {
+        this.status = "error";
         this.code = code;
         this.message = message;
+        this.errorCode = errorCode;
+        this.errors = errors;
         this.path = path;
         this.timestamp = LocalDateTime.now();
     }
-    // Constructor đơn giản khi chỉ có message
-    public ErrorResponse(int status, String error, String message, String path) {
-        this(status, error, null, message, path);
+
+    public ErrorResponse(int code, String message, String errorCode, String path) {
+        this(code, message, errorCode, Collections.emptyList(), path);
     }
 
-    // Getters
-    public int getStatus() { return status; }
-    public String getError() { return error; }
-    public String getCode() { return code; }
-    public String getMessage() { return message; }
-    public String getPath() { return path; }
-    public LocalDateTime getTimestamp() { return timestamp; }
+    public ErrorResponse(int code, String message, List<FieldError> errors, String path) {
+        this(code, message, null, errors, path);
+    }
+
+    public ErrorResponse(int code, String message, String path) {
+        this(code, message, null, Collections.emptyList(), path);
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public List<FieldError> getErrors() {
+        return errors;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public static class FieldError {
+        private final String field;
+        private final String message;
+
+        public FieldError(String field, String message) {
+            this.field = field;
+            this.message = message;
+        }
+
+        public String getField() {
+            return field;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
 }

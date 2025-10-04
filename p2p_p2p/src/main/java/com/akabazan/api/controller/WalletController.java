@@ -1,7 +1,9 @@
 package com.akabazan.api.controller;
 
-import com.akabazan.api.dto.WalletBalanceResponse;
 import com.akabazan.api.mapper.WalletBalanceResponseMapper;
+import com.akabazan.api.reponse.WalletBalanceResponse;
+import com.akabazan.common.dto.BaseResponse;
+import com.akabazan.common.dto.ResponseFactory;
 import com.akabazan.service.WalletBalanceService;
 import com.akabazan.service.dto.WalletBalanceResult;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +20,7 @@ import java.util.List;
     "http://localhost:5500",
     "http://localhost:5174"
 })
-public class WalletController {
+public class WalletController extends BaseController {
 
     private final WalletBalanceService walletBalanceService;
 
@@ -27,8 +29,8 @@ public class WalletController {
     }
 
     @GetMapping("/wallets")
-    public ResponseEntity<List<WalletBalanceResponse>> getWalletBalances() {
+    public ResponseEntity<BaseResponse<List<WalletBalanceResponse>>> getWalletBalances() {
         List<WalletBalanceResult> balances = walletBalanceService.getCurrentUserBalances();
-        return ResponseEntity.ok(WalletBalanceResponseMapper.fromList(balances));
+        return ResponseFactory.ok(WalletBalanceResponseMapper.fromList(balances));
     }
 }

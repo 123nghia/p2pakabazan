@@ -1,4 +1,4 @@
-package com.akabazan.api.dto;
+package com.akabazan.api.reponse;
 
 import java.util.List;
 

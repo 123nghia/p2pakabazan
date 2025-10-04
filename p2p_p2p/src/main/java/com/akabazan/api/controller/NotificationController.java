@@ -1,7 +1,7 @@
 package com.akabazan.api.controller;
 
-import com.akabazan.api.dto.NotificationResponse;
 import com.akabazan.api.mapper.NotificationResponseMapper;
+import com.akabazan.api.reponse.NotificationResponse;
 import com.akabazan.service.NotificationService;
 import com.akabazan.service.dto.NotificationResult;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import java.util.List;
     "http://localhost:5174"
 })
 
-public class NotificationController {
+public class NotificationController extends BaseController {
 
     private final NotificationService notificationService;
 

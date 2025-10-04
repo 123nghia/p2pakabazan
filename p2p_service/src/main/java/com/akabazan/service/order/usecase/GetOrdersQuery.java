@@ -1,10 +1,9 @@
 package com.akabazan.service.order.usecase;
 
 import com.akabazan.service.dto.OrderResult;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface GetOrdersQuery {
 
-    List<OrderResult> get(String type, String token, String paymentMethod, String sortByPrice);
+    Page<OrderResult> get(String type, String token, String paymentMethod, String sortByPrice, int page, int size);
 }

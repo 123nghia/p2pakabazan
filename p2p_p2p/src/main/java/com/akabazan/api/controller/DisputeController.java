@@ -1,7 +1,7 @@
 package com.akabazan.api.controller;
 
-import com.akabazan.api.dto.DisputeResponse;
 import com.akabazan.api.mapper.DisputeResponseMapper;
+import com.akabazan.api.reponse.DisputeResponse;
 import com.akabazan.api.request.DisputeAssignRequest;
 import com.akabazan.api.request.DisputeRejectRequest;
 import com.akabazan.api.request.DisputeResolutionRequest;
@@ -22,7 +22,7 @@ import java.util.List;
     "http://localhost:5174"
 })
 
-public class DisputeController {
+public class DisputeController extends BaseController {
 
     private final DisputeService disputeService;
 

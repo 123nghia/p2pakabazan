@@ -8,9 +8,8 @@ import com.akabazan.service.order.usecase.CloseOrderUseCase;
 import com.akabazan.service.order.usecase.CreateOrderUseCase;
 import com.akabazan.service.order.usecase.ExpireOrdersUseCase;
 import com.akabazan.service.order.usecase.GetOrdersQuery;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -39,8 +38,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResult> getOrders(String type, String token, String paymentMethod, String sortByPrice) {
-        return getOrdersQuery.get(type, token, paymentMethod, sortByPrice);
+    public Page<OrderResult> getOrders(String type, String token, String paymentMethod, String sortByPrice, int page, int size) {
+        return getOrdersQuery.get(type, token, paymentMethod, sortByPrice, page, size);
     }
 
     @Override

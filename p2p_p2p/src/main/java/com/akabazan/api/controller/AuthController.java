@@ -1,7 +1,10 @@
 package com.akabazan.api.controller;
-import com.akabazan.api.dto.AuthResponse;
+import com.akabazan.api.reponse.AuthResponse;
+import com.akabazan.api.reponse.OrderResponse;
 import com.akabazan.api.request.LoginRequest;
 import com.akabazan.api.request.RegisterRequest;
+import com.akabazan.common.dto.BaseResponse;
+import com.akabazan.common.dto.ResponseFactory;
 import com.akabazan.service.AuthService;
 import com.akabazan.service.dto.AuthResult;
 import jakarta.validation.Valid;
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 })
 
-public class AuthController {
+public class AuthController extends BaseController {
 
     private final AuthService authService;
 
@@ -25,15 +28,15 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public   ResponseEntity<BaseResponse<AuthResponse>>  login(@Valid @RequestBody LoginRequest request) {
         AuthResult result = authService.login(request.getEmail(), request.getPassword());
-        return ResponseEntity.ok(toResponse(result));
+        return ResponseFactory.ok(toResponse(result));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<BaseResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResult result = authService.register(request.getEmail(), request.getPassword());
-        return ResponseEntity.ok(toResponse(result));
+        return  ResponseFactory.ok(toResponse(result));
     }
 
     private AuthResponse toResponse(AuthResult result) {

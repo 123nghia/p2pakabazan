@@ -26,8 +26,8 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         ErrorResponse error = new ErrorResponse(
                 HttpServletResponse.SC_UNAUTHORIZED,
-                "Unauthorized",
                 ErrorCode.INVALID_TOKEN.getMessage(),
+                ErrorCode.INVALID_TOKEN.getCode(),
                 request.getRequestURI()
         );
 

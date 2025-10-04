@@ -16,6 +16,8 @@ import com.akabazan.service.DisputeService;
 import com.akabazan.service.NotificationService;
 import com.akabazan.service.dto.DisputeMapper;
 import com.akabazan.service.dto.DisputeResult;
+import com.akabazan.service.order.support.SellerFundsManager;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,17 +34,21 @@ public class DisputeServiceImpl implements DisputeService {
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
     private final NotificationService notificationService;
+    private final SellerFundsManager sellerFundsManager;
+
 
     public DisputeServiceImpl(TradeRepository tradeRepository,
                               DisputeRepository disputeRepository,
                               UserRepository userRepository,
                               CurrentUserService currentUserService,
-                              NotificationService notificationService) {
+                              NotificationService notificationService,  
+                              SellerFundsManager sellerFundsManager) {
         this.tradeRepository = tradeRepository;
         this.disputeRepository = disputeRepository;
         this.userRepository = userRepository;
         this.currentUserService = currentUserService;
         this.notificationService = notificationService;
+        this.sellerFundsManager = sellerFundsManager;
     }
 
     @Override
@@ -157,6 +163,16 @@ public class DisputeServiceImpl implements DisputeService {
 
         updateTradeAfterResolution(dispute.getTrade(), resolutionOutcome);
 
+        switch (resolutionOutcome) {
+        case BUYER_FAVORED -> {
+        // Giải phóng coin cho buyer
+        sellerFundsManager.releaseToBuyer(dispute.getTrade());
+        }
+        case SELLER_FAVORED -> {
+        // Trả coin lại cho seller
+        sellerFundsManager.refundToSeller(dispute.getTrade());
+        }
+        }
         Dispute saved = disputeRepository.save(dispute);
 
         notifyParticipants(dispute, String.format("Dispute #%d resolved in favour of %s", dispute.getId(), resolutionOutcome.name()));

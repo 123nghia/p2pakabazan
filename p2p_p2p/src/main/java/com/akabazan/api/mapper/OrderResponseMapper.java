@@ -1,7 +1,7 @@
 package com.akabazan.api.mapper;
 
-import com.akabazan.api.dto.OrderResponse;
-import com.akabazan.api.dto.TradeResponse;
+import com.akabazan.api.reponse.OrderResponse;
+import com.akabazan.api.reponse.TradeResponse;
 import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.dto.TradeResult;
 import java.util.List;

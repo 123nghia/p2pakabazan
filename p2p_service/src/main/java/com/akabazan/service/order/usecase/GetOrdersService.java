@@ -3,13 +3,13 @@ package com.akabazan.service.order.usecase;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.constant.OrderStatus;
 import com.akabazan.repository.entity.Order;
-import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.dto.OrderMapper;
+import com.akabazan.service.dto.OrderResult;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class GetOrdersService implements GetOrdersQuery {
@@ -21,26 +21,33 @@ public class GetOrdersService implements GetOrdersQuery {
     }
 
     @Override
-    public List<OrderResult> get(String type, String token, String paymentMethod, String sortByPrice) {
-        List<Order> orders = orderRepository.findByStatusAndTypeAndTokenAndPaymentMethod(
+    public Page<OrderResult> get(String type, String token, String paymentMethod, String sortByPrice, int page, int size) {
+        Pageable pageable = buildPageable(sortByPrice, page, size);
+
+        Page<Order> orders = orderRepository.findByStatusAndTypeAndTokenAndPaymentMethod(
                 OrderStatus.OPEN.name(),
                 type != null ? type.toUpperCase() : null,
                 token,
-                paymentMethod
+                paymentMethod,
+                pageable
         );
 
-        applySorting(sortByPrice, orders);
-
-        return orders.stream()
-                .map(OrderMapper::toResult)
-                .collect(Collectors.toList());
+        return orders.map(OrderMapper::toResult);
     }
 
-    private void applySorting(String sortByPrice, List<Order> orders) {
+    private Pageable buildPageable(String sortByPrice, int page, int size) {
+        Sort sort = Sort.unsorted();
         if ("asc".equalsIgnoreCase(sortByPrice)) {
-            orders.sort(Comparator.comparingDouble(Order::getPrice));
+            sort = Sort.by(Sort.Direction.ASC, "price");
         } else if ("desc".equalsIgnoreCase(sortByPrice)) {
-            orders.sort(Comparator.comparingDouble(Order::getPrice).reversed());
+            sort = Sort.by(Sort.Direction.DESC, "price");
         }
+
+        int resolvedPage = Math.max(page, 0);
+        int resolvedSize = size > 0 ? size : 10;
+
+        return sort.isSorted()
+                ? PageRequest.of(resolvedPage, resolvedSize, sort)
+                : PageRequest.of(resolvedPage, resolvedSize);
     }
 }

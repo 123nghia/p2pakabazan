@@ -1,6 +1,6 @@
 package com.akabazan.api.mapper;
 
-import com.akabazan.api.dto.NotificationResponse;
+import com.akabazan.api.reponse.NotificationResponse;
 import com.akabazan.service.dto.NotificationResult;
 
 import java.util.List;

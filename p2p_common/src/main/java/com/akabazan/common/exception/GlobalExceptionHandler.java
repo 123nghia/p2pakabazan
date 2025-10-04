@@ -1,13 +1,14 @@
 package com.akabazan.common.exception;
 
+import com.akabazan.common.constant.ErrorCode;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import com.akabazan.common.constant.*;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -18,9 +19,8 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = ex.getErrorCode();
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "Business Error",
-                errorCode.getCode(),
                 errorCode.getMessage(),
+                errorCode.getCode(),
                 request.getRequestURI()
         );
         return ResponseEntity.badRequest().body(error);
@@ -30,16 +30,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException ex, HttpServletRequest request) {
         // Lấy tất cả lỗi, nối lại thành 1 chuỗi
-        String message = ex.getBindingResult().getFieldErrors().stream()
-                .map(err -> err.getField() + " " + err.getDefaultMessage())
-                .reduce((a, b) -> a + "; " + b)
-                .orElse("Validation error");
+        List<ErrorResponse.FieldError> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> new ErrorResponse.FieldError(err.getField(), err.getDefaultMessage()))
+                .collect(Collectors.toList());
 
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                "Validation Error",
+                "Invalid request parameters",
                 "VALIDATION_ERROR",
-                message,
+                errors,
                 request.getRequestURI()
         );
         return ResponseEntity.badRequest().body(error);
@@ -50,9 +49,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex, HttpServletRequest request) {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Error",
-                "INTERNAL_ERROR",
                 ex.getMessage(),
+                "INTERNAL_ERROR",
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

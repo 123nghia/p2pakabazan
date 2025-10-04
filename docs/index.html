@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>P2P Trading Demo Console</title>
+    <style>
+        :root {
+            font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            color-scheme: light;
+            --bg: #f5f7fb;
+            --surface: #ffffff;
+            --surface-alt: #f1f5ff;
+            --border: #d8e0f5;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --text: #1f2937;
+            --muted: #64748b;
+            --success: #0f766e;
+            --danger: #b91c1c;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: radial-gradient(circle at top right, rgba(37,99,235,0.08), transparent 40%), var(--bg); color: var(--text); }
+        header { padding: 28px 36px 18px; color: var(--text); }
+        header h1 { margin: 0 0 6px; font-size: 28px; font-weight: 700; letter-spacing: 0.2px; }
+        header p { margin: 0; color: var(--muted); }
+        main { padding: 0 36px 40px; display: grid; gap: 24px; }
+        section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px 26px; box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08); display: grid; gap: 18px; }
+        h2 { margin: 0; font-size: 19px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+        form, .settings, .card-grid { display: grid; gap: 14px; }
+        label { display: grid; gap: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+        input, select, textarea { padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: #f8fafc; font-size: 14px; transition: border 0.2s, box-shadow 0.2s, background 0.2s; }
+        textarea { min-height: 80px; resize: vertical; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        button { cursor: pointer; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; padding: 12px 18px; color: #fff; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); box-shadow: 0 16px 26px rgba(37, 99, 235, 0.22); transition: transform 0.15s, box-shadow 0.15s; }
+        button:hover { transform: translateY(-1px); box-shadow: 0 18px 32px rgba(37, 99, 235, 0.26); }
+        button.secondary { background: linear-gradient(135deg, #6b7280, #4b5563); box-shadow: 0 12px 24px rgba(107, 114, 128, 0.18); }
+        .row { display: flex; flex-wrap: wrap; gap: 14px; }
+        .row > * { flex: 1 1 210px; }
+        .chip-bar { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: #fff; cursor: pointer; font-size: 13px; transition: background 0.15s, border 0.15s, color 0.15s; }
+        .chip.active { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 8px 18px rgba(37,99,235,0.25); }
+        .token-display { border-radius: 14px; background: linear-gradient(135deg, #eef2ff, #dee7ff); padding: 14px 16px; font-family: "Roboto Mono", monospace; font-size: 13px; word-break: break-all; }
+        .token-display span { font-weight: 600; color: var(--muted); margin-right: 8px; }
+        .result-card { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 14px; padding: 18px; display: grid; gap: 12px; }
+        .result-card h3 { margin: 0; font-size: 15px; }
+        .info-line { font-size: 13px; color: var(--muted); }
+        .info-line strong { color: var(--text); }
+        .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+        .badge.BUY { background: rgba(14, 159, 110, 0.18); color: #047857; }
+        .badge.SELL { background: rgba(220, 38, 38, 0.18); color: #b91c1c; }
+        .badge.OPEN { background: rgba(37, 99, 235, 0.18); color: #1d4ed8; }
+        table { width: 100%; border-collapse: collapse; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09); }
+        th, td { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 13px; }
+        th { background: #f3f6ff; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+        tr:hover td { background: #f8fbff; }
+        .meta { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--muted); }
+        .meta strong { color: var(--text); }
+        .pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.05em; }
+        .pill.success { background: rgba(16, 185, 129, 0.18); color: var(--success); }
+        .pill.error { background: rgba(239, 68, 68, 0.18); color: var(--danger); }
+        .wallet-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+        .wallet-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08); display: grid; gap: 6px; }
+        .wallet-card h4 { margin: 0; font-size: 14px; }
+        .wallet-card span { font-size: 12px; color: var(--muted); }
+        .notification-list { display: grid; gap: 12px; }
+        .notification { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08); }
+        .notification h4 { margin: 0 0 6px; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .notification time { font-size: 12px; color: var(--muted); }
+        .empty-state { padding: 18px; border-radius: 12px; background: rgba(37, 99, 235, 0.08); border: 1px dashed rgba(37, 99, 235, 0.45); color: var(--primary-dark); font-size: 13px; }
+        .raw-output { background: #0f172a; color: #e2e8f0; border-radius: 14px; padding: 20px; font-family: "Roboto Mono", monospace; font-size: 13px; max-height: 45vh; overflow: auto; }
+        @media (max-width: 900px) {
+            header, main { padding-left: 20px; padding-right: 20px; }
+            .row > * { flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>P2P Trading API Demo</h1>
+    <p>Configure environment, authenticate, and exercise core P2P flows with visual feedback.</p>
+</header>
+<main>
+    <section>
+        <h2>01 · Environment</h2>
+        <div class="settings">
+            <div class="row">
+                <label>Base URL
+                    <input id="baseUrl" type="text" value="http://localhost:8080" />
+                </label>
+                <label>API Prefix
+                    <input id="apiPrefix" type="text" value="/api" />
+                </label>
+            </div>
+            <label>Token
+                <div class="row">
+                    <input id="tokenInput" type="text" placeholder="Paste JWT or login to populate" />
+                    <button type="button" onclick="applyToken()">Use Token</button>
+                    <button type="button" class="secondary" onclick="clearToken()">Clear</button>
+                </div>
+            </label>
+            <div class="token-display"><span>Active:</span><span id="activeToken">(none)</span></div>
+            <div class="row">
+                <button type="button" onclick="applyBaseUrl()">Apply Environment</button>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>02 · Authentication</h2>
+        <div class="row">
+            <form id="loginForm" onsubmit="handleLogin(event)" style="flex:1 1 320px;">
+                <label>Email<input name="email" type="email" placeholder="demo@akabazan.com" required /></label>
+                <label>Password<input name="password" type="password" placeholder="••••••" required /></label>
+                <button type="submit">Login</button>
+            </form>
+            <form id="registerForm" onsubmit="handleRegister(event)" style="flex:1 1 320px;">
+                <label>Email<input name="email" type="email" placeholder="new@akabazan.com" required /></label>
+                <label>Password<input name="password" type="password" placeholder="••••••" required /></label>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </section>
+
+    <section>
+        <h2>03 · Browse Orders</h2>
+        <div class="row">
+            <form id="p2pOrderForm" onsubmit="handleP2POrders(event)" style="flex:1 1 320px;">
+                <h3 style="margin:0;font-size:15px;">P2P Orders</h3>
+                <label>Type
+                    <select name="type">
+                        <option value="">All</option>
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </label>
+                <label>Token<input name="token" placeholder="USDT" /></label>
+                <label>Payment Method<input name="paymentMethod" placeholder="BANK" /></label>
+                <div class="row">
+                    <label style="flex:1">Sort By Price
+                        <select name="sortByPrice">
+                            <option value="">default</option>
+                            <option value="asc">asc</option>
+                            <option value="desc">desc</option>
+                        </select>
+                    </label>
+                    <label style="flex:1">Page<input name="page" type="number" value="0" min="0" /></label>
+                    <label style="flex:1">Size<input name="size" type="number" value="10" min="1" /></label>
+                </div>
+                <button type="submit">Fetch P2P Orders</button>
+            </form>
+
+            <form id="marketOrderForm" onsubmit="handleMarketOrders(event)" style="flex:1 1 320px;">
+                <h3 style="margin:0;font-size:15px;">Market Orders</h3>
+                <label>Type
+                    <select name="type" required>
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </label>
+                <label>Token<input name="token" placeholder="USDT" /></label>
+                <label>Payment Method<input name="paymentMethod" placeholder="BANK" /></label>
+                <div class="row">
+                    <label style="flex:1">Sort By Price
+                        <select name="sortByPrice">
+                            <option value="">default</option>
+                            <option value="asc">asc</option>
+                            <option value="desc">desc</option>
+                        </select>
+                    </label>
+                    <label style="flex:1">Page<input name="page" type="number" value="0" min="0" /></label>
+                    <label style="flex:1">Size<input name="size" type="number" value="10" min="1" /></label>
+                </div>
+                <button type="submit">Fetch Market Orders</button>
+            </form>
+        </div>
+        <div id="p2pOrdersResult" class="result-card">
+            <h3>P2P Results</h3>
+            <div class="empty-state">No request yet.</div>
+        </div>
+        <div id="marketOrdersResult" class="result-card">
+            <h3>Market Results</h3>
+            <div class="empty-state">No request yet.</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>04 · Create Order</h2>
+        <form id="createOrderForm" onsubmit="handleCreateOrder(event)">
+            <div class="row">
+                <label>Type
+                    <select name="type" required>
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </label>
+                <label>Token
+                    <div class="chip-bar" id="tokenChips">
+                        <span class="chip active" data-token="USDT">USDT</span>
+                        <span class="chip" data-token="BTC">BTC</span>
+                        <span class="chip" data-token="ETH">ETH</span>
+                        <input name="token" value="USDT" style="display:none" />
+                    </div>
+                </label>
+                <label>Fiat
+                    <div class="chip-bar" id="fiatChips">
+                        <span class="chip active" data-fiat="VND">VND</span>
+                        <span class="chip" data-fiat="USD">USD</span>
+                        <span class="chip" data-fiat="EUR">EUR</span>
+                        <input name="fiat" value="VND" style="display:none" />
+                    </div>
+                </label>
+                <label>Price Mode
+                    <select name="priceMode" id="priceModeSelect">
+                        <option value="CUSTOM">CUSTOM (manual price)</option>
+                        <option value="MARKET">MARKET (auto price)</option>
+                    </select>
+                </label>
+            </div>
+            <div class="row" id="priceRow">
+                <label style="flex:1">Amount<input name="amount" type="number" step="0.0001" min="0.0001" value="1" required /></label>
+                <label style="flex:1">Price<input name="price" type="number" step="0.0001" min="0" value="25000" required /></label>
+                <label style="flex:1">Min Limit<input name="minLimit" type="number" step="0.01" min="0" placeholder="Optional" /></label>
+                <label style="flex:1">Max Limit<input name="maxLimit" type="number" step="0.01" min="0" placeholder="Optional" /></label>
+            </div>
+            <div class="row">
+                <label style="flex:1">Payment Method<input name="paymentMethod" value="BANK" /></label>
+                <label style="flex:1">Bank Name<input name="bankName" placeholder="Vietcombank" /></label>
+                <label style="flex:1">Bank Account<input name="bankAccount" placeholder="0123456789" /></label>
+                <label style="flex:1">Account Holder<input name="accountHolder" placeholder="NGUYEN VAN A" /></label>
+            </div>
+            <button type="submit">Submit Order</button>
+        </form>
+        <div id="createOrderResult" class="result-card">
+            <h3>Server Response</h3>
+            <div class="empty-state">No order submitted yet.</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>05 · Account Dashboard</h2>
+        <div class="row">
+            <button type="button" onclick="fetchCurrentUser()">Current User</button>
+            <button type="button" onclick="fetchMyActivities()">Trades &amp; Orders</button>
+            <button type="button" onclick="fetchWallets()">Wallet Balances</button>
+            <button type="button" onclick="fetchNotifications()">Notifications</button>
+        </div>
+        <div class="card-grid">
+            <div id="currentUserCard" class="result-card">
+                <h3>Current User</h3>
+                <div class="empty-state">No data yet.</div>
+            </div>
+            <div id="walletCard" class="result-card">
+                <h3>Wallet Balances</h3>
+                <div class="empty-state">No data yet.</div>
+            </div>
+            <div id="activitiesCard" class="result-card">
+                <h3>Trades &amp; Orders</h3>
+                <div class="empty-state">No data yet.</div>
+            </div>
+            <div id="notificationsCard" class="result-card">
+                <h3>Notifications</h3>
+                <div class="empty-state">No data yet.</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>06 · Trade Operations</h2>
+        <form id="createTradeForm" onsubmit="handleCreateTrade(event)">
+            <div class="row">
+                <label>Order ID<input name="orderId" type="number" min="1" required /></label>
+                <label>Amount<input name="amount" type="number" step="0.0001" min="0.0001" required /></label>
+            </div>
+            <label>Initial Message<input name="chatMessage" placeholder="Optional chat message" /></label>
+            <button type="submit">Create Trade</button>
+        </form>
+        <div class="row" style="align-items:flex-end;">
+            <label style="flex:1 1 200px;">Trade ID
+                <input id="tradeActionId" type="number" min="1" placeholder="Trade to update" />
+            </label>
+            <button type="button" onclick="performTradeAction('confirm-payment')">Confirm Payment</button>
+            <button type="button" onclick="performTradeAction('confirm-received')">Confirm Received</button>
+            <button type="button" class="secondary" onclick="performTradeAction('cancel')">Cancel Trade</button>
+        </div>
+        <form id="tradesByOrderForm" onsubmit="handleTradesByOrder(event)" class="row">
+            <label style="flex:1 1 200px;">Order ID
+                <input name="orderId" type="number" min="1" required />
+            </label>
+            <button type="submit">Fetch Trades by Order</button>
+        </form>
+        <div id="tradeCreateResult" class="result-card">
+            <h3>Trade Creation</h3>
+            <div class="empty-state">No trade created yet.</div>
+        </div>
+        <div id="tradeActionResult" class="result-card">
+            <h3>Trade Update</h3>
+            <div class="empty-state">No trade action executed.</div>
+        </div>
+        <div id="tradesByOrderResult" class="result-card">
+            <h3>Trades for Order</h3>
+            <div class="empty-state">No lookup yet.</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>07 · Dispute Center</h2>
+        <form id="disputeListForm" onsubmit="handleListDisputes(event)">
+            <div class="row">
+                <label>Status
+                    <select name="status">
+                        <option value="">All</option>
+                        <option value="OPEN">OPEN</option>
+                        <option value="IN_REVIEW">IN_REVIEW</option>
+                        <option value="RESOLVED">RESOLVED</option>
+                        <option value="REJECTED">REJECTED</option>
+                    </select>
+                </label>
+                <label style="align-items:center;">
+                    Only Mine
+                    <input type="checkbox" name="onlyMine" value="true" />
+                </label>
+            </div>
+            <button type="submit">List Disputes</button>
+        </form>
+        <form id="openDisputeForm" onsubmit="handleOpenDispute(event)">
+            <div class="row">
+                <label>Trade ID<input name="tradeId" type="number" min="1" required /></label>
+                <label>Reason<input name="reason" required /></label>
+                <label>Evidence URL<input name="evidence" placeholder="Optional" /></label>
+            </div>
+            <button type="submit">Open Dispute</button>
+        </form>
+        <div class="row" style="align-items:flex-end;">
+            <form id="assignDisputeForm" onsubmit="handleAssignDispute(event)" style="flex:1 1 240px;">
+                <label>Dispute ID<input name="disputeId" type="number" min="1" required /></label>
+                <label>Admin ID<input name="adminId" type="number" min="1" placeholder="Leave empty for current admin" /></label>
+                <button type="submit">Assign</button>
+            </form>
+            <form id="resolveDisputeForm" onsubmit="handleResolveDispute(event)" style="flex:1 1 240px;">
+                <label>Dispute ID<input name="disputeId" type="number" min="1" required /></label>
+                <label>Outcome
+                    <select name="outcome" required>
+                        <option value="BUYER_FAVORED">BUYER_FAVORED</option>
+                        <option value="SELLER_FAVORED">SELLER_FAVORED</option>
+                        <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                </label>
+                <label>Note<textarea name="note" placeholder="Decision note"></textarea></label>
+                <button type="submit">Resolve</button>
+            </form>
+            <form id="rejectDisputeForm" onsubmit="handleRejectDispute(event)" style="flex:1 1 240px;">
+                <label>Dispute ID<input name="disputeId" type="number" min="1" required /></label>
+                <label>Note<textarea name="note" placeholder="Optional"></textarea></label>
+                <button type="submit" class="secondary">Reject</button>
+            </form>
+        </div>
+        <form id="disputesByTradeForm" onsubmit="handleDisputesByTrade(event)" class="row">
+            <label style="flex:1 1 200px;">Trade ID
+                <input name="tradeId" type="number" min="1" required />
+            </label>
+            <button type="submit">Disputes by Trade</button>
+        </form>
+        <div id="disputeListResult" class="result-card">
+            <h3>Dispute List</h3>
+            <div class="empty-state">No query yet.</div>
+        </div>
+        <div id="openDisputeResult" class="result-card">
+            <h3>Open Dispute</h3>
+            <div class="empty-state">No dispute opened yet.</div>
+        </div>
+        <div id="disputeActionResult" class="result-card">
+            <h3>Dispute Action</h3>
+            <div class="empty-state">No action taken.</div>
+        </div>
+        <div id="disputesByTradeResult" class="result-card">
+            <h3>Disputes for Trade</h3>
+            <div class="empty-state">No lookup yet.</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>Raw JSON Output</h2>
+        <div id="rawOutput" class="raw-output">Ready.</div>
+    </section>
+</main>
+
+<script>
+    const state = {
+        baseUrl: 'http://localhost:8080',
+        apiPrefix: '/api',
+        token: null
+    };
+
+    const baseUrlInput = document.getElementById('baseUrl');
+    const prefixInput = document.getElementById('apiPrefix');
+    const tokenInput = document.getElementById('tokenInput');
+    const activeTokenEl = document.getElementById('activeToken');
+    const rawOutput = document.getElementById('rawOutput');
+    const priceModeSelect = document.getElementById('priceModeSelect');
+    const priceInput = document.querySelector('input[name="price"]');
+
+    function applyBaseUrl() {
+        state.baseUrl = baseUrlInput.value.trim().replace(/\/$/, '') || 'http://localhost:8080';
+        state.apiPrefix = normalisePrefix(prefixInput.value);
+        prefixInput.value = state.apiPrefix;
+        log(`API root set to ${getApiRoot()}`);
+    }
+
+    function normalisePrefix(prefix) {
+        if (!prefix) return '';
+        const trimmed = prefix.trim();
+        return trimmed ? `/${trimmed.replace(/^\/+|\/+$|\s+/g, '')}` : '';
+    }
+
+    function getApiRoot() {
+        const base = state.baseUrl.replace(/\/$/, '');
+        return `${base}${state.apiPrefix || ''}`;
+    }
+
+    function normalisePath(path) {
+        if (!path) return '';
+        return path.startsWith('/') ? path : `/${path}`;
+    }
+
+    function setToken(token) {
+        state.token = token || null;
+        activeTokenEl.textContent = state.token || '(none)';
+        tokenInput.value = state.token || '';
+    }
+
+    function applyToken() {
+        const value = tokenInput.value.trim();
+        setToken(value || null);
+        log(value ? 'Token applied.' : 'Token cleared.');
+    }
+
+    function clearToken() {
+        setToken(null);
+        log('Token cleared.');
+    }
+
+    async function apiFetch(path, options = {}) {
+        const url = path.startsWith('http') ? path : `${getApiRoot()}${normalisePath(path)}`;
+        const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+        if (state.token) headers['Authorization'] = `Bearer ${state.token}`;
+        const response = await fetch(url, { ...options, headers });
+        const text = await response.text();
+        let payload;
+        try { payload = text ? JSON.parse(text) : null; } catch { payload = text; }
+        if (!response.ok) throw { status: response.status, payload };
+        return payload;
+    }
+
+    function log(message, data) {
+        rawOutput.textContent = data !== undefined ? `${message}\n\n${JSON.stringify(data, null, 2)}` : message;
+    }
+
+    function formToJson(form) {
+        const data = new FormData(form);
+        const json = {};
+        data.forEach((value, key) => {
+            const field = form.elements[key];
+            if (!field) return;
+            if (field.type === 'checkbox') {
+                json[key] = field.checked;
+                return;
+            }
+            if (value === '') return;
+            if (field.type === 'number') {
+                const parsed = Number(value);
+                json[key] = Number.isNaN(parsed) ? null : parsed;
+            } else {
+                json[key] = value;
+            }
+        });
+        return json;
+    }
+
+    function buildQuery(params) {
+        const search = new URLSearchParams();
+        Object.entries(params).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== '' && v !== false) search.append(k, v);
+        });
+        const qs = search.toString();
+        return qs ? `?${qs}` : '';
+    }
+
+    function formatNumber(value) {
+        if (value === undefined || value === null || value === '') return '';
+        const num = Number(value);
+        return Number.isNaN(num) ? value : num.toLocaleString(undefined, { maximumFractionDigits: 6 });
+    }
+
+    function formatDate(value) {
+        if (!value) return '';
+        try { return new Date(value).toLocaleString(); } catch { return value; }
+    }
+
+    function unwrapResult(response) {
+        return response && typeof response === 'object' && 'result' in response ? response.result : response;
+    }
+
+    function renderResponseInfo(container, response) {
+        if (!response || typeof response !== 'object') return;
+        const info = document.createElement('div');
+        info.className = 'info-line';
+        const bits = [];
+        if (response.status) bits.push(`<span class="pill ${response.status === 'success' ? 'success' : 'error'}">${response.status.toUpperCase()}</span>`);
+        if (response.code !== undefined) bits.push(`Code: <strong>${response.code}</strong>`);
+        if (response.message) bits.push(`Message: <strong>${response.message}</strong>`);
+        if (bits.length) {
+            info.innerHTML = bits.join(' · ');
+            container.appendChild(info);
+        }
+    }
+
+    function renderOrders(containerId, response) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `<h3>${containerId.includes('p2p') ? 'P2P' : 'Market'} Results</h3>`;
+        renderResponseInfo(container, response);
+        const data = unwrapResult(response);
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML += '<div class="empty-state">No orders returned.</div>';
+            return;
+        }
+        const table = document.createElement('table');
+        table.innerHTML = '<thead><tr><th>ID</th><th>Type</th><th>Token</th><th>Price</th><th>Amount</th><th>Status</th><th>Payment</th></tr></thead>';
+        const tbody = document.createElement('tbody');
+        data.forEach(order => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${order.id ?? ''}</td>
+                <td><span class="badge ${order.type ?? ''}">${order.type ?? ''}</span></td>
+                <td>${order.token ?? ''}</td>
+                <td>${formatNumber(order.price)}</td>
+                <td>${formatNumber(order.amount)}</td>
+                <td><span class="badge ${order.status ?? ''}">${order.status ?? ''}</span></td>
+                <td>${order.paymentMethod ?? ''}</td>`;
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        container.appendChild(table);
+        if (response.meta) {
+            const meta = document.createElement('div');
+            meta.className = 'meta';
+            meta.innerHTML = `
+                <div>Page <strong>${response.meta.page}</strong> / <strong>${response.meta.totalPages}</strong></div>
+                <div>Total: <strong>${response.meta.totalElements}</strong></div>
+                <div>Has next: <strong>${response.meta.hasNext}</strong></div>
+                <div>Has prev: <strong>${response.meta.hasPrevious}</strong></div>`;
+            container.appendChild(meta);
+        }
+    }
+
+    function renderJSON(containerId, title, response) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `<h3>${title}</h3>`;
+        renderResponseInfo(container, response);
+        const pre = document.createElement('pre');
+        pre.className = 'raw-output';
+        pre.textContent = JSON.stringify(response, null, 2);
+        container.appendChild(pre);
+    }
+
+    function renderWallets(response) {
+        const container = document.getElementById('walletCard');
+        container.innerHTML = '<h3>Wallet Balances</h3>';
+        renderResponseInfo(container, response);
+        const data = unwrapResult(response);
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML += '<div class="empty-state">No balances available.</div>';
+            return;
+        }
+        const grid = document.createElement('div');
+        grid.className = 'wallet-grid';
+        data.forEach(wallet => {
+            const card = document.createElement('div');
+            card.className = 'wallet-card';
+            card.innerHTML = `
+                <h4>${wallet.token}</h4>
+                <span>Total</span>
+                <strong>${formatNumber(wallet.balance)}</strong>
+                <span>Available</span>
+                <strong>${formatNumber(wallet.availableBalance)}</strong>`;
+            grid.appendChild(card);
+        });
+        container.appendChild(grid);
+    }
+
+    function renderNotifications(response) {
+        const container = document.getElementById('notificationsCard');
+        container.innerHTML = '<h3>Notifications</h3>';
+        renderResponseInfo(container, response);
+        const data = unwrapResult(response);
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML += '<div class="empty-state">No notifications.</div>';
+            return;
+        }
+        const list = document.createElement('div');
+        list.className = 'notification-list';
+        data.forEach(n => {
+            const item = document.createElement('div');
+            item.className = 'notification';
+            item.innerHTML = `
+                <h4>${n.message ?? 'No message'} <span class="pill ${n.read ? 'success' : 'error'}">${n.read ? 'READ' : 'NEW'}</span></h4>
+                <time>${formatDate(n.createdAt)}</time>`;
+            list.appendChild(item);
+        });
+        container.appendChild(list);
+    }
+
+    function renderUserProfile(response) {
+        const container = document.getElementById('currentUserCard');
+        container.innerHTML = '<h3>Current User</h3>';
+        renderResponseInfo(container, response);
+        const profile = unwrapResult(response);
+        if (!profile) {
+            container.innerHTML += '<div class="empty-state">No user info found.</div>';
+            return;
+        }
+        const info = document.createElement('div');
+        info.className = 'info-line';
+        info.innerHTML = `ID: <strong>${profile.id ?? '-'}</strong> · Email: <strong>${profile.email ?? '-'}</strong> · Phone: <strong>${profile.phone ?? '-'}</strong> · KYC: <strong>${profile.kycStatus ?? '-'}</strong>`;
+        container.appendChild(info);
+        if (profile.wallets && profile.wallets.length) {
+            const walletTitle = document.createElement('h4');
+            walletTitle.textContent = 'Linked Wallets';
+            container.appendChild(walletTitle);
+            const grid = document.createElement('div');
+            grid.className = 'wallet-grid';
+            profile.wallets.forEach(w => {
+                const card = document.createElement('div');
+                card.className = 'wallet-card';
+                card.innerHTML = `<h4>${w.token}</h4><span>Address</span><strong>${w.address ?? '-'}</strong><span>Balance</span><strong>${formatNumber(w.balance)}</strong>`;
+                grid.appendChild(card);
+            });
+            container.appendChild(grid);
+        }
+    }
+
+    function renderActivities(response) {
+        const container = document.getElementById('activitiesCard');
+        container.innerHTML = '<h3>Trades &amp; Orders</h3>';
+        renderResponseInfo(container, response);
+        const payload = unwrapResult(response);
+        if (!payload) {
+            container.innerHTML += '<div class="empty-state">No activity.</div>';
+            return;
+        }
+        if (payload.orders && payload.orders.length) {
+            const ordersTitle = document.createElement('h4');
+            ordersTitle.textContent = 'Orders';
+            container.appendChild(ordersTitle);
+            const table = document.createElement('table');
+            table.innerHTML = '<thead><tr><th>ID</th><th>Type</th><th>Token</th><th>Amount</th><th>Status</th></tr></thead>';
+            const tbody = document.createElement('tbody');
+            payload.orders.forEach(order => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${order.id ?? ''}</td><td><span class="badge ${order.type ?? ''}">${order.type ?? ''}</span></td><td>${order.token ?? ''}</td><td>${formatNumber(order.amount)}</td><td><span class="badge ${order.status ?? ''}">${order.status ?? ''}</span></td>`;
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+        if (payload.trades && payload.trades.length) {
+            const tradesTitle = document.createElement('h4');
+            tradesTitle.textContent = 'Trades';
+            container.appendChild(tradesTitle);
+            const table = document.createElement('table');
+            table.innerHTML = '<thead><tr><th>ID</th><th>Order</th><th>Buyer</th><th>Seller</th><th>Amount</th><th>Status</th></tr></thead>';
+            const tbody = document.createElement('tbody');
+            payload.trades.forEach(trade => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${trade.id ?? ''}</td><td>${trade.orderId ?? ''}</td><td>${trade.buyerId ?? ''}</td><td>${trade.sellerId ?? ''}</td><td>${formatNumber(trade.amount)}</td><td><span class="badge ${trade.status ?? ''}">${trade.status ?? ''}</span></td>`;
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            container.appendChild(table);
+        }
+        if ((!payload.orders || !payload.orders.length) && (!payload.trades || !payload.trades.length)) {
+            container.innerHTML += '<div class="empty-state">No trades or orders recorded.</div>';
+        }
+    }
+
+    function renderTrade(response, containerId, title) {
+        renderJSON(containerId, title, response);
+    }
+
+    function renderTradesList(response, containerId, title) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `<h3>${title}</h3>`;
+        renderResponseInfo(container, response);
+        const data = unwrapResult(response);
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML += '<div class="empty-state">No trades found.</div>';
+            return;
+        }
+        const table = document.createElement('table');
+        table.innerHTML = '<thead><tr><th>ID</th><th>Order</th><th>Buyer</th><th>Seller</th><th>Amount</th><th>Status</th><th>Escrow</th></tr></thead>';
+        const tbody = document.createElement('tbody');
+        data.forEach(trade => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${trade.id ?? ''}</td><td>${trade.orderId ?? ''}</td><td>${trade.buyerId ?? ''}</td><td>${trade.sellerId ?? ''}</td><td>${formatNumber(trade.amount)}</td><td><span class="badge ${trade.status ?? ''}">${trade.status ?? ''}</span></td><td>${trade.escrow ? 'Yes' : 'No'}</td>`;
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        container.appendChild(table);
+    }
+
+    function renderDisputes(response, containerId, title) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `<h3>${title}</h3>`;
+        renderResponseInfo(container, response);
+        const data = unwrapResult(response);
+        if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML += '<div class="empty-state">No disputes found.</div>';
+            return;
+        }
+        const table = document.createElement('table');
+        table.innerHTML = '<thead><tr><th>ID</th><th>Trade</th><th>Status</th><th>Outcome</th><th>Reason</th><th>Admin</th><th>Updated</th></tr></thead>';
+        const tbody = document.createElement('tbody');
+        data.forEach(dispute => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${dispute.id ?? ''}</td>
+                <td>${dispute.tradeId ?? ''}</td>
+                <td><span class="badge ${dispute.status ?? ''}">${dispute.status ?? ''}</span></td>
+                <td>${dispute.resolutionOutcome ?? '-'}</td>
+                <td>${dispute.reason ?? ''}</td>
+                <td>${dispute.assignedAdminEmail ?? '-'}</td>
+                <td>${formatDate(dispute.updatedAt)}</td>`;
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        container.appendChild(table);
+    }
+
+    async function handleLogin(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        try {
+            const data = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(payload) });
+            setToken(data.token);
+            renderJSON('currentUserCard', 'Login Response', data);
+            log('Login successful.', data);
+        } catch (error) {
+            renderJSON('currentUserCard', 'Login Failed', error);
+            log('Login failed', error);
+        }
+    }
+
+    async function handleRegister(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        try {
+            const data = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(payload) });
+            renderJSON('currentUserCard', 'Registration Response', data);
+            log('Registration successful.', data);
+        } catch (error) {
+            renderJSON('currentUserCard', 'Registration Failed', error);
+            log('Registration failed', error);
+        }
+    }
+
+    async function handleP2POrders(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        const query = buildQuery(payload);
+        try {
+            const data = await apiFetch(`/p2p/orders${query}`);
+            renderOrders('p2pOrdersResult', data);
+            log('P2P orders fetched.', data);
+        } catch (error) {
+            renderJSON('p2pOrdersResult', 'Error', error);
+            log('Failed to fetch P2P orders', error);
+        }
+    }
+
+    async function handleMarketOrders(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        const query = buildQuery(payload);
+        try {
+            const data = await apiFetch(`/market/orders${query}`);
+            renderOrders('marketOrdersResult', data);
+            log('Market orders fetched.', data);
+        } catch (error) {
+            renderJSON('marketOrdersResult', 'Error', error);
+            log('Failed to fetch market orders', error);
+        }
+    }
+
+    async function handleCreateOrder(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        try {
+            const data = await apiFetch('/p2p/orders', { method: 'POST', body: JSON.stringify(payload) });
+            renderJSON('createOrderResult', 'Order Created', data);
+            log('Order created.', data);
+        } catch (error) {
+            renderJSON('createOrderResult', 'Error', error);
+            log('Failed to create order', error);
+        }
+    }
+
+    async function fetchCurrentUser() {
+        try {
+            const data = await apiFetch('/p2p/me');
+            renderUserProfile(data);
+            log('Fetched current user.', data);
+        } catch (error) {
+            renderJSON('currentUserCard', 'Error', error);
+            log('Failed to fetch current user', error);
+        }
+    }
+
+    async function fetchMyActivities() {
+        try {
+            const data = await apiFetch('/p2p/my-activities');
+            renderActivities(data);
+            log('Fetched trades & orders.', data);
+        } catch (error) {
+            renderJSON('activitiesCard', 'Error', error);
+            log('Failed to fetch activities', error);
+        }
+    }
+
+    async function fetchWallets() {
+        try {
+            const data = await apiFetch('/p2p/wallets');
+            renderWallets(data);
+            log('Fetched wallets.', data);
+        } catch (error) {
+            renderJSON('walletCard', 'Error', error);
+            log('Failed to fetch wallets', error);
+        }
+    }
+
+    async function fetchNotifications() {
+        try {
+            const data = await apiFetch('/p2p/notifications?unreadOnly=false');
+            renderNotifications(data);
+            log('Fetched notifications.', data);
+        } catch (error) {
+            renderJSON('notificationsCard', 'Error', error);
+            log('Failed to fetch notifications', error);
+        }
+    }
+
+    async function handleCreateTrade(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        try {
+            const data = await apiFetch('/p2p/trades', { method: 'POST', body: JSON.stringify(payload) });
+            renderTrade(data, 'tradeCreateResult', 'Trade Created');
+            log('Trade created.', data);
+        } catch (error) {
+            renderTrade(error, 'tradeCreateResult', 'Error');
+            log('Failed to create trade', error);
+        }
+    }
+
+    async function performTradeAction(action) {
+        const tradeId = Number(document.getElementById('tradeActionId').value);
+        if (!tradeId) {
+            alert('Please enter a trade ID.');
+            return;
+        }
+        let path;
+        let title;
+        if (action === 'confirm-payment') {
+            path = `/p2p/trades/${tradeId}/confirm-payment`;
+            title = 'Payment Confirmed';
+        } else if (action === 'confirm-received') {
+            path = `/p2p/trades/${tradeId}/confirm-received`;
+            title = 'Receipt Confirmed';
+        } else {
+            path = `/p2p/trades/${tradeId}/cancel`;
+            title = 'Trade Cancelled';
+        }
+        try {
+            const data = await apiFetch(path, { method: 'POST' });
+            renderTrade(data, 'tradeActionResult', title);
+            log(`${title}.`, data);
+        } catch (error) {
+            renderTrade(error, 'tradeActionResult', 'Error');
+            log('Trade action failed', error);
+        }
+    }
+
+    async function handleTradesByOrder(event) {
+        event.preventDefault();
+        const { orderId } = formToJson(event.target);
+        try {
+            const data = await apiFetch(`/p2p/orders/${orderId}/trades`);
+            renderTradesList(data, 'tradesByOrderResult', `Trades for Order ${orderId}`);
+            log('Fetched trades for order.', data);
+        } catch (error) {
+            renderJSON('tradesByOrderResult', 'Error', error);
+            log('Failed to fetch trades for order', error);
+        }
+    }
+
+    async function handleListDisputes(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        const query = buildQuery(payload);
+        try {
+            const data = await apiFetch(`/p2p/disputes${query}`);
+            renderDisputes(data, 'disputeListResult', 'Dispute List');
+            log('Fetched disputes.', data);
+        } catch (error) {
+            renderJSON('disputeListResult', 'Error', error);
+            log('Failed to fetch disputes', error);
+        }
+    }
+
+    async function handleOpenDispute(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        const { tradeId, ...queryParams } = payload;
+        const query = buildQuery(queryParams);
+        try {
+            const data = await apiFetch(`/p2p/trades/${tradeId}/dispute${query}`, { method: 'POST' });
+            renderJSON('openDisputeResult', 'Dispute Opened', data);
+            log('Dispute opened.', data);
+        } catch (error) {
+            renderJSON('openDisputeResult', 'Error', error);
+            log('Failed to open dispute', error);
+        }
+    }
+
+    async function handleAssignDispute(event) {
+        event.preventDefault();
+        const { disputeId, adminId } = formToJson(event.target);
+        const options = { method: 'POST' };
+        if (adminId) options.body = JSON.stringify({ adminId });
+        try {
+            const data = await apiFetch(`/p2p/disputes/${disputeId}/assign`, options);
+            renderJSON('disputeActionResult', 'Dispute Assigned', data);
+            log('Dispute assignment completed.', data);
+        } catch (error) {
+            renderJSON('disputeActionResult', 'Error', error);
+            log('Failed to assign dispute', error);
+        }
+    }
+
+    async function handleResolveDispute(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        const { disputeId, outcome, note } = payload;
+        try {
+            const data = await apiFetch(`/p2p/disputes/${disputeId}/resolve`, {
+                method: 'POST',
+                body: JSON.stringify({ outcome, note })
+            });
+            renderJSON('disputeActionResult', 'Dispute Resolved', data);
+            log('Dispute resolved.', data);
+        } catch (error) {
+            renderJSON('disputeActionResult', 'Error', error);
+            log('Failed to resolve dispute', error);
+        }
+    }
+
+    async function handleRejectDispute(event) {
+        event.preventDefault();
+        const payload = formToJson(event.target);
+        const { disputeId, note } = payload;
+        const options = { method: 'POST' };
+        if (note) options.body = JSON.stringify({ note });
+        try {
+            const data = await apiFetch(`/p2p/disputes/${disputeId}/reject`, options);
+            renderJSON('disputeActionResult', 'Dispute Rejected', data);
+            log('Dispute rejected.', data);
+        } catch (error) {
+            renderJSON('disputeActionResult', 'Error', error);
+            log('Failed to reject dispute', error);
+        }
+    }
+
+    async function handleDisputesByTrade(event) {
+        event.preventDefault();
+        const { tradeId } = formToJson(event.target);
+        try {
+            const data = await apiFetch(`/p2p/trades/${tradeId}/disputes`);
+            renderDisputes(data, 'disputesByTradeResult', `Disputes for Trade ${tradeId}`);
+            log('Fetched disputes for trade.', data);
+        } catch (error) {
+            renderJSON('disputesByTradeResult', 'Error', error);
+            log('Failed to fetch disputes for trade', error);
+        }
+    }
+
+    function wireChipGroup(groupId, hiddenName) {
+        const group = document.getElementById(groupId);
+        const hiddenInput = group.querySelector(`input[name="${hiddenName}"]`);
+        group.addEventListener('click', (evt) => {
+            const chip = evt.target.closest('.chip');
+            if (!chip) return;
+            group.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            hiddenInput.value = chip.dataset.token || chip.dataset.fiat || '';
+        });
+    }
+
+    wireChipGroup('tokenChips', 'token');
+    wireChipGroup('fiatChips', 'fiat');
+
+    priceModeSelect.addEventListener('change', () => {
+        const isMarket = priceModeSelect.value === 'MARKET';
+        priceInput.disabled = isMarket;
+        priceInput.required = !isMarket;
+        if (isMarket) {
+            priceInput.value = '';
+            priceInput.placeholder = 'Auto pricing from market';
+        } else {
+            priceInput.placeholder = '';
+            if (!priceInput.value) priceInput.value = '25000';
+        }
+    });
+
+    applyBaseUrl();
+    setToken(null);
+</script>
+</body>
+</html>

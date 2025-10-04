@@ -1,7 +1,7 @@
 package com.akabazan.api.mapper;
 
-import com.akabazan.api.dto.IntegrationUserResponse;
-import com.akabazan.api.dto.UserResponse;
+import com.akabazan.api.reponse.IntegrationUserResponse;
+import com.akabazan.api.reponse.UserResponse;
 import com.akabazan.api.request.IntegrationUserRequest;
 import com.akabazan.repository.entity.User.KycStatus;
 import com.akabazan.service.dto.IntegrationSyncCommand;

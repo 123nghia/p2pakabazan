@@ -1,12 +1,16 @@
 package com.akabazan.api.controller;
 
-import com.akabazan.api.dto.OrderResponse;
 import com.akabazan.api.mapper.OrderResponseMapper;
+import com.akabazan.api.reponse.OrderResponse;
+import com.akabazan.api.request.OrderQueryRequest;
+import com.akabazan.common.dto.BaseResponse;
+import com.akabazan.common.dto.ResponseFactory;
 import com.akabazan.service.MarketService;
 import com.akabazan.service.OrderService;
 import com.akabazan.service.dto.OrderResult;
 import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +18,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/market")
 @CrossOrigin(origins = {
     "http://localhost:5500",
-  "http://localhost:5174"
+    "http://localhost:5174"
 })
 
-public class MarketController {
+public class MarketController extends BaseController {
     private final MarketService marketService;
     private final OrderService orderService;
 
@@ -27,35 +31,26 @@ public class MarketController {
     }
 
     @GetMapping("/price")
-    public ResponseEntity<Double> getPrice(
+    public ResponseEntity<BaseResponse<Double>> getPrice(
             @RequestParam(defaultValue = "USDT") String token,
             @RequestParam(defaultValue = "VND") String fiat,
             @RequestParam(defaultValue = "SELL") String tradeType,
-            @RequestParam(defaultValue = "5") int top) {
+            @RequestParam(defaultValue = "5") int top) throws Exception 
+     {
 
-        try {
-            Double price = marketService.getP2PPrice(token, fiat, tradeType, top);
-            return ResponseEntity.ok(price);  // trả Double trực tiếp
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(null);
-        }
+        Double price = marketService.getP2PPrice(token, fiat, tradeType, top);
+        return ResponseFactory.ok(price);
     }
 
-    @GetMapping("/orders/buy")
-    public ResponseEntity<List<OrderResponse>> getPublicBuyOrders(
-            @RequestParam(required = false) String token,
-            @RequestParam(required = false) String paymentMethod,
-            @RequestParam(required = false) String sortByPrice) {
-        List<OrderResult> orders = orderService.getOrders("BUY", token, paymentMethod, sortByPrice);
-        return ResponseEntity.ok(OrderResponseMapper.fromList(orders));
-    }
-
-    @GetMapping("/orders/sell")
-    public ResponseEntity<List<OrderResponse>> getPublicSellOrders(
-            @RequestParam(required = false) String token,
-            @RequestParam(required = false) String paymentMethod,
-            @RequestParam(required = false) String sortByPrice) {
-        List<OrderResult> orders = orderService.getOrders("SELL", token, paymentMethod, sortByPrice);
-        return ResponseEntity.ok(OrderResponseMapper.fromList(orders));
+    @GetMapping("/orders")
+    public ResponseEntity<BaseResponse<List<OrderResponse>>> getPublicBuyOrders(@ModelAttribute OrderQueryRequest request) {
+        Page<OrderResult> orders = orderService.getOrders(
+                request.getType(),
+                request.getToken(),
+                request.getPaymentMethod(),
+                request.getSortByPrice(),
+                request.getPageOrDefault(),
+                request.getSizeOrDefault());
+        return ResponseEntity.ok(buildPagedResponse(orders, OrderResponseMapper::from));
     }
 }

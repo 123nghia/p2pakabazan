@@ -1,8 +1,4 @@
-// package com.akabazan.controller;
+package com.akabazan.api.controller;
 
-// import org.springframework.web.bind.annotation.RequestMapping;
-
-// @RequestMapping("/api")  // prefix chung
-// public abstract class BaseApiController { }
-
-
+public abstract class BaseApiController {
+}

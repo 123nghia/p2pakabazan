@@ -1,6 +1,6 @@
 package com.akabazan.api.mapper;
 
-import com.akabazan.api.dto.TradeChatResponse;
+import com.akabazan.api.reponse.TradeChatResponse;
 import com.akabazan.service.dto.TradeChatResult;
 import java.util.List;
 import java.util.stream.Collectors;

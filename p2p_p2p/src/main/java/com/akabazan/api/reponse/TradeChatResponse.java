@@ -1,8 +1,9 @@
-package com.akabazan.api.dto;
+package com.akabazan.api.reponse;
 
 import java.time.LocalDateTime;
 
 public class TradeChatResponse {
+   
     private Long id;
     private Long tradeId;
     private Long senderId;

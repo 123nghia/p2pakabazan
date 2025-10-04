@@ -1,6 +1,6 @@
 package com.akabazan.api.mapper;
 
-import com.akabazan.api.dto.DisputeResponse;
+import com.akabazan.api.reponse.DisputeResponse;
 import com.akabazan.service.dto.DisputeResult;
 import java.util.List;
 import java.util.stream.Collectors;
