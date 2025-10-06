@@ -8,6 +8,7 @@ public class TradeResult {
     private double amount;
     private String status;
     private boolean escrow;
+    private String tradeCode;
 
     public Long getId() {
         return id;
@@ -63,5 +64,13 @@ public class TradeResult {
 
     public void setEscrow(boolean escrow) {
         this.escrow = escrow;
+    }
+
+    public String getTradeCode() {
+        return tradeCode;
+    }
+
+    public void setTradeCode(String tradeCode) {
+        this.tradeCode = tradeCode;
     }
 }

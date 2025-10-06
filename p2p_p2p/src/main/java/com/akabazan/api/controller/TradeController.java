@@ -4,8 +4,11 @@ import com.akabazan.api.mapper.TradeCommandMapper;
 import com.akabazan.api.mapper.TradeResponseMapper;
 import com.akabazan.api.reponse.TradeResponse;
 import com.akabazan.api.request.TradeRequest;
+import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.dto.BaseResponse;
 import com.akabazan.common.dto.ResponseFactory;
+import com.akabazan.common.exception.ApplicationException;
+import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.TradeService;
 import com.akabazan.service.command.TradeCreateCommand;
 import com.akabazan.service.dto.TradeResult;
@@ -23,16 +26,31 @@ import org.springframework.web.bind.annotation.*;
 public class TradeController extends BaseController {
 
     private final TradeService tradeService;
+    private final CurrentUserService currentUserService;
 
-    public TradeController(TradeService tradeService) {
+    public TradeController(TradeService tradeService, CurrentUserService currentUserService) {
         this.tradeService = tradeService;
+        this.currentUserService = currentUserService;
     }
 
     // ====================== ORDER ======================
+    @GetMapping("/trades/me")
+    public ResponseEntity<BaseResponse<List<TradeResponse>>> getTradesOfCurrentUser() {
+        Long userId = currentUserService.getCurrentUserId()
+                .orElseThrow(() -> new ApplicationException(ErrorCode.UNAUTHORIZED));
 
-   
+        List<TradeResult> trades = tradeService.getTradesByUser(userId);
+        return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
+    }
+
     @GetMapping("/orders/{orderId}/trades")
     public  ResponseEntity < BaseResponse<List<TradeResponse>>> getTradesByOrder(@PathVariable Long orderId) {
+        List<TradeResult> trades = tradeService.getTradesByOrder(orderId);
+        return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
+    }
+
+    @GetMapping("/trades/order/{orderId}")
+    public ResponseEntity<BaseResponse<List<TradeResponse>>> getTradesByOrderId(@PathVariable Long orderId) {
         List<TradeResult> trades = tradeService.getTradesByOrder(orderId);
         return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
     }
@@ -62,5 +80,4 @@ public class TradeController extends BaseController {
         TradeResult result = tradeService.cancelTrade(tradeId);
         return ResponseFactory.ok(TradeResponseMapper.from(result));
     }
-
 }

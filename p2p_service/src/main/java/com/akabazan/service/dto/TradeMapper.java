@@ -16,6 +16,7 @@ public class TradeMapper {
         result.setAmount(trade.getAmount());
         result.setStatus(trade.getStatus().name());
         result.setEscrow(trade.isEscrow());
+        result.setTradeCode(trade.getTradeCode());
         return result;
     }
 }

@@ -1,6 +1,5 @@
 package com.akabazan.api.controller;
 import com.akabazan.api.reponse.AuthResponse;
-import com.akabazan.api.reponse.OrderResponse;
 import com.akabazan.api.request.LoginRequest;
 import com.akabazan.api.request.RegisterRequest;
 import com.akabazan.common.dto.BaseResponse;

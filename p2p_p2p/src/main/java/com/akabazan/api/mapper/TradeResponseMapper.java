@@ -20,6 +20,7 @@ public final class TradeResponseMapper {
         response.setAmount(result.getAmount());
         response.setStatus(result.getStatus());
         response.setEscrow(result.isEscrow());
+        response.setTradeCode(result.getTradeCode());
         return response;
     }
 }

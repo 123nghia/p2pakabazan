@@ -2,6 +2,7 @@ package com.akabazan.service.impl;
 
 import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.exception.ApplicationException;
+import com.akabazan.common.util.SnowflakeIdGenerator;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.WalletRepository;
@@ -94,11 +95,13 @@ public class TradeServiceImpl implements TradeService {
         trade.setAmount(command.getAmount());
         trade.setStatus(TradeStatus.PENDING);
         trade.setCreatedAt(LocalDateTime.now());
+       // String tradeCode = "" + snowflakeId; // có thể bỏ prefix nếu muốn chỉ số thuần
+        // ✅ Gán mã vào Trade entity
+        trade.setTradeCode( String.valueOf(System.currentTimeMillis()));
+        // ✅ Lưu vào DB
         tradeRepository.save(trade);
-
         return TradeMapper.toResult(trade);
     }
-
     @Override
     @Transactional
     public TradeResult confirmPayment(Long tradeId) {
@@ -216,6 +219,7 @@ public class TradeServiceImpl implements TradeService {
         tradeRepository.save(trade);
         return TradeMapper.toResult(trade);
     }
+
     @Override
     @Transactional
     public List<TradeResult> getTradesByOrder(Long orderId) {
@@ -223,6 +227,15 @@ public class TradeServiceImpl implements TradeService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
         return tradeRepository.findByOrderId(orderId)
+                .stream()
+                .map(TradeMapper::toResult)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public List<TradeResult> getTradesByUser(Long userId) {
+        return tradeRepository.findByUser(userId)
                 .stream()
                 .map(TradeMapper::toResult)
                 .collect(Collectors.toList());

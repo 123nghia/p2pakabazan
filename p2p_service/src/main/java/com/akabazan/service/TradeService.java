@@ -16,4 +16,6 @@ public interface TradeService {
     TradeResult cancelTrade(Long tradeId);
 
     List<TradeResult> getTradesByOrder(Long orderId);
+
+    List<TradeResult> getTradesByUser(Long userId);
 }
