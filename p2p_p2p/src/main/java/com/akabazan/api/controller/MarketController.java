@@ -51,6 +51,7 @@ public class MarketController extends BaseController {
                 request.getSortByPrice(),
                 request.getPageOrDefault(),
                 request.getSizeOrDefault());
+        
         return ResponseEntity.ok(buildPagedResponse(orders, OrderResponseMapper::from));
     }
 }

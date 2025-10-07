@@ -1,7 +1,9 @@
 package com.akabazan.api.controller;
 
 import com.akabazan.api.mapper.TradeCommandMapper;
+import com.akabazan.api.mapper.TradeInfoResponseMapper;
 import com.akabazan.api.mapper.TradeResponseMapper;
+import com.akabazan.api.reponse.TradeInfoResponse;
 import com.akabazan.api.reponse.TradeResponse;
 import com.akabazan.api.request.TradeRequest;
 import com.akabazan.common.constant.ErrorCode;
@@ -11,6 +13,7 @@ import com.akabazan.common.exception.ApplicationException;
 import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.TradeService;
 import com.akabazan.service.command.TradeCreateCommand;
+import com.akabazan.service.dto.TradeInfoResult;
 import com.akabazan.service.dto.TradeResult;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +58,7 @@ public class TradeController extends BaseController {
         return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
     }
 
+
     @PostMapping("/trades")
     public ResponseEntity < BaseResponse<TradeResponse>> createTrade(@RequestBody TradeRequest tradeRequest) {
         TradeCreateCommand command = TradeCommandMapper.toCommand(tradeRequest); // map từ API request sang Command
@@ -79,5 +83,12 @@ public class TradeController extends BaseController {
 
         TradeResult result = tradeService.cancelTrade(tradeId);
         return ResponseFactory.ok(TradeResponseMapper.from(result));
+    }
+
+
+    @GetMapping("/trades/{tradeId}")
+    public ResponseEntity<BaseResponse<TradeInfoResponse>> getTradeInfo(@PathVariable Long tradeId) {
+        TradeInfoResult info = tradeService.getTradeInfo(tradeId);
+        return ResponseFactory.ok(TradeInfoResponseMapper.from(info));
     }
 }

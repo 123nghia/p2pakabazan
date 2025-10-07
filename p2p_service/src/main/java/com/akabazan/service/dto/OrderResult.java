@@ -27,6 +27,15 @@ public class OrderResult {
     private String bankName;
     private String bankAccount;
     private String accountHolder;
+    private String userName;
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
 
     private List<TradeResult> trades;
 

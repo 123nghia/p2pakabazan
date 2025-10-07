@@ -19,8 +19,16 @@ public final class TradeResponseMapper {
         response.setSellerId(result.getSellerId());
         response.setAmount(result.getAmount());
         response.setStatus(result.getStatus());
-        response.setEscrow(result.isEscrow());
+     
         response.setTradeCode(result.getTradeCode());
+        response.setPrice(result.getPrice());
+        response.setCreatedAt(result.getCreatedAt());
+        response.setBuyerUserName(result.getBuyerUserName());
+        response.setSenderUserName(result.getSenderUserName());
+        response.setToken(result.getToken());
+        response.setFiat(result.getFiat());
+        response.setRole(result.getRole());
+        response.setCanCancel(result.isCanCancel());
         return response;
     }
 }

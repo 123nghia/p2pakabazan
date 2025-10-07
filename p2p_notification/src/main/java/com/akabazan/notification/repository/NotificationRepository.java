@@ -1,6 +1,6 @@
-package com.akabazan.repository;
+package com.akabazan.notification.repository;
 
-import com.akabazan.repository.entity.Notification;
+import com.akabazan.notification.entity.Notification;
 import com.akabazan.repository.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

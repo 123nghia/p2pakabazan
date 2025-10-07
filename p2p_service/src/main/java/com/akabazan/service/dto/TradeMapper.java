@@ -10,6 +10,9 @@ public class TradeMapper {
     public static TradeResult toResult(Trade trade) {
         TradeResult result = new TradeResult();
         result.setId(trade.getId());
+        var userBuyer = trade.getBuyer();
+        var userSender = trade.getSeller();
+        var order = trade.getOrder();
         result.setOrderId(trade.getOrder().getId());
         result.setBuyerId(trade.getBuyer().getId());
         result.setSellerId(trade.getSeller().getId());
@@ -17,6 +20,14 @@ public class TradeMapper {
         result.setStatus(trade.getStatus().name());
         result.setEscrow(trade.isEscrow());
         result.setTradeCode(trade.getTradeCode());
+        result.setBuyerUserName(userBuyer.getEmail());
+        result.setSenderUserName(userSender.getEmail());
+        result.setCreatedAt(trade.getCreatedAt());
+        result.setPrice(trade.getOrder().getPrice());
+        result.setToken(order.getToken());
+        result.setFiat(order.getFiat());
+        
+        
         return result;
     }
 }

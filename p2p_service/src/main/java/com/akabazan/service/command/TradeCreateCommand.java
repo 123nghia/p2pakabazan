@@ -5,7 +5,7 @@ public class TradeCreateCommand {
     private Long orderId;
     private double amount;
     private String chatMessage;
-
+    
     public Long getOrderId() {
         return orderId;
     }

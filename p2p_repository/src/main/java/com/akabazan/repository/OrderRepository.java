@@ -16,7 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "(:type IS NULL OR o.type = :type) AND " +
            "(:token IS NULL OR o.token = :token) AND " +
            "(:paymentMethod IS NULL OR o.paymentMethod = :paymentMethod)")
-    Page<Order> findByStatusAndTypeAndTokenAndPaymentMethod(
+               Page<Order> findByStatusAndTypeAndTokenAndPaymentMethod(
             @Param("status") String status,
             @Param("type") String type,
             @Param("token") String token,
@@ -25,6 +25,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
        
             List<Order> findAllByStatusAndExpireAtBefore(String status, LocalDateTime time);
               List<Order> findByUserId(Long userId);
+       @Query("""
+    SELECT o FROM Order o
+    WHERE o.user.id = :userId
+    AND (:status IS NULL OR o.status = :status)
+    AND (:type IS NULL OR o.type = :type)
+""")
+             List<Order> findOrdersByUserAndOptionalFilters(Long userId, String status, String type);
 
 
             

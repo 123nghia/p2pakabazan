@@ -2,8 +2,8 @@ package com.akabazan.api.controller;
 
 import com.akabazan.api.mapper.NotificationResponseMapper;
 import com.akabazan.api.reponse.NotificationResponse;
-import com.akabazan.service.NotificationService;
-import com.akabazan.service.dto.NotificationResult;
+import com.akabazan.notification.dto.NotificationResult;
+import com.akabazan.notification.service.NotificationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

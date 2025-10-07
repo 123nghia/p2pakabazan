@@ -35,7 +35,7 @@ public final class OrderResponseMapper {
         response.setBankName(result.getBankName());
         response.setBankAccount(result.getBankAccount());
         response.setAccountHolder(result.getAccountHolder());
-
+     response.setUserName(result.getUserName());
         List<TradeResult> trades = result.getTrades();
         if (trades != null) {
             List<TradeResponse> tradeResponses = trades.stream()

@@ -1,5 +1,7 @@
 package com.akabazan.api.reponse;
 
+import java.time.LocalDateTime;
+
 public class TradeResponse {
     private Long id;
     private Long orderId;
@@ -7,8 +9,82 @@ public class TradeResponse {
     private Long sellerId;
     private double amount;
     private String status;
-    private boolean escrow;
+    // private boolean escrow;
     private String tradeCode;
+    private String Fiat;
+    private String Token;
+
+    private boolean canCancel;
+
+public boolean isCanCancel() {
+    return canCancel;
+}
+
+public void setCanCancel(boolean canCancel) {
+    this.canCancel = canCancel;
+}
+     private String role;
+
+
+    public String getRole() {
+      return role;
+    }
+     public void setRole(String role) {
+       this.role = role;
+     }
+
+     public String getToken() {
+        return Token;
+    }
+
+    public void setToken(String token) {
+        Token = token;
+    }
+
+     public String getFiat() {
+        return Fiat;
+    }
+
+    public void setFiat(String fiat) {
+        Fiat = fiat;
+    }
+
+     private double price;
+    private String SenderUserName;
+
+    private String BuyerUserName;
+    public String getBuyerUserName() {
+        return BuyerUserName;
+    }
+
+    public void setBuyerUserName(String buyerUserName) {
+        BuyerUserName = buyerUserName;
+    }
+
+    public String getSenderUserName() {
+        return SenderUserName;
+    }
+
+    public void setSenderUserName(String senderUserName) {
+        SenderUserName = senderUserName;
+    }
+
+    private LocalDateTime createdAt;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
 
     public Long getId() {
         return id;
@@ -58,13 +134,7 @@ public class TradeResponse {
         this.status = status;
     }
 
-    public boolean isEscrow() {
-        return escrow;
-    }
-
-    public void setEscrow(boolean escrow) {
-        this.escrow = escrow;
-    }
+   
 
     public String getTradeCode() {
         return tradeCode;

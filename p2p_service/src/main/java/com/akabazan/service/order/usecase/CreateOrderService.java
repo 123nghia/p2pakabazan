@@ -2,6 +2,8 @@ package com.akabazan.service.order.usecase;
 
 import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.exception.ApplicationException;
+import com.akabazan.notification.enums.NotificationType;
+import com.akabazan.notification.service.NotificationService;
 import com.akabazan.repository.FiatAccountRepository;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.constant.OrderStatus;
@@ -25,6 +27,7 @@ public class CreateOrderService implements CreateOrderUseCase {
     private static final double DEFAULT_MIN_LIMIT = 10.0;
     private static final double DEFAULT_MAX_LIMIT = 100.0;
     private static final long ORDER_EXPIRATION_MINUTES = 15L;
+        private final NotificationService notificationService;
 
     private final CurrentUserService currentUserService;
     private final FiatAccountRepository fiatAccountRepository;
@@ -34,11 +37,13 @@ public class CreateOrderService implements CreateOrderUseCase {
     public CreateOrderService(CurrentUserService currentUserService,
                               FiatAccountRepository fiatAccountRepository,
                               OrderRepository orderRepository,
-                              SellerFundsManager sellerFundsManager) {
+                              SellerFundsManager sellerFundsManager,
+                              NotificationService notificationService) {
         this.currentUserService = currentUserService;
         this.fiatAccountRepository = fiatAccountRepository;
         this.orderRepository = orderRepository;
         this.sellerFundsManager = sellerFundsManager;
+        this.notificationService  = notificationService;
     }
 
     @Override
@@ -57,7 +62,7 @@ public class CreateOrderService implements CreateOrderUseCase {
         }
 
         Order savedOrder = orderRepository.save(buildOrder(command, user, orderType, fiatAccount));
-
+        notificationService.notifyUser(user.getId(), NotificationType.ORDER_CREATED, orderType);
         return enrichWithFiatAccount(OrderMapper.toResult(savedOrder), fiatAccount);
     }
 

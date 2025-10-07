@@ -2,18 +2,19 @@ package com.akabazan.service.impl;
 
 import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.exception.ApplicationException;
+import com.akabazan.notification.enums.NotificationType;
+import com.akabazan.notification.service.NotificationService;
 import com.akabazan.repository.DisputeRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.UserRepository;
+import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.Dispute;
 import com.akabazan.repository.entity.Dispute.DisputeStatus;
 import com.akabazan.repository.entity.Dispute.ResolutionOutcome;
 import com.akabazan.repository.entity.Trade;
-import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.User;
 import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.DisputeService;
-import com.akabazan.service.NotificationService;
 import com.akabazan.service.dto.DisputeMapper;
 import com.akabazan.service.dto.DisputeResult;
 import com.akabazan.service.order.support.SellerFundsManager;
@@ -221,7 +222,7 @@ public class DisputeServiceImpl implements DisputeService {
 
         Dispute saved = disputeRepository.save(dispute);
 
-        notificationService.notifyUser(admin.getId(),
+        notificationService.notifyUser(admin.getId(),NotificationType.ADMIN_INREVIEW,
                 String.format("Dispute #%d has been assigned to you", dispute.getId()));
         notifyParticipants(dispute, String.format("Dispute #%d is under review by %s", dispute.getId(), admin.getEmail()));
 
@@ -277,19 +278,19 @@ public class DisputeServiceImpl implements DisputeService {
 
     private void notifyOnOpen(Trade trade, Dispute dispute) {
         String message = String.format("Trade #%d has a new dispute (#%d)", trade.getId(), dispute.getId());
-        notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()), message);
+        notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()),NotificationType.DISPUTE_OPENED, message);
 
         List<User> admins = userRepository.findByRole(User.Role.ADMIN);
         List<Long> adminIds = admins.stream().map(User::getId).toList();
-        notificationService.notifyUsers(adminIds, message + ". Please review");
+        notificationService.notifyUsers(adminIds,NotificationType.ADMIN_INREVIEW ,message + ". Please review");
 
         List<User> moderators = userRepository.findByRole(User.Role.MODERATOR);
         List<Long> moderatorIds = moderators.stream().map(User::getId).toList();
-        notificationService.notifyUsers(moderatorIds, message + ". Please review");
+        notificationService.notifyUsers(moderatorIds,NotificationType.ADMIN_INREVIEW , message + ". Please review");
     }
 
     private void notifyParticipants(Dispute dispute, String message) {
         Trade trade = dispute.getTrade();
-        notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()), message);
+        notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()), NotificationType.DISPUTE_RESOLVED ,message);
     }
 }

@@ -20,10 +20,12 @@ public class OrderResponse {
     private LocalDateTime expireAt;
     private Long fiatAccountId;
     private Long userId;
+    private String userName;
     private String bankName;
     private String bankAccount;
     private String accountHolder;
     private List<TradeResponse> trades;
+
 
     public Long getId() {
         return id;
@@ -31,6 +33,14 @@ public class OrderResponse {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+     public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getType() {
@@ -176,4 +186,6 @@ public class OrderResponse {
     public void setTrades(List<TradeResponse> trades) {
         this.trades = trades;
     }
+
+  
 }

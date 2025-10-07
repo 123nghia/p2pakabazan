@@ -1,6 +1,9 @@
-package com.akabazan.service.dto;
+package com.akabazan.notification.dto;
+
+import com.akabazan.notification.enums.NotificationType;
 
 import java.time.LocalDateTime;
+
 
 public class NotificationResult {
 
@@ -8,6 +11,7 @@ public class NotificationResult {
     private String message;
     private boolean read;
     private LocalDateTime createdAt;
+    private NotificationType type;
 
     public Long getId() {
         return id;
@@ -17,6 +21,8 @@ public class NotificationResult {
         this.id = id;
     }
 
+    public NotificationType getType() { return type; }
+    public void setType(NotificationType type) { this.type = type; }
     public String getMessage() {
         return message;
     }

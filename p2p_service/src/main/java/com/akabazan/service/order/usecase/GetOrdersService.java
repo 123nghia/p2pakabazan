@@ -23,7 +23,6 @@ public class GetOrdersService implements GetOrdersQuery {
     @Override
     public Page<OrderResult> get(String type, String token, String paymentMethod, String sortByPrice, int page, int size) {
         Pageable pageable = buildPageable(sortByPrice, page, size);
-
         Page<Order> orders = orderRepository.findByStatusAndTypeAndTokenAndPaymentMethod(
                 OrderStatus.OPEN.name(),
                 type != null ? type.toUpperCase() : null,
@@ -31,7 +30,6 @@ public class GetOrdersService implements GetOrdersQuery {
                 paymentMethod,
                 pageable
         );
-
         return orders.map(OrderMapper::toResult);
     }
 
@@ -42,10 +40,8 @@ public class GetOrdersService implements GetOrdersQuery {
         } else if ("desc".equalsIgnoreCase(sortByPrice)) {
             sort = Sort.by(Sort.Direction.DESC, "price");
         }
-
         int resolvedPage = Math.max(page, 0);
         int resolvedSize = size > 0 ? size : 10;
-
         return sort.isSorted()
                 ? PageRequest.of(resolvedPage, resolvedSize, sort)
                 : PageRequest.of(resolvedPage, resolvedSize);

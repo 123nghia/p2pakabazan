@@ -17,6 +17,10 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
 
     Optional<Trade> findByTradeCode(String tradeCode);
 
-    @Query("SELECT t FROM Trade t WHERE t.buyer.id = :userId OR t.seller.id = :userId")
+  @Query("""
+    SELECT t FROM Trade t
+    WHERE t.buyer.id = :userId OR t.seller.id = :userId
+    ORDER BY t.createdAt DESC
+""")
     List<Trade> findByUser(@Param("userId") Long userId);
 }

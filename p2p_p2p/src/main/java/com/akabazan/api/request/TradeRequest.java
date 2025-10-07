@@ -2,6 +2,14 @@ package com.akabazan.api.request;
 
 public class TradeRequest {
     private Long orderId;
+    private String type;
+   
+    public String getType() {
+        return type;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
     private Double amount;
     // Optional: chat message on creation
     private String chatMessage;

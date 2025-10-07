@@ -39,6 +39,7 @@ public class OrderMapper {
         }
         if (order.getUser() != null) {
             dto.setUserId(order.getUser().getId());
+            dto.setUserName(order.getUser().getEmail());
         }
 
 

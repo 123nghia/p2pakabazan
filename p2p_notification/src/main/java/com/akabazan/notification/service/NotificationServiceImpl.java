@@ -1,17 +1,16 @@
-package com.akabazan.service.impl;
+package com.akabazan.notification.service;
 
 import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.exception.ApplicationException;
-import com.akabazan.repository.NotificationRepository;
+import com.akabazan.notification.dto.NotificationResult;
+import com.akabazan.notification.entity.Notification;
+import com.akabazan.notification.repository.NotificationRepository;
 import com.akabazan.repository.UserRepository;
-import com.akabazan.repository.entity.Notification;
 import com.akabazan.repository.entity.User;
 import com.akabazan.service.CurrentUserService;
-import com.akabazan.service.NotificationService;
-import com.akabazan.service.dto.NotificationResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.akabazan.notification.enums.NotificationType;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,35 +31,28 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notifyUser(Long userId, String message) {
-        if (message == null || message.isBlank()) {
-            return;
-        }
+    public void notifyUser(Long userId, NotificationType type, String message) {
+      if (message == null || message.isBlank()) return;
         userRepository.findById(userId).ifPresent(user -> {
-            Notification notification = new Notification();
-            notification.setUser(user);
-            notification.setMessage(message);
-            notificationRepository.save(notification);
+            Notification n = new Notification();
+            n.setUser(user);
+            n.setType(type == null ? NotificationType.GENERIC : type);
+            n.setMessage(message);
+            notificationRepository.save(n);
         });
     }
 
-    @Override
-    public void notifyUsers(List<Long> userIds, String message) {
-        if (message == null || message.isBlank()) {
-            return;
-        }
-        if (userIds == null || userIds.isEmpty()) {
-            return;
-        }
+       @Override
+    public void notifyUsers(List<Long> userIds, NotificationType type, String message) {
+        if (message == null || message.isBlank() || userIds == null || userIds.isEmpty()) return;
         List<User> users = userRepository.findAllById(userIds.stream().distinct().collect(Collectors.toList()));
-        if (users.isEmpty()) {
-            return;
-        }
-        for (User user : users) {
-            Notification notification = new Notification();
-            notification.setUser(user);
-            notification.setMessage(message);
-            notificationRepository.save(notification);
+        if (users.isEmpty()) return;
+        for (User u : users) {
+            Notification n = new Notification();
+            n.setUser(u);
+            n.setType(type == null ? NotificationType.GENERIC : type);
+            n.setMessage(message);
+            notificationRepository.save(n);
         }
     }
 

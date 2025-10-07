@@ -37,7 +37,7 @@
             <version>0.11.5</version>
             <scope>runtime</scope>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>com.akabazan</groupId>
             <artifactId>p2p_common</artifactId>
             <version>1.0-SNAPSHOT</version>
@@ -45,6 +45,11 @@
         <dependency>
             <groupId>com.akabazan</groupId>
             <artifactId>p2p_repository</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.akabazan</groupId>
+            <artifactId>p2p_notification</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>

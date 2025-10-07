@@ -18,12 +18,12 @@
     <relativePath/>
   </parent>
     <modules>
-     <module>p2p_common</module>    
-      <module>p2p_service</module>
     <module>p2p_repository</module>
+    <module>p2p_common</module>
+    <module>p2p_notification</module>
+    <module>p2p_service</module>
+    <module>p2p_security</module>
     <module>p2p_p2p</module>
-    
-    
     </modules>
   <dependencies>
  
