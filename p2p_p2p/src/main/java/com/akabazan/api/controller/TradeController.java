@@ -21,10 +21,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/p2p")
-@CrossOrigin(origins = {
-        "http://localhost:5500",
-        "http://localhost:5174"
-})
 
 public class TradeController extends BaseController {
 

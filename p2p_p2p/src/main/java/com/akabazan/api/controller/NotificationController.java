@@ -11,10 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/p2p")
-@CrossOrigin(origins = {
-    "http://localhost:5500",
-    "http://localhost:5174"
-})
 
 public class NotificationController extends BaseController {
 

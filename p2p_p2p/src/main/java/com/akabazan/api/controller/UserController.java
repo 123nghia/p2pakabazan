@@ -13,11 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = {
-    "http://localhost:5500",
-   "http://localhost:5174"
-})
-
 public class UserController extends BaseController {
 
     private final CurrentUserService currentUserService;

@@ -10,16 +10,11 @@ import com.akabazan.service.OrderService;
 import com.akabazan.service.dto.OrderResult;
 import java.util.List;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/market")
-@CrossOrigin(origins = {
-    "http://localhost:5500",
-    "http://localhost:5174"
-})
 
 public class MarketController extends BaseController {
     private final MarketService marketService;
