@@ -26,9 +26,12 @@ public class TradeInfoResponse {
        public void setRole(String role) {
            this.role = role;
        }
+    private Long sellerFiatAccountId;
     private String bankName;
     private String accountNumber;
     private String accountHolder;
+    private String bankBranch;
+    private String paymentType;
 
 
     // --- TTL ---
@@ -109,6 +112,30 @@ public class TradeInfoResponse {
 
     public void setAccountHolder(String accountHolder) {
         this.accountHolder = accountHolder;
+    }
+
+    public Long getSellerFiatAccountId() {
+        return sellerFiatAccountId;
+    }
+
+    public void setSellerFiatAccountId(Long sellerFiatAccountId) {
+        this.sellerFiatAccountId = sellerFiatAccountId;
+    }
+
+    public String getBankBranch() {
+        return bankBranch;
+    }
+
+    public void setBankBranch(String bankBranch) {
+        this.bankBranch = bankBranch;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
     }
 
 

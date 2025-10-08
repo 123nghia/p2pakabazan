@@ -30,6 +30,12 @@ public final class TradeResponseMapper {
         response.setRole(result.getRole());
         response.setCanCancel(result.isCanCancel());
         response.setCounterparty(result.getCounterparty());
+        response.setSellerFiatAccountId(result.getSellerFiatAccountId());
+        response.setSellerBankName(result.getSellerBankName());
+        response.setSellerAccountNumber(result.getSellerAccountNumber());
+        response.setSellerAccountHolder(result.getSellerAccountHolder());
+        response.setSellerBankBranch(result.getSellerBankBranch());
+        response.setSellerPaymentType(result.getSellerPaymentType());
         return response;
     }
 }

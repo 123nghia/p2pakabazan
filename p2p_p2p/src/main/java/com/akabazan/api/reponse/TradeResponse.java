@@ -14,6 +14,12 @@ public class TradeResponse {
     private String Fiat;
     private String Token;
     private String Counterparty;
+    private Long sellerFiatAccountId;
+    private String sellerBankName;
+    private String sellerAccountNumber;
+    private String sellerAccountHolder;
+    private String sellerBankBranch;
+    private String sellerPaymentType;
 
     private boolean canCancel;
 
@@ -151,5 +157,53 @@ public void setCanCancel(boolean canCancel) {
 
     public void setTradeCode(String tradeCode) {
         this.tradeCode = tradeCode;
+    }
+
+    public Long getSellerFiatAccountId() {
+        return sellerFiatAccountId;
+    }
+
+    public void setSellerFiatAccountId(Long sellerFiatAccountId) {
+        this.sellerFiatAccountId = sellerFiatAccountId;
+    }
+
+    public String getSellerBankName() {
+        return sellerBankName;
+    }
+
+    public void setSellerBankName(String sellerBankName) {
+        this.sellerBankName = sellerBankName;
+    }
+
+    public String getSellerAccountNumber() {
+        return sellerAccountNumber;
+    }
+
+    public void setSellerAccountNumber(String sellerAccountNumber) {
+        this.sellerAccountNumber = sellerAccountNumber;
+    }
+
+    public String getSellerAccountHolder() {
+        return sellerAccountHolder;
+    }
+
+    public void setSellerAccountHolder(String sellerAccountHolder) {
+        this.sellerAccountHolder = sellerAccountHolder;
+    }
+
+    public String getSellerBankBranch() {
+        return sellerBankBranch;
+    }
+
+    public void setSellerBankBranch(String sellerBankBranch) {
+        this.sellerBankBranch = sellerBankBranch;
+    }
+
+    public String getSellerPaymentType() {
+        return sellerPaymentType;
+    }
+
+    public void setSellerPaymentType(String sellerPaymentType) {
+        this.sellerPaymentType = sellerPaymentType;
     }
 }

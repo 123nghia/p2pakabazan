@@ -22,6 +22,10 @@ public enum ErrorCode {
     FORBIDDEN("AUTH_002", "Access denied"),
     NOTIFICATION_NOT_FOUND("NOTIFICATION_001", "Notification not found"),
     INVALID_CURRENCY_TYPE("CURRENCY_001", "Currency type is invalid"),
+    FIAT_ACCOUNT_NOT_FOUND("FIAT_001", "Seller payment account not found"),
+    SELLER_PAYMENT_METHOD_REQUIRED("FIAT_002", "Seller payment method is required"),
+    FIAT_ACCOUNT_ALREADY_EXISTS("FIAT_003", "Fiat account already exists"),
+    INVALID_FIAT_ACCOUNT_INPUT("FIAT_004", "Fiat account information is invalid"),
     INVALID_PAYMENT_METHOD_TYPE("PAYMENT_METHOD_001", "Payment method type is invalid");
    
    

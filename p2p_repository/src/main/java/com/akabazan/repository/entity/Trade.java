@@ -23,6 +23,25 @@ public class Trade extends AbstractEntity {
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_fiat_account_id")
+    private FiatAccount sellerFiatAccount;
+
+    @Column(name = "seller_bank_name", length = 150)
+    private String sellerBankName;
+
+    @Column(name = "seller_account_number", length = 100)
+    private String sellerAccountNumber;
+
+    @Column(name = "seller_account_holder", length = 150)
+    private String sellerAccountHolder;
+
+    @Column(name = "seller_bank_branch", length = 150)
+    private String sellerBankBranch;
+
+    @Column(name = "seller_payment_type", length = 50)
+    private String sellerPaymentType;
+
     @Column(name = "trade_code", nullable = false, unique = true, length = 32)
     private String tradeCode;
 
@@ -83,6 +102,54 @@ public class Trade extends AbstractEntity {
 
     public void setSeller(User seller) {
         this.seller = seller;
+    }
+
+    public FiatAccount getSellerFiatAccount() {
+        return sellerFiatAccount;
+    }
+
+    public void setSellerFiatAccount(FiatAccount sellerFiatAccount) {
+        this.sellerFiatAccount = sellerFiatAccount;
+    }
+
+    public String getSellerBankName() {
+        return sellerBankName;
+    }
+
+    public void setSellerBankName(String sellerBankName) {
+        this.sellerBankName = sellerBankName;
+    }
+
+    public String getSellerAccountNumber() {
+        return sellerAccountNumber;
+    }
+
+    public void setSellerAccountNumber(String sellerAccountNumber) {
+        this.sellerAccountNumber = sellerAccountNumber;
+    }
+
+    public String getSellerAccountHolder() {
+        return sellerAccountHolder;
+    }
+
+    public void setSellerAccountHolder(String sellerAccountHolder) {
+        this.sellerAccountHolder = sellerAccountHolder;
+    }
+
+    public String getSellerBankBranch() {
+        return sellerBankBranch;
+    }
+
+    public void setSellerBankBranch(String sellerBankBranch) {
+        this.sellerBankBranch = sellerBankBranch;
+    }
+
+    public String getSellerPaymentType() {
+        return sellerPaymentType;
+    }
+
+    public void setSellerPaymentType(String sellerPaymentType) {
+        this.sellerPaymentType = sellerPaymentType;
     }
 
     public String getTradeCode() {

@@ -26,6 +26,14 @@ public class TradeMapper {
         result.setPrice(trade.getOrder().getPrice());
         result.setToken(order.getToken());
         result.setFiat(order.getFiat());
+        if (trade.getSellerFiatAccount() != null) {
+            result.setSellerFiatAccountId(trade.getSellerFiatAccount().getId());
+        }
+        result.setSellerBankName(trade.getSellerBankName());
+        result.setSellerAccountNumber(trade.getSellerAccountNumber());
+        result.setSellerAccountHolder(trade.getSellerAccountHolder());
+        result.setSellerBankBranch(trade.getSellerBankBranch());
+        result.setSellerPaymentType(trade.getSellerPaymentType());
         
         
         return result;

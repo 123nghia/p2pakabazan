@@ -14,9 +14,12 @@ public final class TradeInfoResponseMapper {
         resp.setStatus(r.getStatus());
         resp.setAmount(r.getAmount());
 
+        resp.setSellerFiatAccountId(r.getSellerFiatAccountId());
         resp.setBankName(r.getBankName());
         resp.setAccountNumber(r.getAccountNumber());
         resp.setAccountHolder(r.getAccountHolder());
+        resp.setBankBranch(r.getBankBranch());
+        resp.setPaymentType(r.getPaymentType());
         resp.setRole(r.getRole());
         resp.setPrice(r.getPrice());
         resp.setAutoCancelAt(r.getAutoCancelAt());

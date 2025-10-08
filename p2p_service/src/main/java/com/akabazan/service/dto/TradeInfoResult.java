@@ -10,9 +10,12 @@ public class TradeInfoResult {
     private Double amount;
 
 
+    private Long sellerFiatAccountId;
     private String bankName;
     private String accountNumber;
     private String accountHolder;
+    private String bankBranch;
+    private String paymentType;
     private double Price;
     private boolean canCancel;
 
@@ -60,6 +63,12 @@ public void setCanCancel(boolean canCancel) {
     public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
     public String getAccountHolder() { return accountHolder; }
     public void setAccountHolder(String accountHolder) { this.accountHolder = accountHolder; }
+    public String getBankBranch() { return bankBranch; }
+    public void setBankBranch(String bankBranch) { this.bankBranch = bankBranch; }
+    public String getPaymentType() { return paymentType; }
+    public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
+    public Long getSellerFiatAccountId() { return sellerFiatAccountId; }
+    public void setSellerFiatAccountId(Long sellerFiatAccountId) { this.sellerFiatAccountId = sellerFiatAccountId; }
 
     public LocalDateTime getAutoCancelAt() { return autoCancelAt; }
     public void setAutoCancelAt(LocalDateTime autoCancelAt) { this.autoCancelAt = autoCancelAt; }

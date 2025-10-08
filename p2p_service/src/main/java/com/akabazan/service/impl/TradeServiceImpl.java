@@ -2,8 +2,8 @@ package com.akabazan.service.impl;
 
 import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.exception.ApplicationException;
-import com.akabazan.common.util.SnowflakeIdGenerator;
 import com.akabazan.notification.service.NotificationService;
+import com.akabazan.repository.FiatAccountRepository;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.WalletRepository;
@@ -22,6 +22,7 @@ import com.akabazan.service.dto.TradeResult;
 import com.akabazan.service.order.support.SellerFundsManager;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 
@@ -42,7 +43,8 @@ public class TradeServiceImpl implements TradeService {
     private final TradeRepository tradeRepository;
     private final WalletRepository walletRepository;
     private final SellerFundsManager sellerFundsManager;
-   private final NotificationService notificationService;
+    private final NotificationService notificationService;
+    private final FiatAccountRepository fiatAccountRepository;
        @Value("${app.trade.auto-cancel-minutes:15}")
     private long autoCancelMinutes;
     public TradeServiceImpl(EntityManager entityManager,
@@ -50,7 +52,8 @@ public class TradeServiceImpl implements TradeService {
             TradeRepository tradeRepository,
             WalletRepository walletRepository,
             SellerFundsManager sellerFundsManager,
-            NotificationService  notificationService
+            NotificationService  notificationService,
+            FiatAccountRepository fiatAccountRepository
             ) {
         this.entityManager = entityManager;
         this.orderRepository = orderRepository;
@@ -58,12 +61,13 @@ public class TradeServiceImpl implements TradeService {
         this.walletRepository = walletRepository;
         this.sellerFundsManager = sellerFundsManager;
         this.notificationService = notificationService;
+        this.fiatAccountRepository = fiatAccountRepository;
     }
 
     @Override
     @Transactional
     public TradeResult createTrade(TradeCreateCommand command) {
-        User buyer = getCurrentUser();
+        User actor = getCurrentUser();
 
         // Lock order tránh oversell
         Order order = entityManager.find(Order.class, command.getOrderId(), LockModeType.PESSIMISTIC_WRITE);
@@ -73,8 +77,8 @@ public class TradeServiceImpl implements TradeService {
         if (!OrderStatus.OPEN.name().equals(order.getStatus()))
             throw new ApplicationException(ErrorCode.ORDER_CLOSED);
 
-        if (command.getAmount() < order.getMinLimit() || command.getAmount() > order.getMaxLimit())
-            throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
+        // if (command.getAmount() < order.getMinLimit() || command.getAmount() > order.getMaxLimit())
+        //     throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
 
         if (command.getAmount() > order.getAvailableAmount())
             throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
@@ -83,28 +87,105 @@ public class TradeServiceImpl implements TradeService {
         orderRepository.save(order);
         Trade trade = new Trade();
         trade.setOrder(order);
-        
-        if ("SELL".equalsIgnoreCase(order.getType())) {
-            // Người tạo trade là buyer
-            trade.setBuyer(buyer);
-            trade.setSeller(order.getUser());
-            trade.setEscrow(true); // coin đã lock từ seller
 
+        User buyer;
+        User seller;
+
+        if ("SELL".equalsIgnoreCase(order.getType())) {
+            // Người tạo trade là buyer, seller là chủ order
+            buyer = actor;
+            seller = order.getUser();
+            trade.setEscrow(true); // coin đã lock từ seller
         } else if ("BUY".equalsIgnoreCase(order.getType())) {
             // Người tạo trade là seller
-            trade.setSeller(buyer);
-            trade.setBuyer(order.getUser());
-            sellerFundsManager.lock(buyer, order.getToken(), command.getAmount());
+            seller = actor;
+            buyer = order.getUser();
+            sellerFundsManager.lock(seller, order.getToken(), command.getAmount());
             trade.setEscrow(false); // buyer chưa có coin lock
+        } else {
+            throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
         }
+
+        trade.setBuyer(buyer);
+        trade.setSeller(seller);
+
+        FiatAccount sellerAccount = resolveSellerAccount(seller, order, command);
         
         trade.setAmount(command.getAmount());
         trade.setStatus(TradeStatus.PENDING);
         trade.setCreatedAt(LocalDateTime.now());
         trade.setTradeCode( String.valueOf(System.currentTimeMillis()));
+
+        if (sellerAccount != null) {
+            trade.setSellerFiatAccount(sellerAccount);
+            trade.setSellerBankName(sellerAccount.getBankName());
+            trade.setSellerAccountNumber(sellerAccount.getAccountNumber());
+            trade.setSellerAccountHolder(sellerAccount.getAccountHolder());
+            trade.setSellerBankBranch(sellerAccount.getBranch());
+            trade.setSellerPaymentType(sellerAccount.getPaymentType());
+        }
+
         // ✅ Lưu vào DB
         tradeRepository.save(trade);
         return TradeMapper.toResult(trade);
+    }
+
+    private FiatAccount resolveSellerAccount(User seller, Order order, TradeCreateCommand command) {
+        if ("SELL".equalsIgnoreCase(order.getType())) {
+            if (hasSellerAccountInput(command)) {
+                return findOrCreateSellerAccount(seller, command);
+            }
+            FiatAccount account = order.getFiatAccount();
+            if (account == null) {
+                throw new ApplicationException(ErrorCode.SELLER_PAYMENT_METHOD_REQUIRED);
+            }
+            return account;
+        }
+
+        return findOrCreateSellerAccount(seller, command);
+    }
+
+    private FiatAccount findOrCreateSellerAccount(User seller, TradeCreateCommand command) {
+        if (!hasSellerAccountInput(command)) {
+            throw new ApplicationException(ErrorCode.SELLER_PAYMENT_METHOD_REQUIRED);
+        }
+
+        User sellerRef = entityManager.getReference(User.class, seller.getId());
+        return fiatAccountRepository.findByUserAndBankNameAndAccountNumberAndAccountHolder(
+                        sellerRef,
+                        command.getBankName(),
+                        command.getAccountNumber(),
+                        command.getAccountHolder())
+                .map(account -> updateSellerAccount(account, command))
+                .orElseGet(() -> createSellerAccount(sellerRef, command));
+    }
+
+    private FiatAccount updateSellerAccount(FiatAccount account, TradeCreateCommand command) {
+        account.setBranch(command.getBranch());
+        account.setPaymentType(command.getPaymentType());
+        return fiatAccountRepository.save(account);
+    }
+
+    private FiatAccount createSellerAccount(User seller, TradeCreateCommand command) {
+        FiatAccount account = new FiatAccount();
+        account.setUser(seller);
+        account.setBankName(command.getBankName());
+        account.setAccountNumber(command.getAccountNumber());
+        account.setAccountHolder(command.getAccountHolder());
+        account.setBranch(command.getBranch());
+        account.setPaymentType(command.getPaymentType());
+        return fiatAccountRepository.save(account);
+    }
+
+    private boolean hasSellerAccountInput(TradeCreateCommand command) {
+        return isNotBlank(command.getBankName())
+                && isNotBlank(command.getAccountNumber())
+                && isNotBlank(command.getAccountHolder())
+                && isNotBlank(command.getPaymentType());
+    }
+
+    private boolean isNotBlank(String value) {
+        return value != null && !value.isBlank();
     }
     @Override
     @Transactional
@@ -177,9 +258,11 @@ public class TradeServiceImpl implements TradeService {
 
     private User getCurrentUser() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
-        User u = new User();
-        u.setId(Long.valueOf(userId));
-        return u;
+        try {
+            return entityManager.getReference(User.class, Long.valueOf(userId));
+        } catch (EntityNotFoundException ex) {
+            throw new ApplicationException(ErrorCode.USER_NOT_FOUND);
+        }
     }
 
     @Override
@@ -296,13 +379,14 @@ public class TradeServiceImpl implements TradeService {
         r.setRole("SELLER");
         }
 
-        FiatAccount fa = t.getOrder().getFiatAccount();
-        if (fa != null) {
-        r.setBankName(fa.getBankName());
-        r.setAccountNumber(fa.getAccountNumber());
-        r.setAccountHolder(fa.getAccountHolder());
-    
+        if (t.getSellerFiatAccount() != null) {
+            r.setSellerFiatAccountId(t.getSellerFiatAccount().getId());
         }
+        r.setBankName(t.getSellerBankName());
+        r.setAccountNumber(t.getSellerAccountNumber());
+        r.setAccountHolder(t.getSellerAccountHolder());
+        r.setBankBranch(t.getSellerBankBranch());
+        r.setPaymentType(t.getSellerPaymentType());
 
         boolean canCancel = t.getStatus() == TradeStatus.PENDING;
          r.setCanCancel(canCancel);
