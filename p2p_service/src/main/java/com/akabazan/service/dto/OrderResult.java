@@ -19,6 +19,7 @@ public class OrderResult {
 
     private Double availableAmount;
     private LocalDateTime expireAt;
+    private LocalDateTime createdAt;
 
     // flatten từ fiatAccount và user
     private Long fiatAccountId;
@@ -28,6 +29,12 @@ public class OrderResult {
     private String bankAccount;
     private String accountHolder;
     private String userName;
+    private String paymentType;
+    private String bankBranch;
+
+    private Long tradeCount = 0L;
+    private Long completedTradeCount = 0L;
+    private Double completionRate = 0.0;
 
     public String getUserName() {
         return userName;
@@ -143,6 +150,14 @@ public class OrderResult {
         this.expireAt = expireAt;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public Long getFiatAccountId() {
         return fiatAccountId;
     }
@@ -183,11 +198,51 @@ public class OrderResult {
         this.accountHolder = accountHolder;
     }
 
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public String getBankBranch() {
+        return bankBranch;
+    }
+
+    public void setBankBranch(String bankBranch) {
+        this.bankBranch = bankBranch;
+    }
+
     public List<TradeResult> getTrades() {
         return trades;
     }
 
     public void setTrades(List<TradeResult> trades) {
         this.trades = trades;
+    }
+
+    public Long getTradeCount() {
+        return tradeCount;
+    }
+
+    public void setTradeCount(Long tradeCount) {
+        this.tradeCount = tradeCount;
+    }
+
+    public Long getCompletedTradeCount() {
+        return completedTradeCount;
+    }
+
+    public void setCompletedTradeCount(Long completedTradeCount) {
+        this.completedTradeCount = completedTradeCount;
+    }
+
+    public Double getCompletionRate() {
+        return completionRate;
+    }
+
+    public void setCompletionRate(Double completionRate) {
+        this.completionRate = completionRate;
     }
 }

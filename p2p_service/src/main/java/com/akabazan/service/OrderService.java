@@ -12,7 +12,13 @@ public interface OrderService {
     OrderResult createOrder(OrderCreateCommand command);
 
     /** Lấy danh sách order theo filter */
-    Page<OrderResult> getOrders(String type, String token, String paymentMethod, String sortByPrice, int page, int size);
+    Page<OrderResult> getOrders(String type,
+                                String token,
+                                String paymentMethod,
+                                String sortByPrice,
+                                String fiat,
+                                int page,
+                                int size);
 
     List<OrderResult> getOrdersByUserToken(String token, String status , String type);
 

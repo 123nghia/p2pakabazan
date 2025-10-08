@@ -9,6 +9,7 @@ public enum ErrorCode {
     INSUFFICIENT_BALANCE("WALLET_001", "Insufficient balance"),
     ORDER_NOT_FOUND("ORDER_001", "Order not found"),
     ORDER_CLOSED("ORDER_002", "Order is closed"),
+    ORDER_HAS_TRADE("ORDER_004", "Order has existing trades"),
     TRADE_NOT_FOUND("TRADE_001", "Trade not found"),
     INVALID_TRADE_STATUS("TRADE_002", "Invalid trade status"),
     AMOUNT_OUT_OF_LIMIT("ORDER_003", "Amount out of limits"),
@@ -19,7 +20,9 @@ public enum ErrorCode {
     WALLET_NOT_FOUND("WALLET_001", "wallet is not found"),
     INVALID_ORDER_TYPE("ORDER_TYPE_001", "order type is not found"),
     FORBIDDEN("AUTH_002", "Access denied"),
-    NOTIFICATION_NOT_FOUND("NOTIFICATION_001", "Notification not found"); 
+    NOTIFICATION_NOT_FOUND("NOTIFICATION_001", "Notification not found"),
+    INVALID_CURRENCY_TYPE("CURRENCY_001", "Currency type is invalid"),
+    INVALID_PAYMENT_METHOD_TYPE("PAYMENT_METHOD_001", "Payment method type is invalid");
    
    
 

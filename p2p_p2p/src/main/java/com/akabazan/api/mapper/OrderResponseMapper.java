@@ -30,12 +30,18 @@ public final class OrderResponseMapper {
         response.setPriceMode(result.getPriceMode());
         response.setAvailableAmount(result.getAvailableAmount());
         response.setExpireAt(result.getExpireAt());
+        response.setCreatedAt(result.getCreatedAt());
         response.setFiatAccountId(result.getFiatAccountId());
         response.setUserId(result.getUserId());
         response.setBankName(result.getBankName());
         response.setBankAccount(result.getBankAccount());
         response.setAccountHolder(result.getAccountHolder());
-     response.setUserName(result.getUserName());
+        response.setPaymentType(result.getPaymentType());
+        response.setBankBranch(result.getBankBranch());
+        response.setTradeCount(result.getTradeCount());
+        response.setCompletedTradeCount(result.getCompletedTradeCount());
+        response.setCompletionRate(result.getCompletionRate());
+        response.setUserName(result.getUserName());
         List<TradeResult> trades = result.getTrades();
         if (trades != null) {
             List<TradeResponse> tradeResponses = trades.stream()

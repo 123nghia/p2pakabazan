@@ -49,6 +49,7 @@ public class MarketController extends BaseController {
                 request.getToken(),
                 request.getPaymentMethod(),
                 request.getSortByPrice(),
+                request.getFiat(),
                 request.getPageOrDefault(),
                 request.getSizeOrDefault());
         

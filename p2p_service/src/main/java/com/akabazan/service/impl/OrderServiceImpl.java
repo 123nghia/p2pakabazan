@@ -55,7 +55,13 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Page<OrderResult> getOrders(String type, String token, String paymentMethod, String sortByPrice, int page, int size) {
+    public Page<OrderResult> getOrders(String type,
+                                       String token,
+                                       String paymentMethod,
+                                       String sortByPrice,
+                                       String fiat,
+                                       int page,
+                                       int size) {
         String userAction = type; // hành động người dùng (mua hay bán)
         String oppositeOrderType = "SELL";
 
@@ -65,7 +71,13 @@ public class OrderServiceImpl implements OrderService {
         oppositeOrderType = "BUY";
         }
 
-        return getOrdersQuery.get(oppositeOrderType, token, paymentMethod, sortByPrice, page, size);
+        return getOrdersQuery.get(oppositeOrderType,
+                token,
+                paymentMethod,
+                sortByPrice,
+                fiat,
+                page,
+                size);
     }
 
     @Override

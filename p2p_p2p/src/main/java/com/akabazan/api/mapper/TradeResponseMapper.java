@@ -29,6 +29,7 @@ public final class TradeResponseMapper {
         response.setFiat(result.getFiat());
         response.setRole(result.getRole());
         response.setCanCancel(result.isCanCancel());
+        response.setCounterparty(result.getCounterparty());
         return response;
     }
 }

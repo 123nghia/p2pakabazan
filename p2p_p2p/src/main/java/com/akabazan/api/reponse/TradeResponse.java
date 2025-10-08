@@ -13,6 +13,7 @@ public class TradeResponse {
     private String tradeCode;
     private String Fiat;
     private String Token;
+    private String Counterparty;
 
     private boolean canCancel;
 
@@ -47,6 +48,14 @@ public void setCanCancel(boolean canCancel) {
 
     public void setFiat(String fiat) {
         Fiat = fiat;
+    }
+
+    public String getCounterparty() {
+        return Counterparty;
+    }
+
+    public void setCounterparty(String partnerUserName) {
+        this.Counterparty = partnerUserName;
     }
 
      private double price;

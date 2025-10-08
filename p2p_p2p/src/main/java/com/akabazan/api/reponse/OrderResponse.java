@@ -18,6 +18,7 @@ public class OrderResponse {
     private String priceMode;
     private Double availableAmount;
     private LocalDateTime expireAt;
+    private LocalDateTime createdAt;
     private Long fiatAccountId;
     private Long userId;
     private String userName;
@@ -25,6 +26,11 @@ public class OrderResponse {
     private String bankAccount;
     private String accountHolder;
     private List<TradeResponse> trades;
+    private String paymentType;
+    private String bankBranch;
+    private Long tradeCount = 0L;
+    private Long completedTradeCount = 0L;
+    private Double completionRate = 0.0;
 
 
     public Long getId() {
@@ -139,6 +145,14 @@ public class OrderResponse {
         this.expireAt = expireAt;
     }
 
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     public Long getFiatAccountId() {
         return fiatAccountId;
     }
@@ -185,6 +199,46 @@ public class OrderResponse {
 
     public void setTrades(List<TradeResponse> trades) {
         this.trades = trades;
+    }
+
+    public String getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(String paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public String getBankBranch() {
+        return bankBranch;
+    }
+
+    public void setBankBranch(String bankBranch) {
+        this.bankBranch = bankBranch;
+    }
+
+    public Long getTradeCount() {
+        return tradeCount;
+    }
+
+    public void setTradeCount(Long tradeCount) {
+        this.tradeCount = tradeCount;
+    }
+
+    public Long getCompletedTradeCount() {
+        return completedTradeCount;
+    }
+
+    public void setCompletedTradeCount(Long completedTradeCount) {
+        this.completedTradeCount = completedTradeCount;
+    }
+
+    public Double getCompletionRate() {
+        return completionRate;
+    }
+
+    public void setCompletionRate(Double completionRate) {
+        this.completionRate = completionRate;
     }
 
   

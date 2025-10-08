@@ -245,8 +245,10 @@ public class TradeServiceImpl implements TradeService {
                 // ✅ Thêm vai trò dựa trên userId hiện tại
                 if (t.getBuyer().getId().equals(userId)) {
                     r.setRole("BUYER");
+                    r.setCounterparty(t.getSeller().getEmail());
                 } else if (t.getSeller().getId().equals(userId)) {
                     r.setRole("SELLER");
+                    r.setCounterparty(t.getBuyer().getEmail());
                 }
                 boolean canCancel = t.getStatus() == TradeStatus.PENDING;
                 r.setCanCancel(canCancel);

@@ -12,6 +12,8 @@ public class TradeResult {
     private String SenderUserName;
     private String role;
 
+    private String Counterparty;
+
     private boolean canCancel;
 
 public boolean isCanCancel() {
@@ -28,6 +30,14 @@ public void setCanCancel(boolean canCancel) {
      public void setRole(String role) {
        this.role = role;
      }
+
+    public String getCounterparty() {
+        return Counterparty;
+    }
+
+    public void setCounterparty(String partnerUserName) {
+        this.Counterparty = partnerUserName;
+    }
 
     private String BuyerUserName;
     public String getBuyerUserName() {

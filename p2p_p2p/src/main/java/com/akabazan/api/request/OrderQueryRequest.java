@@ -8,6 +8,7 @@ public class OrderQueryRequest extends BaseQueryRequest {
     private String token;
     private String paymentMethod;
     private String sortByPrice;
+    private String fiat;
 
 
     public String getType() {
@@ -42,5 +43,12 @@ public class OrderQueryRequest extends BaseQueryRequest {
         this.sortByPrice = sortByPrice;
     }
 
-   
+    public String getFiat() {
+        return fiat;
+    }
+
+    public void setFiat(String fiat) {
+        this.fiat = fiat;
+    }
+
 }

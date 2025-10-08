@@ -28,6 +28,7 @@ public class OrderMapper {
         dto.setPriceMode(order.getPriceMode());
         dto.setAvailableAmount(order.getAvailableAmount());
         dto.setExpireAt(order.getExpireAt());
+        dto.setCreatedAt(order.getCreatedAt());
 
         if (order.getFiatAccount() != null) {
             dto.setFiatAccountId(order.getFiatAccount().getId());
@@ -35,11 +36,13 @@ public class OrderMapper {
             dto.setBankName(order.getFiatAccount().getBankName());
             dto.setBankAccount(order.getFiatAccount().getAccountNumber());
             dto.setAccountHolder(order.getFiatAccount().getAccountHolder());
+            dto.setPaymentType(order.getFiatAccount().getPaymentType());
+            dto.setBankBranch(order.getFiatAccount().getBranch());
             
         }
         if (order.getUser() != null) {
             dto.setUserId(order.getUser().getId());
-            dto.setUserName(order.getUser().getEmail());
+            dto.setUserName(extractDisplayName(order.getUser().getEmail()));
         }
 
 
@@ -63,6 +66,7 @@ public class OrderMapper {
         dto.setPriceMode(order.getPriceMode());
         dto.setAvailableAmount(order.getAvailableAmount());
         dto.setExpireAt(order.getExpireAt());
+        dto.setCreatedAt(order.getCreatedAt());
 
         if (order.getFiatAccount() != null) {
             dto.setFiatAccountId(order.getFiatAccount().getId());
@@ -70,10 +74,13 @@ public class OrderMapper {
             dto.setBankName(order.getFiatAccount().getBankName());
             dto.setBankAccount(order.getFiatAccount().getAccountNumber());
             dto.setAccountHolder(order.getFiatAccount().getAccountHolder());
+            dto.setPaymentType(order.getFiatAccount().getPaymentType());
+            dto.setBankBranch(order.getFiatAccount().getBranch());
             
         }
         if (order.getUser() != null) {
             dto.setUserId(order.getUser().getId());
+            dto.setUserName(extractDisplayName(order.getUser().getEmail()));
         }
 
         List<TradeResult> tradeResults = trades.stream()
@@ -83,6 +90,14 @@ public class OrderMapper {
 
 
         return dto;
+    }
+
+    private static String extractDisplayName(String email) {
+        if (email == null) {
+            return null;
+        }
+        int atIndex = email.indexOf('@');
+        return atIndex > 0 ? email.substring(0, atIndex) : email;
     }
 
     public static Order toEntity(OrderResult dto, FiatAccount fiatAccount, User user) {
