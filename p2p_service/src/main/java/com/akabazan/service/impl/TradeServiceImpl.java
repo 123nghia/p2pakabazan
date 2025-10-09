@@ -6,12 +6,14 @@ import com.akabazan.notification.service.NotificationService;
 import com.akabazan.repository.FiatAccountRepository;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
+import com.akabazan.repository.TradeChatRepository;
 import com.akabazan.repository.WalletRepository;
 import com.akabazan.repository.constant.OrderStatus;
 import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.FiatAccount;
 import com.akabazan.repository.entity.Order;
 import com.akabazan.repository.entity.Trade;
+import com.akabazan.repository.entity.TradeChat;
 import com.akabazan.repository.entity.User;
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.TradeService;
@@ -38,9 +40,12 @@ import java.util.stream.Collectors;
 @Service
 public class TradeServiceImpl implements TradeService {
 
+    private static final String INITIAL_CHAT_MESSAGE = "Khởi tạo chát, hai bên trao đôi với nhau";
+
     private final EntityManager entityManager;
     private final OrderRepository orderRepository;
     private final TradeRepository tradeRepository;
+    private final TradeChatRepository tradeChatRepository;
     private final WalletRepository walletRepository;
     private final SellerFundsManager sellerFundsManager;
     private final NotificationService notificationService;
@@ -50,6 +55,7 @@ public class TradeServiceImpl implements TradeService {
     public TradeServiceImpl(EntityManager entityManager,
             OrderRepository orderRepository,
             TradeRepository tradeRepository,
+            TradeChatRepository tradeChatRepository,
             WalletRepository walletRepository,
             SellerFundsManager sellerFundsManager,
             NotificationService  notificationService,
@@ -58,6 +64,7 @@ public class TradeServiceImpl implements TradeService {
         this.entityManager = entityManager;
         this.orderRepository = orderRepository;
         this.tradeRepository = tradeRepository;
+        this.tradeChatRepository = tradeChatRepository;
         this.walletRepository = walletRepository;
         this.sellerFundsManager = sellerFundsManager;
         this.notificationService = notificationService;
@@ -126,8 +133,9 @@ public class TradeServiceImpl implements TradeService {
         }
 
         // ✅ Lưu vào DB
-        tradeRepository.save(trade);
-        return TradeMapper.toResult(trade);
+        Trade savedTrade = tradeRepository.save(trade);
+        createInitialChat(savedTrade, actor.getId());
+        return TradeMapper.toResult(savedTrade);
     }
 
     private FiatAccount resolveSellerAccount(User seller, Order order, TradeCreateCommand command) {
@@ -196,6 +204,15 @@ public class TradeServiceImpl implements TradeService {
 
     private boolean isNotBlank(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private void createInitialChat(Trade trade, Long senderId) {
+        TradeChat chat = new TradeChat();
+        chat.setTrade(trade);
+        chat.setSenderId(senderId);
+        chat.setMessage(INITIAL_CHAT_MESSAGE);
+        chat.setTimestamp(LocalDateTime.now());
+        tradeChatRepository.save(chat);
     }
     @Override
     @Transactional
