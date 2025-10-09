@@ -29,6 +29,7 @@ public class OrderMapper {
         dto.setAvailableAmount(order.getAvailableAmount());
         dto.setExpireAt(order.getExpireAt());
         dto.setCreatedAt(order.getCreatedAt());
+        dto.setCanCancel(false);
 
         if (order.getFiatAccount() != null) {
             dto.setFiatAccountId(order.getFiatAccount().getId());
@@ -67,6 +68,7 @@ public class OrderMapper {
         dto.setAvailableAmount(order.getAvailableAmount());
         dto.setExpireAt(order.getExpireAt());
         dto.setCreatedAt(order.getCreatedAt());
+        dto.setCanCancel(false);
 
         if (order.getFiatAccount() != null) {
             dto.setFiatAccountId(order.getFiatAccount().getId());

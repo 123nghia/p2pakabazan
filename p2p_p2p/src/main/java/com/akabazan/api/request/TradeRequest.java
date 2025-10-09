@@ -8,6 +8,7 @@ public class TradeRequest {
     private String accountHolder;
     private String branch;
     private String paymentType;
+    private Long fiatAccountId;
 
     public String getType() {
         return type;
@@ -64,5 +65,13 @@ public class TradeRequest {
 
     public void setPaymentType(String paymentType) {
         this.paymentType = paymentType;
+    }
+
+    public Long getFiatAccountId() {
+        return fiatAccountId;
+    }
+
+    public void setFiatAccountId(Long fiatAccountId) {
+        this.fiatAccountId = fiatAccountId;
     }
 }

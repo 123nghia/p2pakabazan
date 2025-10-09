@@ -38,7 +38,14 @@ public class MarketController extends BaseController {
     }
 
     @GetMapping("/orders")
-    public ResponseEntity<BaseResponse<List<OrderResponse>>> getPublicBuyOrders(@ModelAttribute OrderQueryRequest request) {
+    public ResponseEntity<BaseResponse<List<OrderResponse>>> getPublicBuyOrders(@ModelAttribute OrderQueryRequest request) { 
+
+        String paymentMethod = request.getPaymentMethod();
+        if (paymentMethod != null && paymentMethod.trim().equalsIgnoreCase("all-payments")) {
+            request.setPaymentMethod(null);
+        }
+
+
         Page<OrderResult> orders = orderService.getOrders(
                 request.getType(),
                 request.getToken(),

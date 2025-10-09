@@ -1,0 +1,39 @@
+{
+    "status": "success",
+    "code": 200,
+    "message": "OK",
+    "result": [
+        {
+            "id": 96,
+            "type": "BUY",
+            "token": "USDT",
+            "amount": 100.0,
+            "price": 26622.0,
+            "fiat": "VND",
+            "minLimit": 1.0,
+            "maxLimit": 100.0,
+            "status": "OPEN",
+            "paymentMethod": "BANK_TRANSFER",
+            "priceMode": "FIXED",
+            "availableAmount": 50.0,
+            "expireAt": "2025-10-08T14:14:17.783428",
+            "createdAt": "2025-10-08T13:59:17.783688",
+            "fiatAccountId": 50,
+            "userId": 4,
+            "userName": "buyer",
+            "bankName": "1",
+            "bankAccount": "2",
+            "accountHolder": "3",
+            "trades": null,
+            "paymentType": "BANK_TRANSFER",
+            "bankBranch": null,
+            "tradeCount": 0,
+            "completedTradeCount": 0,
+            "completionRate": 0.0,
+            "canCancel": false
+        }
+    ],
+    "meta": null,
+    "links": null,
+    "errors": null
+}

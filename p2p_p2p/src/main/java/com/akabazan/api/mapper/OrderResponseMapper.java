@@ -42,6 +42,7 @@ public final class OrderResponseMapper {
         response.setCompletedTradeCount(result.getCompletedTradeCount());
         response.setCompletionRate(result.getCompletionRate());
         response.setUserName(result.getUserName());
+        response.setCanCancel(result.isCanCancel());
         List<TradeResult> trades = result.getTrades();
         if (trades != null) {
             List<TradeResponse> tradeResponses = trades.stream()

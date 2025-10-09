@@ -3,6 +3,9 @@ package com.akabazan.service.impl;
 import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.exception.ApplicationException;
 import com.akabazan.repository.OrderRepository;
+import com.akabazan.repository.TradeRepository;
+import com.akabazan.repository.constant.OrderStatus;
+import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.Order;
 import com.akabazan.repository.entity.User;
 import com.akabazan.service.CurrentUserService;
@@ -31,6 +34,7 @@ public class OrderServiceImpl implements OrderService {
     private final GetOrdersQuery getOrdersQuery;
     private final CurrentUserService currentUserService;
     private final OrderRepository orderRepository;
+    private final TradeRepository tradeRepository;
 
     public OrderServiceImpl(CreateOrderUseCase createOrderUseCase,
                             CancelOrderUseCase cancelOrderUseCase,
@@ -38,7 +42,8 @@ public class OrderServiceImpl implements OrderService {
                             ExpireOrdersUseCase expireOrdersUseCase,
                             GetOrdersQuery getOrdersQuery,
                             CurrentUserService  currentUserService,
-                            OrderRepository orderRepository
+                            OrderRepository orderRepository,
+                            TradeRepository tradeRepository
                             ) {
         this.createOrderUseCase = createOrderUseCase;
         this.cancelOrderUseCase = cancelOrderUseCase;
@@ -47,10 +52,13 @@ public class OrderServiceImpl implements OrderService {
         this.getOrdersQuery = getOrdersQuery;
         this.currentUserService = currentUserService;
         this.orderRepository = orderRepository;
+        this.tradeRepository = tradeRepository;
     }
 
     @Override
     public OrderResult createOrder(OrderCreateCommand command) {
+
+     
         return createOrderUseCase.create(command);
     }
 
@@ -87,8 +95,23 @@ public class OrderServiceImpl implements OrderService {
         Long userId = user.getId();
         List<Order> orders;
         orders = orderRepository.findOrdersByUserAndOptionalFilters(userId, status, type);
+        long totalTrades = tradeRepository.countByUserId(userId);
+        long completedTrades = tradeRepository.countByUserIdAndStatus(userId, TradeStatus.COMPLETED);
+        double completionRate = totalTrades == 0 ? 0.0 : (completedTrades * 100.0) / totalTrades;
+
         return orders.stream()
-                .map(OrderMapper::toResult)
+                .map(order -> {
+                    OrderResult dto = OrderMapper.toResult(order);
+                    boolean isOpen = OrderStatus.OPEN.name().equals(order.getStatus());
+                    boolean hasActiveTrades = tradeRepository.countByOrderIdAndStatusNotIn(
+                            order.getId(),
+                            List.of(TradeStatus.CANCELLED, TradeStatus.COMPLETED)) > 0;
+                    dto.setCanCancel(isOpen && !hasActiveTrades);
+                    dto.setTradeCount(totalTrades);
+                    dto.setCompletedTradeCount(completedTrades);
+                    dto.setCompletionRate(completionRate);
+                    return dto;
+                })
                 .toList();
     }
 

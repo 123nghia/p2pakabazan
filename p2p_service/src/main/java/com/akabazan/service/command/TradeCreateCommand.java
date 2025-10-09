@@ -10,6 +10,7 @@ public class TradeCreateCommand {
     private String accountHolder;
     private String branch;
     private String paymentType;
+    private Long fiatAccountId;
     
     public Long getOrderId() {
         return orderId;
@@ -73,5 +74,13 @@ public class TradeCreateCommand {
 
     public void setPaymentType(String paymentType) {
         this.paymentType = paymentType;
+    }
+
+    public Long getFiatAccountId() {
+        return fiatAccountId;
+    }
+
+    public void setFiatAccountId(Long fiatAccountId) {
+        this.fiatAccountId = fiatAccountId;
     }
 }

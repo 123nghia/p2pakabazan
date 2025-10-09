@@ -2,6 +2,7 @@ package com.akabazan.api.controller;
 
 import com.akabazan.api.mapper.TradeChatResponseMapper;
 import com.akabazan.api.reponse.TradeChatResponse;
+import com.akabazan.api.request.ChatRequest;
 import com.akabazan.service.TradeChatService;
 import com.akabazan.service.dto.TradeChatResult;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,8 @@ public class TradeChatController extends BaseController {
 
     @PostMapping
     public ResponseEntity<TradeChatResponse> sendMessage(@PathVariable Long tradeId,
-                                                    @RequestBody String message) {
-        TradeChatResult dto = tradeChatService.sendMessage(tradeId, message);
+                                                    @RequestBody ChatRequest req) {
+        TradeChatResult dto = tradeChatService.sendMessage(tradeId, req.getMessages());
         return ResponseEntity.ok(TradeChatResponseMapper.from(dto));
     }
 

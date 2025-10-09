@@ -131,6 +131,16 @@ public class TradeServiceImpl implements TradeService {
     }
 
     private FiatAccount resolveSellerAccount(User seller, Order order, TradeCreateCommand command) {
+        Long existingAccountId = command.getFiatAccountId();
+        if (existingAccountId != null) {
+            FiatAccount account = fiatAccountRepository.findById(existingAccountId)
+                    .orElseThrow(() -> new ApplicationException(ErrorCode.FIAT_ACCOUNT_NOT_FOUND));
+            if (!account.getUser().getId().equals(seller.getId())) {
+                throw new ApplicationException(ErrorCode.FORBIDDEN);
+            }
+            return account;
+        }
+
         if ("SELL".equalsIgnoreCase(order.getType())) {
             if (hasSellerAccountInput(command)) {
                 return findOrCreateSellerAccount(seller, command);
@@ -271,29 +281,36 @@ public class TradeServiceImpl implements TradeService {
         User currentUser = getCurrentUser();
 
         Trade trade = tradeRepository.findById(tradeId)
-                .orElseThrow(() -> new RuntimeException("Trade not found"));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
-        // Buyer hoặc Seller đều có quyền huỷ
-        if (!trade.getBuyer().getId().equals(currentUser.getId()) &&
-                !trade.getSeller().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("You are not allowed to cancel this trade");
+        String orderType = trade.getOrder().getType();
+          Long creatorId = "SELL".equalsIgnoreCase(orderType)
+            ? trade.getBuyer().getId() // người tạo order
+            : trade.getSeller().getId(); // người tạo order nếu là BUY
+
+        if (!creatorId.equals(currentUser.getId())) {
+            throw new ApplicationException(ErrorCode.FORBIDDEN);
         }
 
-        // Chỉ huỷ được khi đang PENDING
         if (trade.getStatus() != TradeStatus.PENDING) {
-            throw new RuntimeException("Trade cannot be canceled at this stage");
+            throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
         }
 
         double refundAmount = trade.getAmount();
 
-        // 1. Hoàn coin lại cho seller (unlock funds)
-        Wallet sellerWallet = walletRepository.findByUserIdAndToken(
-                trade.getSeller().getId(),
-                trade.getOrder().getToken()).orElseThrow(() -> new RuntimeException("Seller wallet not found"));
 
-        sellerWallet.setAvailableBalance(
+      if (currentUser.getId().equals(trade.getSeller().getId())) {
+                // 1. Hoàn coin lại cho seller (unlock funds)
+                Wallet sellerWallet = walletRepository.findByUserIdAndToken(
+                trade.getSeller().getId(),
+                trade.getOrder().getToken()).orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+
+                sellerWallet.setAvailableBalance(
                 sellerWallet.getAvailableBalance() + refundAmount);
-        walletRepository.save(sellerWallet);
+                walletRepository.save(sellerWallet);
+        }
+
+        
 
         // 2. Hoàn lại availableAmount trong order
         Order order = trade.getOrder();
@@ -323,21 +340,27 @@ public class TradeServiceImpl implements TradeService {
     public List<TradeResult> getTradesByUser(Long userId) {
         return tradeRepository.findByUser(userId)
                 .stream()
-               .map(t -> {
-                TradeResult r = TradeMapper.toResult(t);
-                // ✅ Thêm vai trò dựa trên userId hiện tại
-                if (t.getBuyer().getId().equals(userId)) {
-                    r.setRole("BUYER");
-                    r.setCounterparty(t.getSeller().getEmail());
-                } else if (t.getSeller().getId().equals(userId)) {
-                    r.setRole("SELLER");
-                    r.setCounterparty(t.getBuyer().getEmail());
-                }
-                boolean canCancel = t.getStatus() == TradeStatus.PENDING;
-                r.setCanCancel(canCancel);
+                .map(trade -> {
+                    TradeResult result = TradeMapper.toResult(trade);
+                    boolean isBuyer = trade.getBuyer().getId().equals(userId);
+                    boolean isSeller = trade.getSeller().getId().equals(userId);
+                    if (isBuyer) {
+                        result.setRole("BUYER");
+                        result.setCounterparty(trade.getSeller().getEmail());
+                    } else if (isSeller) {
+                        result.setRole("SELLER");
+                        result.setCounterparty(trade.getBuyer().getEmail());
+                    }
 
-                return r;
-            })
+                    String orderType = trade.getOrder().getType();
+                    Long creatorId = "SELL".equalsIgnoreCase(orderType)
+                            ? trade.getBuyer().getId()
+                            : trade.getSeller().getId();
+                    boolean canCancel = trade.getStatus() == TradeStatus.PENDING
+                            && creatorId.equals(userId);
+                    result.setCanCancel(canCancel);
+                    return result;
+                })
                 .collect(Collectors.toList());
     }
 

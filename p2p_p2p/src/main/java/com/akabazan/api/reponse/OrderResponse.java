@@ -31,6 +31,7 @@ public class OrderResponse {
     private Long tradeCount = 0L;
     private Long completedTradeCount = 0L;
     private Double completionRate = 0.0;
+    private boolean canCancel;
 
 
     public Long getId() {
@@ -239,6 +240,14 @@ public class OrderResponse {
 
     public void setCompletionRate(Double completionRate) {
         this.completionRate = completionRate;
+    }
+
+    public boolean isCanCancel() {
+        return canCancel;
+    }
+
+    public void setCanCancel(boolean canCancel) {
+        this.canCancel = canCancel;
     }
 
   
