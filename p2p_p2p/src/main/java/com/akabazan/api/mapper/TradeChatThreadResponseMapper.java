@@ -1,9 +1,8 @@
 package com.akabazan.api.mapper;
 
-import com.akabazan.api.reponse.TradeChatResponse;
 import com.akabazan.api.reponse.TradeChatThreadResponse;
-import com.akabazan.api.reponse.TradeResponse;
 import com.akabazan.service.dto.TradeChatThreadResult;
+import com.akabazan.service.dto.TradeResult;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,10 +16,18 @@ public final class TradeChatThreadResponseMapper {
             return null;
         }
         TradeChatThreadResponse response = new TradeChatThreadResponse();
-        TradeResponse trade = TradeResponseMapper.from(result.getTrade());
-        TradeChatResponse lastMessage = TradeChatResponseMapper.from(result.getLastMessage());
-        response.setTrade(trade);
-        response.setLastMessage(lastMessage);
+        TradeResult trade = result.getTrade();
+        if (trade != null) {
+            response.setTradeId(trade.getId());
+            response.setTradeCode(trade.getTradeCode());
+            response.setAmount(trade.getAmount());
+            response.setPrice(trade.getPrice());
+            response.setToken(trade.getToken());
+            response.setFiat(trade.getFiat());
+            response.setStatus(trade.getStatus());
+        }
+        response.setCounterpartyName(result.getCounterpartyName());
+        response.setLastMessage(TradeChatResponseMapper.from(result.getLastMessage()));
         return response;
     }
 

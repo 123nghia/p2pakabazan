@@ -4,6 +4,7 @@ public class TradeChatThreadResult {
 
     private TradeResult trade;
     private TradeChatResult lastMessage;
+    private String counterpartyName;
 
     public TradeResult getTrade() {
         return trade;
@@ -19,5 +20,13 @@ public class TradeChatThreadResult {
 
     public void setLastMessage(TradeChatResult lastMessage) {
         this.lastMessage = lastMessage;
+    }
+
+    public String getCounterpartyName() {
+        return counterpartyName;
+    }
+
+    public void setCounterpartyName(String counterpartyName) {
+        this.counterpartyName = counterpartyName;
     }
 }

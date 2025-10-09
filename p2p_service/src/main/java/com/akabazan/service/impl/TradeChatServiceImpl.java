@@ -6,6 +6,7 @@ import com.akabazan.repository.TradeChatRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.TradeChat;
+import com.akabazan.repository.entity.User;
 import com.akabazan.service.TradeChatService;
 import com.akabazan.service.dto.TradeChatResult;
 import com.akabazan.service.dto.TradeChatThreadResult;
@@ -51,10 +52,7 @@ public class TradeChatServiceImpl implements TradeChatService {
 
     @Override
     public List<TradeChatResult> getMessages(Long tradeId) {
-        return tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId)
-                .stream()
-                .map(TradeChatMapper::toResult)
-                .collect(Collectors.toList());
+        return mapChats(tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId));
     }
 
     @Override
@@ -82,6 +80,9 @@ public class TradeChatServiceImpl implements TradeChatService {
                     TradeChatThreadResult thread = new TradeChatThreadResult();
                     TradeResult tradeResult = TradeMapper.toResult(trade);
                     thread.setTrade(tradeResult);
+                    String counterpartyName = resolveCounterpartyName(trade, userId);
+                    tradeResult.setCounterparty(counterpartyName);
+                    thread.setCounterpartyName(counterpartyName);
                     thread.setLastMessage(lastMessages.get(trade.getId()));
                     return thread;
                 })
@@ -94,6 +95,39 @@ public class TradeChatServiceImpl implements TradeChatService {
                 .reversed());
 
         return threads;
+    }
+
+
+
+    private List<TradeChatResult> mapChats(List<TradeChat> chats) {
+        return chats.stream()
+                .map(TradeChatMapper::toResult)
+                .collect(Collectors.toList());
+    }
+
+    private String resolveCounterpartyName(Trade trade, Long currentUserId) {
+        if (trade == null) {
+            return null;
+        }
+        if (trade.getBuyer() != null && trade.getBuyer().getId().equals(currentUserId)) {
+            return extractDisplayName(trade.getSeller());
+        }
+        if (trade.getSeller() != null && trade.getSeller().getId().equals(currentUserId)) {
+            return extractDisplayName(trade.getBuyer());
+        }
+        return extractDisplayName(trade.getSeller() != null ? trade.getSeller() : trade.getBuyer());
+    }
+
+    private String extractDisplayName(User user) {
+        if (user == null) {
+            return null;
+        }
+        String email = user.getEmail();
+        if (email == null) {
+            return null;
+        }
+        int atIndex = email.indexOf('@');
+        return atIndex > 0 ? email.substring(0, atIndex) : email;
     }
 
     private Long getCurrentUserId() {
