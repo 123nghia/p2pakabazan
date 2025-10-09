@@ -21,12 +21,21 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
 
     Optional<Trade> findByTradeCode(String tradeCode);
 
-  @Query("""
+    @Query("""
     SELECT t FROM Trade t
     WHERE t.buyer.id = :userId OR t.seller.id = :userId
     ORDER BY t.createdAt DESC
 """)
     List<Trade> findByUser(@Param("userId") Long userId);
+
+    @Query("""
+            SELECT t FROM Trade t
+            WHERE (t.buyer.id = :userId OR t.seller.id = :userId)
+              AND EXISTS (
+                SELECT 1 FROM TradeChat chat WHERE chat.trade = t
+              )
+            """)
+    List<Trade> findTradesWithChatsByUser(@Param("userId") Long userId);
 
     @Query("""
             SELECT COUNT(t)

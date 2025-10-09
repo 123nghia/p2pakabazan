@@ -76,11 +76,11 @@
 </head>
 <body>
 <header>
-    <h1>P2P Trading API Demo</h1>
+    <h1>P2P Dispute Center</h1>
     <p>Configure environment, authenticate, and exercise core P2P flows with visual feedback.</p>
 </header>
 <main>
-    <section>
+    <section style ="display:none">
         <h2>01 · Environment</h2>
         <div class="settings">
             <div class="row">
@@ -93,7 +93,7 @@
             </div>
             <label>Token
                 <div class="row">
-                    <input id="tokenInput" type="text" placeholder="Paste JWT or login to populate" />
+                    <input id="tokenInput" type="text" placeholder="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc1OTk5MTYyNiwiZXhwIjoxNzYwMDc4MDI2fQ.Ie0YXlemj9B_bby4n3z673nxcL1QaC8XX-9sxcYPpxU" />
                     <button type="button" onclick="applyToken()">Use Token</button>
                     <button type="button" class="secondary" onclick="clearToken()">Clear</button>
                 </div>
@@ -105,28 +105,13 @@
         </div>
     </section>
 
-    <section>
-        <h2>02 · Authentication</h2>
-        <div class="row">
-            <form id="loginForm" onsubmit="handleLogin(event)" style="flex:1 1 320px;">
-                <label>Email<input name="email" type="email" placeholder="demo@akabazan.com" required /></label>
-                <label>Password<input name="password" type="password" placeholder="••••••" required /></label>
-                <button type="submit">Login</button>
-            </form>
-            <form id="registerForm" onsubmit="handleRegister(event)" style="flex:1 1 320px;">
-                <label>Email<input name="email" type="email" placeholder="new@akabazan.com" required /></label>
-                <label>Password<input name="password" type="password" placeholder="••••••" required /></label>
-                <button type="submit">Register</button>
-            </form>
-        </div>
-    </section>
 
-
+  
 
     
-
+   
     <section>
-        <h2>07 · Dispute Center</h2>
+        
         <form id="disputeListForm" onsubmit="handleListDisputes(event)">
             <div class="row">
                 <label>Status
@@ -156,7 +141,7 @@
         <div class="row" style="align-items:flex-end;">
             <form id="assignDisputeForm" onsubmit="handleAssignDispute(event)" style="flex:1 1 240px;">
                 <label>Dispute ID<input name="disputeId" type="number" min="1" required /></label>
-                <label>Admin ID<input name="adminId" type="number" min="1" placeholder="Leave empty for current admin" /></label>
+                <label>Admin ID<input value =10 name="adminId" type="number" min="1" placeholder="Leave empty for current admin" /></label>
                 <button type="submit">Assign</button>
             </form>
             <form id="resolveDisputeForm" onsubmit="handleResolveDispute(event)" style="flex:1 1 240px;">
