@@ -8,6 +8,7 @@ import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.TradeChatRepository;
 import com.akabazan.repository.WalletRepository;
+import com.akabazan.repository.constant.WalletTransactionType;
 import com.akabazan.repository.constant.OrderStatus;
 import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.FiatAccount;
@@ -17,6 +18,7 @@ import com.akabazan.repository.entity.TradeChat;
 import com.akabazan.repository.entity.User;
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.TradeService;
+import com.akabazan.service.WalletTransactionService;
 import com.akabazan.service.command.TradeCreateCommand;
 import com.akabazan.service.dto.TradeInfoResult;
 import com.akabazan.service.dto.TradeMapper;
@@ -50,6 +52,7 @@ public class TradeServiceImpl implements TradeService {
     private final SellerFundsManager sellerFundsManager;
     private final NotificationService notificationService;
     private final FiatAccountRepository fiatAccountRepository;
+    private final WalletTransactionService walletTransactionService;
        @Value("${app.trade.auto-cancel-minutes:15}")
     private long autoCancelMinutes;
     public TradeServiceImpl(EntityManager entityManager,
@@ -59,7 +62,8 @@ public class TradeServiceImpl implements TradeService {
             WalletRepository walletRepository,
             SellerFundsManager sellerFundsManager,
             NotificationService  notificationService,
-            FiatAccountRepository fiatAccountRepository
+            FiatAccountRepository fiatAccountRepository,
+            WalletTransactionService walletTransactionService
             ) {
         this.entityManager = entityManager;
         this.orderRepository = orderRepository;
@@ -69,6 +73,7 @@ public class TradeServiceImpl implements TradeService {
         this.sellerFundsManager = sellerFundsManager;
         this.notificationService = notificationService;
         this.fiatAccountRepository = fiatAccountRepository;
+        this.walletTransactionService = walletTransactionService;
     }
 
     @Override
@@ -252,16 +257,44 @@ public class TradeServiceImpl implements TradeService {
                     w.setAvailableBalance(0.0);
                     return walletRepository.save(w);
                 });
-        buyerWallet.setBalance(buyerWallet.getBalance() + trade.getAmount());
-        buyerWallet.setAvailableBalance(buyerWallet.getAvailableBalance() + trade.getAmount());
+        double buyerBalanceBefore = buyerWallet.getBalance();
+        double buyerAvailableBefore = buyerWallet.getAvailableBalance();
+        buyerWallet.setBalance(buyerBalanceBefore + trade.getAmount());
+        buyerWallet.setAvailableBalance(buyerAvailableBefore + trade.getAmount());
         walletRepository.save(buyerWallet);
+        walletTransactionService.record(
+                buyerWallet,
+                WalletTransactionType.CREDIT,
+                trade.getAmount(),
+                buyerBalanceBefore,
+                buyerWallet.getBalance(),
+                buyerAvailableBefore,
+                buyerWallet.getAvailableBalance(),
+                buyer.getId(),
+                "TRADE_COMPLETED",
+                trade.getId(),
+                "Buyer receives tokens");
         // Seller: trừ balance thực và cập nhật lại lượng lock
         Wallet sellerWallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
                 .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-        sellerWallet.setBalance(sellerWallet.getBalance() - trade.getAmount());
+        double sellerBalanceBefore = sellerWallet.getBalance();
+        double sellerAvailableBefore = sellerWallet.getAvailableBalance();
+        sellerWallet.setBalance(sellerBalanceBefore - trade.getAmount());
         // sellerWallet.setAvailableBalance(sellerWallet.getAvailableBalance() -
         // trade.getAmount());
         walletRepository.save(sellerWallet);
+        walletTransactionService.record(
+                sellerWallet,
+                WalletTransactionType.DEBIT,
+                trade.getAmount(),
+                sellerBalanceBefore,
+                sellerWallet.getBalance(),
+                sellerAvailableBefore,
+                sellerWallet.getAvailableBalance(),
+                seller.getId(),
+                "TRADE_COMPLETED",
+                trade.getId(),
+                "Seller releases tokens");
 
         // Hoàn tất trade
         trade.setStatus(TradeStatus.COMPLETED);
@@ -322,9 +355,22 @@ public class TradeServiceImpl implements TradeService {
                 trade.getSeller().getId(),
                 trade.getOrder().getToken()).orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
 
-                sellerWallet.setAvailableBalance(
-                sellerWallet.getAvailableBalance() + refundAmount);
+                double balanceBefore = sellerWallet.getBalance();
+                double availableBefore = sellerWallet.getAvailableBalance();
+                sellerWallet.setAvailableBalance(availableBefore + refundAmount);
                 walletRepository.save(sellerWallet);
+                walletTransactionService.record(
+                        sellerWallet,
+                        WalletTransactionType.UNLOCK,
+                        refundAmount,
+                        balanceBefore,
+                        sellerWallet.getBalance(),
+                        availableBefore,
+                        sellerWallet.getAvailableBalance(),
+                        currentUser.getId(),
+                        "TRADE_CANCELLED",
+                        trade.getId(),
+                        "Cancel trade and unlock funds");
         }
 
         
