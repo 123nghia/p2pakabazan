@@ -1,4 +1,4 @@
-spring.datasource.url=jdbc:postgresql://localhost:5432/p2p_trading_dev
+spring.datasource.url=jdbc:postgresql://localhost:5432/p2p_trading
 spring.datasource.username=postgres
 spring.datasource.password=123
 spring.jpa.hibernate.ddl-auto=none
@@ -6,7 +6,7 @@ spring.jpa.show-sql=true
 jwt.secret=mysupersecuresecretkey_which_is_at_least_32_chars
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 spring.mvc.servlet.path=/api
-server.port=9999
+#server.port=9999
 # Flyway
 spring.flyway.enabled=true
 spring.flyway.locations=classpath:db/migration

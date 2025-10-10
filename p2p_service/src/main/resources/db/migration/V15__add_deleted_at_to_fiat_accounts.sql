@@ -1,0 +1,1 @@
+ALTER TABLE fiat_accounts ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP NULL;

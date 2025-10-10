@@ -22,6 +22,8 @@ CREATE TABLE IF NOT EXISTS wallets (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token VARCHAR(20) NOT NULL,
+    address VARCHAR(255),
+    balance NUMERIC(30,8) NOT NULL DEFAULT 0,
     available_balance NUMERIC(30,8) NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT now(),
     updated_at TIMESTAMP NOT NULL DEFAULT now(),
