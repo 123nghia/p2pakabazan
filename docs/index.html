@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <title>P2P Trading Demo Console</title>
+    <title>P2P Trading Playground</title>
     <style>
         :root {
             font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -26,7 +26,8 @@
         main { padding: 0 36px 40px; display: grid; gap: 24px; }
         section { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px 26px; box-shadow: 0 18px 38px rgba(15, 23, 42, 0.08); display: grid; gap: 18px; }
         h2 { margin: 0; font-size: 19px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
-        form, .settings, .card-grid { display: grid; gap: 14px; }
+        form, .settings { display: grid; gap: 14px; }
+        .card-grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
         label { display: grid; gap: 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
         input, select, textarea { padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: #f8fafc; font-size: 14px; transition: border 0.2s, box-shadow 0.2s, background 0.2s; }
         textarea { min-height: 80px; resize: vertical; }
@@ -68,6 +69,7 @@
         .notification time { font-size: 12px; color: var(--muted); }
         .empty-state { padding: 18px; border-radius: 12px; background: rgba(37, 99, 235, 0.08); border: 1px dashed rgba(37, 99, 235, 0.45); color: var(--primary-dark); font-size: 13px; }
         .raw-output { background: #0f172a; color: #e2e8f0; border-radius: 14px; padding: 20px; font-family: "Roboto Mono", monospace; font-size: 13px; max-height: 45vh; overflow: auto; }
+        .note { font-size: 13px; color: var(--muted); }
         @media (max-width: 900px) {
             header, main { padding-left: 20px; padding-right: 20px; }
             .row > * { flex: 1 1 100%; }
@@ -76,11 +78,11 @@
 </head>
 <body>
 <header>
-    <h1>P2P Dispute Center</h1>
-    <p>Configure environment, authenticate, and exercise core P2P flows with visual feedback.</p>
+    <h1>P2P Trading Playground</h1>
+    <p>Đăng nhập, tạo order và tạo trade để kiểm thử nhanh các API P2P.</p>
 </header>
 <main>
-    <section >
+    <section>
         <h2>01 · Environment</h2>
         <div class="settings">
             <div class="row">
@@ -93,7 +95,7 @@
             </div>
             <label>Token
                 <div class="row">
-                    <input id="tokenInput" type="text" placeholder="eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMCIsImlhdCI6MTc1OTk5MTYyNiwiZXhwIjoxNzYwMDc4MDI2fQ.Ie0YXlemj9B_bby4n3z673nxcL1QaC8XX-9sxcYPpxU" />
+                    <input id="tokenInput" type="text" placeholder="JWT sẽ tự động fill sau khi login" />
                     <button type="button" onclick="applyToken()">Use Token</button>
                     <button type="button" class="secondary" onclick="clearToken()">Clear</button>
                 </div>
@@ -105,84 +107,246 @@
         </div>
     </section>
 
-
-  
-
-    
-   
     <section>
-        
-        <form id="disputeListForm" onsubmit="handleListDisputes(event)">
+        <h2>02 · Authentication</h2>
+        <p class="note">Nhập email/password hợp lệ. Token sẽ tự động được set và lưu cục bộ sau khi đăng nhập thành công.</p>
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="row">
+                <label>Email
+                    <input name="email" type="email" placeholder="user@example.com" required />
+                </label>
+                <label>Password
+                    <input name="password" type="password" placeholder="••••••" required />
+                </label>
+            </div>
+            <button type="submit">Login &amp; Lấy Token</button>
+        </form>
+        <div id="authResult" class="result-card">
+            <h3>Login Response</h3>
+            <div class="empty-state">Chưa đăng nhập.</div>
+        </div>
+    </section>
+
+    <section>
+        <h2>03 · Thông Tin Tài Khoản</h2>
+        <div class="row">
+            <button type="button" onclick="fetchCurrentUser()">Tải hồ sơ</button>
+            <button type="button" onclick="fetchWallets()">Ví của tôi</button>
+            <button type="button" onclick="fetchNotifications()">Thông báo</button>
+            <button type="button" onclick="fetchMyActivities()">Hoạt động</button>
+            <button type="button" onclick="fetchMyTrades()">Danh sách trade của tôi</button>
+        </div>
+        <div class="card-grid">
+            <div id="currentUserCard" class="result-card">
+                <h3>Current User</h3>
+                <div class="empty-state">Chưa tải dữ liệu.</div>
+            </div>
+            <div id="walletCard" class="result-card">
+                <h3>Wallet Balances</h3>
+                <div class="empty-state">Chưa tải dữ liệu.</div>
+            </div>
+            <div id="notificationsCard" class="result-card">
+                <h3>Notifications</h3>
+                <div class="empty-state">Chưa tải dữ liệu.</div>
+            </div>
+            <div id="activitiesCard" class="result-card">
+                <h3>Trades &amp; Orders</h3>
+                <div class="empty-state">Chưa tải dữ liệu.</div>
+            </div>
+            <div id="myTradesResult" class="result-card">
+                <h3>My Trades</h3>
+                <div class="empty-state">Chưa tải dữ liệu.</div>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <h2>04 · Orders</h2>
+        <form id="p2pOrdersForm" onsubmit="handleP2POrders(event)">
+            <div class="row">
+                <label>Type
+                    <select name="type">
+                        <option value="">All</option>
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </label>
+                <label>Token
+                    <select name="token">
+                        <option value="">All</option>
+                        <option value="USDT">USDT</option>
+                        <option value="BTC">BTC</option>
+                        <option value="ETH">ETH</option>
+                    </select>
+                </label>
+                <label>Fiat
+                    <select name="fiat">
+                        <option value="">All</option>
+                        <option value="VND">VND</option>
+                        <option value="USD">USD</option>
+                    </select>
+                </label>
+            </div>
             <div class="row">
                 <label>Status
-                    <select name="status">
-                        <option value="">All</option>
-                        <option value="OPEN">OPEN</option>
-                        <option value="IN_REVIEW">IN_REVIEW</option>
-                        <option value="RESOLVED">RESOLVED</option>
-                        <option value="REJECTED">REJECTED</option>
-                    </select>
+                    <input name="status" placeholder="OPEN" />
                 </label>
-                <label style="align-items:center;">
-                    Only Mine
-                    <input type="checkbox" name="onlyMine" value="true" />
+                <label>Page
+                    <input name="page" type="number" min="0" value="0" />
+                </label>
+                <label>Size
+                    <input name="size" type="number" min="1" value="10" />
                 </label>
             </div>
-            <button type="submit">List Disputes</button>
+            <button type="submit">List P2P Orders</button>
         </form>
-        <form id="openDisputeForm" onsubmit="handleOpenDispute(event)">
+        <div id="p2pOrdersResult" class="result-card">
+            <h3>P2P Results</h3>
+            <div class="empty-state">Chưa query.</div>
+        </div>
+
+        <form id="createOrderForm" onsubmit="handleCreateOrder(event)">
+            <h3>Tạo Order</h3>
             <div class="row">
-                <label>Trade ID<input name="tradeId" type="number" min="1" required /></label>
-                <label>Reason<input name="reason" required /></label>
-                <label>Evidence URL<input name="evidence" placeholder="Optional" /></label>
-            </div>
-            <button type="submit">Open Dispute</button>
-        </form>
-        <div class="row" style="align-items:flex-end;">
-            <form id="assignDisputeForm" onsubmit="handleAssignDispute(event)" style="flex:1 1 240px;">
-                <label>Dispute ID<input name="disputeId" type="number" min="1" required /></label>
-                <label>Admin ID<input value =10 name="adminId" type="number" min="1" placeholder="Leave empty for current admin" /></label>
-                <button type="submit">Assign</button>
-            </form>
-            <form id="resolveDisputeForm" onsubmit="handleResolveDispute(event)" style="flex:1 1 240px;">
-                <label>Dispute ID<input name="disputeId" type="number" min="1" required /></label>
-                <label>Outcome
-                    <select name="outcome" required>
-                        <option value="BUYER_FAVORED">BUYER_FAVORED</option>
-                        <option value="SELLER_FAVORED">SELLER_FAVORED</option>
-                        <option value="CANCELLED">CANCELLED</option>
+                <label>Type
+                    <select name="type" required>
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
                     </select>
                 </label>
-                <label>Note<textarea name="note" placeholder="Decision note"></textarea></label>
-                <button type="submit">Resolve</button>
-            </form>
-            <form id="rejectDisputeForm" onsubmit="handleRejectDispute(event)" style="flex:1 1 240px;">
-                <label>Dispute ID<input name="disputeId" type="number" min="1" required /></label>
-                <label>Note<textarea name="note" placeholder="Optional"></textarea></label>
-                <button type="submit" class="secondary">Reject</button>
-            </form>
-        </div>
-        <form id="disputesByTradeForm" onsubmit="handleDisputesByTrade(event)" class="row">
-            <label style="flex:1 1 200px;">Trade ID
-                <input name="tradeId" type="number" min="1" required />
-            </label>
-            <button type="submit">Disputes by Trade</button>
+                <label>Token
+                    <div id="tokenChips" class="chip-bar">
+                        <input type="hidden" name="token" value="USDT" />
+                        <span class="chip active" data-token="USDT">USDT</span>
+                        <span class="chip" data-token="BTC">BTC</span>
+                        <span class="chip" data-token="ETH">ETH</span>
+                    </div>
+                </label>
+                <label>Amount
+                    <input name="amount" type="number" min="0" step="0.00000001" value="100" required />
+                </label>
+            </div>
+            <div class="row">
+                <label>Price Mode
+                    <select id="priceModeSelect" name="priceMode">
+                        <option value="CUSTOM" selected>CUSTOM</option>
+                        <option value="MARKET">MARKET</option>
+                    </select>
+                </label>
+                <label>Price
+                    <input id="orderPrice" name="price" type="number" min="0" step="0.0001" value="25000" required />
+                </label>
+                <label>Fiat
+                    <div id="fiatChips" class="chip-bar">
+                        <input type="hidden" name="fiat" value="VND" />
+                        <span class="chip active" data-fiat="VND">VND</span>
+                        <span class="chip" data-fiat="USD">USD</span>
+                    </div>
+                </label>
+            </div>
+            <div class="row">
+                <label>Payment Method
+                    <input name="paymentMethod" placeholder="BANK" value="BANK" />
+                </label>
+                <label>Bank Name
+                    <input name="bankName" placeholder="Vietcombank" />
+                </label>
+                <label>Bank Account
+                    <input name="bankAccount" placeholder="0123456789" />
+                </label>
+                <label>Account Holder
+                    <input name="accountHolder" placeholder="Nguyen Van A" />
+                </label>
+            </div>
+            <div class="row">
+                <label>Min Limit
+                    <input name="minLimit" type="number" min="0" step="0.01" />
+                </label>
+                <label>Max Limit
+                    <input name="maxLimit" type="number" min="0" step="0.01" />
+                </label>
+            </div>
+            <button type="submit">Create Order</button>
         </form>
-        <div id="disputeListResult" class="result-card">
-            <h3>Dispute List</h3>
-            <div class="empty-state">No query yet.</div>
+        <div id="createOrderResult" class="result-card">
+            <h3>Order Created</h3>
+            <div class="empty-state">Chưa tạo order.</div>
         </div>
-        <div id="openDisputeResult" class="result-card">
-            <h3>Open Dispute</h3>
-            <div class="empty-state">No dispute opened yet.</div>
+    </section>
+
+    <section>
+        <h2>05 · Trades</h2>
+        <form id="createTradeForm" onsubmit="handleCreateTrade(event)">
+            <div class="row">
+                <label>Order ID
+                    <input name="orderId" type="number" min="1" required />
+                </label>
+                <label>Type
+                    <select name="type" required>
+                        <option value="BUY">BUY</option>
+                        <option value="SELL">SELL</option>
+                    </select>
+                </label>
+                <label>Amount
+                    <input name="amount" type="number" min="0" step="0.00000001" required />
+                </label>
+                <label>Fiat Account ID
+                    <input name="fiatAccountId" type="number" min="1" placeholder="Optional" />
+                </label>
+            </div>
+            <div class="row">
+                <label>Payment Type
+                    <input name="paymentType" placeholder="BANK" />
+                </label>
+                <label>Bank Name
+                    <input name="bankName" placeholder="Vietcombank" />
+                </label>
+                <label>Account Number
+                    <input name="accountNumber" placeholder="0123456789" />
+                </label>
+                <label>Account Holder
+                    <input name="accountHolder" placeholder="Nguyen Van B" />
+                </label>
+            </div>
+            <div class="row">
+                <label>Branch
+                    <input name="branch" placeholder="HCM" />
+                </label>
+                <label>Chat Message
+                    <input name="chatMessage" placeholder="Optional message" />
+                </label>
+            </div>
+            <button type="submit">Create Trade</button>
+        </form>
+        <div id="tradeCreateResult" class="result-card">
+            <h3>Trade Created</h3>
+            <div class="empty-state">Chưa tạo trade.</div>
         </div>
-        <div id="disputeActionResult" class="result-card">
-            <h3>Dispute Action</h3>
-            <div class="empty-state">No action taken.</div>
+
+        <div class="row" style="align-items:flex-end;">
+            <label style="flex:1 1 180px;">Trade ID
+                <input id="tradeActionId" type="number" min="1" placeholder="Nhập trade id" />
+            </label>
+            <button type="button" onclick="performTradeAction('confirm-payment')">Confirm Payment</button>
+            <button type="button" onclick="performTradeAction('confirm-received')">Confirm Received</button>
+            <button type="button" class="secondary" onclick="performTradeAction('cancel')">Cancel Trade</button>
         </div>
-        <div id="disputesByTradeResult" class="result-card">
-            <h3>Disputes for Trade</h3>
-            <div class="empty-state">No lookup yet.</div>
+        <div id="tradeActionResult" class="result-card">
+            <h3>Trade Action</h3>
+            <div class="empty-state">Chưa thao tác.</div>
+        </div>
+
+        <form id="tradesByOrderForm" onsubmit="handleTradesByOrder(event)">
+            <div class="row">
+                <label>Order ID
+                    <input name="orderId" type="number" min="1" required />
+                </label>
+                <button type="submit">List Trades by Order</button>
+            </div>
+        </form>
+        <div id="tradesByOrderResult" class="result-card">
+            <h3>Trades by Order</h3>
+            <div class="empty-state">Chưa query.</div>
         </div>
     </section>
 
@@ -205,7 +369,7 @@
     const activeTokenEl = document.getElementById('activeToken');
     const rawOutput = document.getElementById('rawOutput');
     const priceModeSelect = document.getElementById('priceModeSelect');
-    const priceInput = document.querySelector('input[name="price"]');
+    const priceInput = document.querySelector('#createOrderForm input[name="price"]');
 
     function applyBaseUrl() {
         state.baseUrl = baseUrlInput.value.trim().replace(/\/$/, '') || 'http://localhost:8080';
@@ -234,6 +398,15 @@
         state.token = token || null;
         activeTokenEl.textContent = state.token || '(none)';
         tokenInput.value = state.token || '';
+        try {
+            if (state.token) {
+                localStorage.setItem('p2p-demo-token', state.token);
+            } else {
+                localStorage.removeItem('p2p-demo-token');
+            }
+        } catch (_) {
+            // ignore storage errors in non-browser environments
+        }
     }
 
     function applyToken() {
@@ -515,58 +688,21 @@
         container.appendChild(table);
     }
 
-    function renderDisputes(response, containerId, title) {
-        const container = document.getElementById(containerId);
-        container.innerHTML = `<h3>${title}</h3>`;
-        renderResponseInfo(container, response);
-        const data = unwrapResult(response);
-        if (!Array.isArray(data) || data.length === 0) {
-            container.innerHTML += '<div class="empty-state">No disputes found.</div>';
-            return;
-        }
-        const table = document.createElement('table');
-        table.innerHTML = '<thead><tr><th>ID</th><th>Trade</th><th>Status</th><th>Outcome</th><th>Reason</th><th>Admin</th><th>Updated</th></tr></thead>';
-        const tbody = document.createElement('tbody');
-        data.forEach(dispute => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${dispute.id ?? ''}</td>
-                <td>${dispute.tradeId ?? ''}</td>
-                <td><span class="badge ${dispute.status ?? ''}">${dispute.status ?? ''}</span></td>
-                <td>${dispute.resolutionOutcome ?? '-'}</td>
-                <td>${dispute.reason ?? ''}</td>
-                <td>${dispute.assignedAdminEmail ?? '-'}</td>
-                <td>${formatDate(dispute.updatedAt)}</td>`;
-            tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-        container.appendChild(table);
-    }
-
     async function handleLogin(event) {
         event.preventDefault();
         const payload = formToJson(event.target);
         try {
             const data = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(payload) });
-            setToken(data.token);
-            renderJSON('currentUserCard', 'Login Response', data);
+            const result = unwrapResult(data);
+            if (result && result.token) {
+                setToken(result.token);
+            }
+            renderJSON('authResult', 'Login Response', data);
             log('Login successful.', data);
+            await fetchCurrentUser();
         } catch (error) {
-            renderJSON('currentUserCard', 'Login Failed', error);
+            renderJSON('authResult', 'Login Failed', error);
             log('Login failed', error);
-        }
-    }
-
-    async function handleRegister(event) {
-        event.preventDefault();
-        const payload = formToJson(event.target);
-        try {
-            const data = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(payload) });
-            renderJSON('currentUserCard', 'Registration Response', data);
-            log('Registration successful.', data);
-        } catch (error) {
-            renderJSON('currentUserCard', 'Registration Failed', error);
-            log('Registration failed', error);
         }
     }
 
@@ -581,20 +717,6 @@
         } catch (error) {
             renderJSON('p2pOrdersResult', 'Error', error);
             log('Failed to fetch P2P orders', error);
-        }
-    }
-
-    async function handleMarketOrders(event) {
-        event.preventDefault();
-        const payload = formToJson(event.target);
-        const query = buildQuery(payload);
-        try {
-            const data = await apiFetch(`/market/orders${query}`);
-            renderOrders('marketOrdersResult', data);
-            log('Market orders fetched.', data);
-        } catch (error) {
-            renderJSON('marketOrdersResult', 'Error', error);
-            log('Failed to fetch market orders', error);
         }
     }
 
@@ -655,6 +777,17 @@
         }
     }
 
+    async function fetchMyTrades() {
+        try {
+            const data = await apiFetch('/p2p/trades/me');
+            renderTradesList(data, 'myTradesResult', 'My Trades');
+            log('Fetched my trades.', data);
+        } catch (error) {
+            renderJSON('myTradesResult', 'Error', error);
+            log('Failed to fetch my trades', error);
+        }
+    }
+
     async function handleCreateTrade(event) {
         event.preventDefault();
         const payload = formToJson(event.target);
@@ -709,99 +842,11 @@
         }
     }
 
-    async function handleListDisputes(event) {
-        event.preventDefault();
-        const payload = formToJson(event.target);
-        const query = buildQuery(payload);
-        try {
-            const data = await apiFetch(`/p2p/disputes${query}`);
-            renderDisputes(data, 'disputeListResult', 'Dispute List');
-            log('Fetched disputes.', data);
-        } catch (error) {
-            renderJSON('disputeListResult', 'Error', error);
-            log('Failed to fetch disputes', error);
-        }
-    }
-
-    async function handleOpenDispute(event) {
-        event.preventDefault();
-        const payload = formToJson(event.target);
-        const { tradeId, ...queryParams } = payload;
-        const query = buildQuery(queryParams);
-        try {
-            const data = await apiFetch(`/p2p/trades/${tradeId}/dispute${query}`, { method: 'POST' });
-            renderJSON('openDisputeResult', 'Dispute Opened', data);
-            log('Dispute opened.', data);
-        } catch (error) {
-            renderJSON('openDisputeResult', 'Error', error);
-            log('Failed to open dispute', error);
-        }
-    }
-
-    async function handleAssignDispute(event) {
-        event.preventDefault();
-        const { disputeId, adminId } = formToJson(event.target);
-        const options = { method: 'POST' };
-        if (adminId) options.body = JSON.stringify({ adminId });
-        try {
-            const data = await apiFetch(`/p2p/disputes/${disputeId}/assign`, options);
-            renderJSON('disputeActionResult', 'Dispute Assigned', data);
-            log('Dispute assignment completed.', data);
-        } catch (error) {
-            renderJSON('disputeActionResult', 'Error', error);
-            log('Failed to assign dispute', error);
-        }
-    }
-
-    async function handleResolveDispute(event) {
-        event.preventDefault();
-        const payload = formToJson(event.target);
-        const { disputeId, outcome, note } = payload;
-        try {
-            const data = await apiFetch(`/p2p/disputes/${disputeId}/resolve`, {
-                method: 'POST',
-                body: JSON.stringify({ outcome, note })
-            });
-            renderJSON('disputeActionResult', 'Dispute Resolved', data);
-            log('Dispute resolved.', data);
-        } catch (error) {
-            renderJSON('disputeActionResult', 'Error', error);
-            log('Failed to resolve dispute', error);
-        }
-    }
-
-    async function handleRejectDispute(event) {
-        event.preventDefault();
-        const payload = formToJson(event.target);
-        const { disputeId, note } = payload;
-        const options = { method: 'POST' };
-        if (note) options.body = JSON.stringify({ note });
-        try {
-            const data = await apiFetch(`/p2p/disputes/${disputeId}/reject`, options);
-            renderJSON('disputeActionResult', 'Dispute Rejected', data);
-            log('Dispute rejected.', data);
-        } catch (error) {
-            renderJSON('disputeActionResult', 'Error', error);
-            log('Failed to reject dispute', error);
-        }
-    }
-
-    async function handleDisputesByTrade(event) {
-        event.preventDefault();
-        const { tradeId } = formToJson(event.target);
-        try {
-            const data = await apiFetch(`/p2p/trades/${tradeId}/disputes`);
-            renderDisputes(data, 'disputesByTradeResult', `Disputes for Trade ${tradeId}`);
-            log('Fetched disputes for trade.', data);
-        } catch (error) {
-            renderJSON('disputesByTradeResult', 'Error', error);
-            log('Failed to fetch disputes for trade', error);
-        }
-    }
-
     function wireChipGroup(groupId, hiddenName) {
         const group = document.getElementById(groupId);
+        if (!group) return;
         const hiddenInput = group.querySelector(`input[name="${hiddenName}"]`);
+        if (!hiddenInput) return;
         group.addEventListener('click', (evt) => {
             const chip = evt.target.closest('.chip');
             if (!chip) return;
@@ -814,21 +859,28 @@
     wireChipGroup('tokenChips', 'token');
     wireChipGroup('fiatChips', 'fiat');
 
-    priceModeSelect.addEventListener('change', () => {
-        const isMarket = priceModeSelect.value === 'MARKET';
-        priceInput.disabled = isMarket;
-        priceInput.required = !isMarket;
-        if (isMarket) {
-            priceInput.value = '';
-            priceInput.placeholder = 'Auto pricing from market';
-        } else {
-            priceInput.placeholder = '';
-            if (!priceInput.value) priceInput.value = '25000';
-        }
-    });
+    if (priceModeSelect && priceInput) {
+        const togglePriceField = () => {
+            const isMarket = priceModeSelect.value === 'MARKET';
+            priceInput.disabled = isMarket;
+            priceInput.required = !isMarket;
+            if (isMarket) {
+                priceInput.value = '';
+                priceInput.placeholder = 'Auto pricing from market';
+            } else if (!priceInput.value) {
+                priceInput.placeholder = '';
+                priceInput.value = '25000';
+            }
+        };
+        priceModeSelect.addEventListener('change', togglePriceField);
+        togglePriceField();
+    }
 
     applyBaseUrl();
-    setToken(null);
+    const savedToken = (() => {
+        try { return localStorage.getItem('p2p-demo-token'); } catch (_) { return null; }
+    })();
+    setToken(savedToken);
 </script>
 </body>
 </html>

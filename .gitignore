@@ -34,6 +34,7 @@ Thumbs.db
 ### Spring Boot config (optional, nếu chứa secret) ###
 application-*.yml
 application-*.properties
+!p2p_p2p/src/main/resources/application-*.properties
 
 ### Docker / Deployment ###
 *.pid

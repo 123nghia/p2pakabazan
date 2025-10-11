@@ -46,19 +46,21 @@ Nền tảng backend hỗ trợ giao dịch tài sản số theo mô hình P2P. 
 - Maven 3.8+
 - PostgreSQL 14+ (tạo database `p2p_trading`)
 
-### Cấu hình local
-Sửa `p2p_p2p/src/main/resources/application.properties` hoặc export biến môi trường tương đương:
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/p2p_trading
-spring.datasource.username=postgres
-spring.datasource.password=123
-spring.jpa.hibernate.ddl-auto=none
-spring.jpa.show-sql=false
-spring.flyway.enabled=true
-spring.mvc.servlet.path=/api
-jwt.secret=mysupersecuresecretkey_which_is_at_least_32_chars
+### Cấu hình môi trường
+Ứng dụng dùng Spring Profiles và mặc định kích hoạt profile `local` (có thể override qua biến `SPRING_PROFILES_ACTIVE`).
+- `application-local.properties`: phục vụ phát triển trên máy cá nhân, có giá trị mặc định an toàn để khởi động nhanh.
+- `application-dev.properties`: dành cho môi trường dev/staging, đọc thông số từ biến môi trường (`DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET`...).
+- `application-prod.properties`: cấu hình production, siết chặt Flyway và tắt log SQL.
+
+Ví dụ export biến cho local:
+```bash
+export SPRING_PROFILES_ACTIVE=local
+export DB_URL=jdbc:postgresql://localhost:5432/p2p_trading_dev
+export DB_USERNAME=postgres
+export DB_PASSWORD=123
+export JWT_SECRET=mysupersecuresecretkey_which_is_at_least_32_chars
 ```
-> **Lưu ý:** đặt `ddl-auto=none` khi dùng Flyway để tránh xung đột schema.
+> **Lưu ý:** giữ `spring.jpa.hibernate.ddl-auto=none` để tránh xung đột với Flyway.
 
 ## 6. Cách chạy & luồng hoạt động
 ```bash
