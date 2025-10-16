@@ -7,7 +7,9 @@ import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.constant.OrderStatus;
 import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.Order;
+import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.User;
+import com.akabazan.repository.projection.OrderTradeStatsProjection;
 import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.OrderService;
 import com.akabazan.service.command.OrderCreateCommand;
@@ -19,7 +21,12 @@ import com.akabazan.service.order.usecase.CreateOrderUseCase;
 import com.akabazan.service.order.usecase.ExpireOrdersUseCase;
 import com.akabazan.service.order.usecase.GetOrdersQuery;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -65,7 +72,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<OrderResult> getOrders(String type,
                                        String token,
-                                       String paymentMethod,
+                                       List<String> paymentMethods,
                                        String sortByPrice,
                                        String fiat,
                                        int page,
@@ -81,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
 
         return getOrdersQuery.get(oppositeOrderType,
                 token,
-                paymentMethod,
+                paymentMethods,
                 sortByPrice,
                 fiat,
                 page,
@@ -95,18 +102,26 @@ public class OrderServiceImpl implements OrderService {
         Long userId = user.getId();
         List<Order> orders;
         orders = orderRepository.findOrdersByUserAndOptionalFilters(userId, status, type);
-        long totalTrades = tradeRepository.countByUserId(userId);
-        long completedTrades = tradeRepository.countByUserIdAndStatus(userId, TradeStatus.COMPLETED);
-        double completionRate = totalTrades == 0 ? 0.0 : (completedTrades * 100.0) / totalTrades;
+        List<Long> orderIds = orders.stream()
+                .map(Order::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        Map<Long, OrderStats> statsByOrder = loadOrderStats(orderIds);
+        Map<Long, List<Trade>> tradesByOrder = loadTradesByOrder(orderIds);
 
         return orders.stream()
                 .map(order -> {
-                    OrderResult dto = OrderMapper.toResult(order);
+                    List<Trade> trades = tradesByOrder.getOrDefault(order.getId(), Collections.emptyList());
+                    OrderResult dto = OrderMapper.toResult(order, trades);
                     boolean isOpen = OrderStatus.OPEN.name().equals(order.getStatus());
                     boolean hasActiveTrades = tradeRepository.countByOrderIdAndStatusNotIn(
                             order.getId(),
                             List.of(TradeStatus.CANCELLED, TradeStatus.COMPLETED)) > 0;
                     dto.setCanCancel(isOpen && !hasActiveTrades);
+                    OrderStats orderStats = statsByOrder.get(order.getId());
+                    long totalTrades = orderStats != null ? orderStats.totalTrades() : 0L;
+                    long completedTrades = orderStats != null ? orderStats.completedTrades() : 0L;
+                    double completionRate = orderStats != null ? orderStats.completionRate() : 0.0;
                     dto.setTradeCount(totalTrades);
                     dto.setCompletedTradeCount(completedTrades);
                     dto.setCompletionRate(completionRate);
@@ -129,5 +144,35 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void expireOrders() {
         expireOrdersUseCase.expire();
+    }
+
+    private Map<Long, OrderStats> loadOrderStats(List<Long> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            return Map.of();
+        }
+        List<OrderTradeStatsProjection> projections =
+                tradeRepository.findTradeStatsByOrderIds(orderIds, TradeStatus.COMPLETED);
+
+        Map<Long, OrderStats> stats = new HashMap<>();
+        for (OrderTradeStatsProjection projection : projections) {
+            long total = projection.getTotalTrades() != null ? projection.getTotalTrades() : 0L;
+            long completed = projection.getCompletedTrades() != null ? projection.getCompletedTrades() : 0L;
+            stats.put(projection.getOrderId(), new OrderStats(total, completed));
+        }
+        return stats;
+    }
+
+    private Map<Long, List<Trade>> loadTradesByOrder(List<Long> orderIds) {
+        if (orderIds == null || orderIds.isEmpty()) {
+            return Map.of();
+        }
+        return tradeRepository.findByOrderIds(orderIds).stream()
+                .collect(Collectors.groupingBy(trade -> trade.getOrder().getId()));
+    }
+
+    private record OrderStats(long totalTrades, long completedTrades) {
+        double completionRate() {
+            return totalTrades == 0 ? 0.0 : (completedTrades * 100.0) / totalTrades;
+        }
     }
 }

@@ -14,7 +14,7 @@ public interface OrderService {
     /** Lấy danh sách order theo filter */
     Page<OrderResult> getOrders(String type,
                                 String token,
-                                String paymentMethod,
+                                List<String> paymentMethods,
                                 String sortByPrice,
                                 String fiat,
                                 int page,

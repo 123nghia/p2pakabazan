@@ -21,8 +21,8 @@ public class OrderMapper {
         dto.setAmount(order.getAmount());
         dto.setPrice(order.getPrice());
         dto.setFiat(order.getFiat());
-        dto.setMinLimit(order.getMinLimit());
-        dto.setMaxLimit(order.getMaxLimit());
+        dto.setMinLimit(defaultDouble(order.getMinLimit()));
+        dto.setMaxLimit(defaultDouble(order.getMaxLimit()));
         dto.setStatus(order.getStatus());
         dto.setPaymentMethod(order.getPaymentMethod());
         dto.setPriceMode(order.getPriceMode());
@@ -60,8 +60,8 @@ public class OrderMapper {
         dto.setAmount(order.getAmount());
         dto.setPrice(order.getPrice());
         dto.setFiat(order.getFiat());
-        dto.setMinLimit(order.getMinLimit());
-        dto.setMaxLimit(order.getMaxLimit());
+        dto.setMinLimit(defaultDouble(order.getMinLimit()));
+        dto.setMaxLimit(defaultDouble(order.getMaxLimit()));
         dto.setStatus(order.getStatus());
         dto.setPaymentMethod(order.getPaymentMethod());
         dto.setPriceMode(order.getPriceMode());
@@ -92,6 +92,10 @@ public class OrderMapper {
 
 
         return dto;
+    }
+
+    private static double defaultDouble(Double value) {
+        return value != null ? value : 0.0;
     }
 
     private static String extractDisplayName(String email) {

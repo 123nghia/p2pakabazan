@@ -61,6 +61,10 @@ public class CreateOrderService implements CreateOrderUseCase {
             sellerFundsManager.lock(user, command.getToken(), command.getAmount());
         }
 
+        if (fiatAccount == null && (command.getPaymentMethod() == null || command.getPaymentMethod().isBlank())) {
+            throw new ApplicationException(ErrorCode.INVALID_FIAT_ACCOUNT_INPUT);
+        }
+
         Order savedOrder = orderRepository.save(buildOrder(command, user, orderType, fiatAccount));
         notificationService.notifyUser(user.getId(), NotificationType.ORDER_CREATED, orderType);
         return enrichWithFiatAccount(OrderMapper.toResult(savedOrder), fiatAccount);
@@ -90,24 +94,20 @@ public class CreateOrderService implements CreateOrderUseCase {
     }
 
     private FiatAccount resolveFiatAccount(User user, OrderCreateCommand command) {
-        return fiatAccountRepository
-                .findByUserAndBankNameAndAccountNumberAndAccountHolder(
-                        user,
-                        command.getBankName(),
-                        command.getBankAccount(),
-                        command.getAccountHolder()
-                )
-                .orElseGet(() -> {
-                    FiatAccount account = new FiatAccount();
-                    account.setUser(user);
-                    account.setBankName(command.getBankName());
-                    account.setAccountNumber(command.getBankAccount());
-                    account.setAccountHolder(command.getAccountHolder());
-                    account.setPaymentType(command.getPaymentMethod());
-                    return fiatAccountRepository.save(account);
-                });
-    }
+        Long accountId = command.getFiatAccountId();
+        if (accountId == null) {
+            return null;
+        }
 
+        FiatAccount account = fiatAccountRepository.findById(accountId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.FIAT_ACCOUNT_NOT_FOUND));
+
+        if (!account.getUser().getId().equals(user.getId())) {
+            throw new ApplicationException(ErrorCode.FORBIDDEN);
+        }
+
+        return account;
+    }
     private Order buildOrder(OrderCreateCommand command, User user, String orderType, FiatAccount fiatAccount) {
         Order order = new Order();
         order.setUser(user);
@@ -119,7 +119,11 @@ public class CreateOrderService implements CreateOrderUseCase {
         order.setFiat(command.getFiat());
         order.setMinLimit(command.getMinLimit());
         order.setMaxLimit(command.getMaxLimit());
-        order.setPaymentMethod(command.getPaymentMethod());
+        if (fiatAccount != null) {
+            order.setPaymentMethod(fiatAccount.getPaymentType());
+        } else {
+            order.setPaymentMethod(command.getPaymentMethod());
+        }
         if (command.getPriceMode() != null) {
             order.setPriceMode(command.getPriceMode());
         }
@@ -130,10 +134,12 @@ public class CreateOrderService implements CreateOrderUseCase {
     }
 
     private OrderResult enrichWithFiatAccount(OrderResult dto, FiatAccount fiatAccount) {
-        dto.setFiatAccountId(fiatAccount.getId());
-        dto.setBankName(fiatAccount.getBankName());
-        dto.setBankAccount(fiatAccount.getAccountNumber());
-        dto.setAccountHolder(fiatAccount.getAccountHolder());
+        if (fiatAccount != null) {
+            dto.setFiatAccountId(fiatAccount.getId());
+            dto.setBankName(fiatAccount.getBankName());
+            dto.setBankAccount(fiatAccount.getAccountNumber());
+            dto.setAccountHolder(fiatAccount.getAccountHolder());
+        }
         return dto;
     }
 

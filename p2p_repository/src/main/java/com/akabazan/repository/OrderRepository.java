@@ -14,15 +14,16 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("""
             SELECT o FROM Order o
             WHERE (:status IS NULL OR o.status = :status)
-              AND (:type IS NULL OR o.type = :type)
-              AND (:token IS NULL OR o.token = :token)
-              AND (:paymentMethod IS NULL OR o.paymentMethod = :paymentMethod)
-              AND (:fiat IS NULL OR o.fiat = :fiat)
+              AND (:type IS NULL OR UPPER(o.type) = :type)
+              AND (:token IS NULL OR UPPER(o.token) = :token)
+              AND (:paymentFilterEnabled = false OR UPPER(o.paymentMethod) IN :paymentMethods)
+              AND (:fiat IS NULL OR UPPER(o.fiat) = :fiat)
             """)
     Page<Order> searchOrders(@Param("status") String status,
                               @Param("type") String type,
                               @Param("token") String token,
-                              @Param("paymentMethod") String paymentMethod,
+                              @Param("paymentFilterEnabled") boolean paymentFilterEnabled,
+                              @Param("paymentMethods") List<String> paymentMethods,
                               @Param("fiat") String fiat,
                               Pageable pageable);
        

@@ -1,6 +1,9 @@
 package com.akabazan.api.request;
 
 import com.akabazan.common.dto.BaseQueryRequest;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class OrderQueryRequest extends BaseQueryRequest {
 
@@ -33,6 +36,18 @@ public class OrderQueryRequest extends BaseQueryRequest {
 
     public void setPaymentMethod(String paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public List<String> getPaymentMethods() {
+        if (paymentMethod == null || paymentMethod.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(paymentMethod.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(String::toUpperCase)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public String getSortByPrice() {

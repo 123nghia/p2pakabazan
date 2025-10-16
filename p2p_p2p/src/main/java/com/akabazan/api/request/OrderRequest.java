@@ -1,21 +1,41 @@
 package com.akabazan.api.request;
 
+import jakarta.validation.constraints.*;
+
 public class OrderRequest {
+    @NotBlank(message = "Order type is required")
+    @Pattern(regexp = "^(BUY|SELL)$", message = "Order type must be BUY or SELL")
     private String type;          // BUY / SELL
+    
+    @NotBlank(message = "Token is required")
     private String token;         // BTC, USDT, ETH
+    
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be positive")
     private Double amount;        // Số token
+    
+    @NotNull(message = "Price is required")
+    @Positive(message = "Price must be positive")
     private Double price;         // Giá 1 token theo fiat
+    
+    @NotBlank(message = "Fiat currency is required")
     private String fiat;          // Mã tiền pháp định (VD: VND, USD)
+    
+    @NotBlank(message = "Price mode is required")
+    @Pattern(regexp = "^(MARKET|CUSTOM)$", message = "Price mode must be MARKET or CUSTOM")
     private String priceMode;     // "MARKET" hoặc "CUSTOM"
 
-    // Fiat Account Info
-    private String paymentMethod; // BANK, MOMO, PAYPAL...
-    private String bankName;      // Tên ngân hàng hoặc ví (VD: Vietcombank, MoMo)
-    private String bankAccount;   // Số tài khoản hoặc số điện thoại ví
-    private String accountHolder; // Chủ tài khoản
+    @NotBlank(message = "Payment method is required")
+    private String paymentMethod;
+
+    @Positive(message = "Fiat account id must be positive")
+    private Long fiatAccountId;
 
     // Limit
+    @Positive(message = "Min limit must be positive")
     private Double minLimit;
+    
+    @Positive(message = "Max limit must be positive")
     private Double maxLimit;
 
     // ===== Getters & Setters =====
@@ -40,14 +60,8 @@ public class OrderRequest {
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
 
-    public String getBankName() { return bankName; }
-    public void setBankName(String bankName) { this.bankName = bankName; }
-
-    public String getBankAccount() { return bankAccount; }
-    public void setBankAccount(String bankAccount) { this.bankAccount = bankAccount; }
-
-    public String getAccountHolder() { return accountHolder; }
-    public void setAccountHolder(String accountHolder) { this.accountHolder = accountHolder; }
+    public Long getFiatAccountId() { return fiatAccountId; }
+    public void setFiatAccountId(Long fiatAccountId) { this.fiatAccountId = fiatAccountId; }
 
     public Double getMinLimit() { return minLimit; }
     public void setMinLimit(Double minLimit) { this.minLimit = minLimit; }

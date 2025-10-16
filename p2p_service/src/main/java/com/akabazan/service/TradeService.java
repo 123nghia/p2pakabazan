@@ -21,4 +21,6 @@ public interface TradeService {
     List<TradeResult> getTradesByUser(Long userId);
     
     TradeInfoResult getTradeInfo(Long tradeId);
+
+    int autoCancelExpiredTrades();
 }

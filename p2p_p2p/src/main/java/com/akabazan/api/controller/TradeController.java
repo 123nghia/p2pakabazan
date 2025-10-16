@@ -18,6 +18,7 @@ import com.akabazan.service.dto.TradeResult;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/p2p")
@@ -56,7 +57,7 @@ public class TradeController extends BaseController {
 
 
     @PostMapping("/trades")
-    public ResponseEntity < BaseResponse<TradeResponse>> createTrade(@RequestBody TradeRequest tradeRequest) {
+    public ResponseEntity < BaseResponse<TradeResponse>> createTrade(@Valid @RequestBody TradeRequest tradeRequest) {
         TradeCreateCommand command = TradeCommandMapper.toCommand(tradeRequest); // map từ API request sang Command
         TradeResult result = tradeService.createTrade(command);
         return ResponseFactory.ok(TradeResponseMapper.from(result));

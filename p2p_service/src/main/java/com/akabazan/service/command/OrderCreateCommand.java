@@ -7,13 +7,11 @@ public class OrderCreateCommand {
     private Double amount;
     private Double price;
     private String fiat;
-    private String paymentMethod;
     private Double minLimit;
     private Double maxLimit;
-    private String bankName;
-    private String bankAccount;
-    private String accountHolder;
     private String priceMode;
+    private String paymentMethod;
+    private Long fiatAccountId;
 
     public String getType() {
         return type;
@@ -55,14 +53,6 @@ public class OrderCreateCommand {
         this.fiat = fiat;
     }
 
-    public String getPaymentMethod() {
-        return paymentMethod;
-    }
-
-    public void setPaymentMethod(String paymentMethod) {
-        this.paymentMethod = paymentMethod;
-    }
-
     public Double getMinLimit() {
         return minLimit;
     }
@@ -79,35 +69,27 @@ public class OrderCreateCommand {
         this.maxLimit = maxLimit;
     }
 
-    public String getBankName() {
-        return bankName;
-    }
-
-    public void setBankName(String bankName) {
-        this.bankName = bankName;
-    }
-
-    public String getBankAccount() {
-        return bankAccount;
-    }
-
-    public void setBankAccount(String bankAccount) {
-        this.bankAccount = bankAccount;
-    }
-
-    public String getAccountHolder() {
-        return accountHolder;
-    }
-
-    public void setAccountHolder(String accountHolder) {
-        this.accountHolder = accountHolder;
-    }
-
     public String getPriceMode() {
         return priceMode;
     }
 
     public void setPriceMode(String priceMode) {
         this.priceMode = priceMode;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Long getFiatAccountId() {
+        return fiatAccountId;
+    }
+
+    public void setFiatAccountId(Long fiatAccountId) {
+        this.fiatAccountId = fiatAccountId;
     }
 }

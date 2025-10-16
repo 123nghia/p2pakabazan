@@ -16,11 +16,6 @@ public final class TradeCommandMapper {
             command.setAmount(request.getAmount());
         }
         command.setChatMessage(request.getChatMessage());
-        command.setBankName(request.getBankName());
-        command.setAccountNumber(request.getAccountNumber());
-        command.setAccountHolder(request.getAccountHolder());
-        command.setBranch(request.getBranch());
-        command.setPaymentType(request.getPaymentType());
         command.setFiatAccountId(request.getFiatAccountId());
 
         return command;

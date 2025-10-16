@@ -1,13 +1,15 @@
 package com.akabazan.api.request;
 
+import jakarta.validation.constraints.*;
+
 public class TradeRequest {
+    @NotNull(message = "Order ID is required")
+    @Positive(message = "Order ID must be positive")
     private Long orderId;
+    
     private String type;
-    private String bankName;
-    private String accountNumber;
-    private String accountHolder;
-    private String branch;
-    private String paymentType;
+    
+    @Positive(message = "Fiat account id must be positive")
     private Long fiatAccountId;
 
     public String getType() {
@@ -16,8 +18,12 @@ public class TradeRequest {
     public void setType(String type) {
         this.type = type;
     }
+    @NotNull(message = "Amount is required")
+    @Positive(message = "Amount must be positive")
     private Double amount;
+    
     // Optional: chat message on creation
+    @Size(max = 500, message = "Chat message cannot exceed 500 characters")
     private String chatMessage;
     // Getters & Setters
     public Long getOrderId() { return orderId; }
@@ -26,46 +32,6 @@ public class TradeRequest {
     public void setAmount(Double amount) { this.amount = amount; }
     public String getChatMessage() { return chatMessage; }
     public void setChatMessage(String chatMessage) { this.chatMessage = chatMessage; }
-
-    public String getBankName() {
-        return bankName;
-    }
-
-    public void setBankName(String bankName) {
-        this.bankName = bankName;
-    }
-
-    public String getAccountNumber() {
-        return accountNumber;
-    }
-
-    public void setAccountNumber(String accountNumber) {
-        this.accountNumber = accountNumber;
-    }
-
-    public String getAccountHolder() {
-        return accountHolder;
-    }
-
-    public void setAccountHolder(String accountHolder) {
-        this.accountHolder = accountHolder;
-    }
-
-    public String getBranch() {
-        return branch;
-    }
-
-    public void setBranch(String branch) {
-        this.branch = branch;
-    }
-
-    public String getPaymentType() {
-        return paymentType;
-    }
-
-    public void setPaymentType(String paymentType) {
-        this.paymentType = paymentType;
-    }
 
     public Long getFiatAccountId() {
         return fiatAccountId;

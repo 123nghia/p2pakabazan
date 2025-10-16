@@ -109,5 +109,5 @@ public class Order extends AbstractEntity {
 
 
     public String getPriceMode() { return priceMode; }
-public void setPriceMode(String priceMode) { this.priceMode = priceMode; }
+    public void setPriceMode(String priceMode) { this.priceMode = priceMode; }
 }

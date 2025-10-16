@@ -15,6 +15,7 @@ import java.math.RoundingMode;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/p2p")
 
@@ -27,7 +28,7 @@ public class P2PController extends BaseController {
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<BaseResponse<OrderResponse>> createOrder(@RequestBody OrderRequest req) {
+    public ResponseEntity<BaseResponse<OrderResponse>> createOrder(@Valid @RequestBody OrderRequest req) {
             
             OrderResult result = orderService.createOrder(OrderCommandMapper.toCommand(req));
             return ResponseFactory.ok(OrderResponseMapper.from(result));
@@ -35,22 +36,47 @@ public class P2PController extends BaseController {
 
 
     @GetMapping("/orders/me")
-    public ResponseEntity<BaseResponse<MyOrdersResponse>> getMyOrders(   
-            @ModelAttribute  OrderUserRequest  req
-    ) {
-        List<OrderResult> results = orderService.getOrdersByUserToken(req.gettoken(), req.getStatus(), req.getType());
+    public ResponseEntity<BaseResponse<MyOrdersResponse>> getMyOrders(@ModelAttribute OrderUserRequest req) {
+        List<OrderResult> results = orderService.getOrdersByUserToken(req.getToken(), req.getStatus(), req.getType());
+        MyOrdersResponse payload = buildMyOrdersResponse(results);
+        return ResponseFactory.ok(payload);
+    }
+
+    private MyOrdersResponse buildMyOrdersResponse(List<OrderResult> results) {
         List<OrderResponse> orders = OrderResponseMapper.fromList(results);
-        long totalTrades = results.isEmpty() ? 0L : results.get(0).getTradeCount();
-        double completionRateRaw = results.isEmpty() ? 0.0 : results.get(0).getCompletionRate();
-        double completionRate = BigDecimal.valueOf(completionRateRaw)
-                .setScale(2, RoundingMode.HALF_UP)
-                .doubleValue();
+        long totalTrades = calculateTotalTrades(results);
+        double completionRate = calculateCompletionRate(results);
 
         MyOrdersResponse payload = new MyOrdersResponse();
         payload.setOrders(orders);
         payload.setTotalTrades(totalTrades);
         payload.setCompletionRate(completionRate);
-        return ResponseFactory.ok(payload);
+        return payload;
+    }
+
+    private long calculateTotalTrades(List<OrderResult> results) {
+        return results.stream()
+                .mapToLong(OrderResult::getTradeCount)
+                .sum();
+    }
+
+    private double calculateCompletionRate(List<OrderResult> results) {
+        if (results.isEmpty()) {
+            return 0.0;
+        }
+        long totalTrades = results.stream()
+                .mapToLong(OrderResult::getTradeCount)
+                .sum();
+        if (totalTrades == 0L) {
+            return 0.0;
+        }
+        long completedTrades = results.stream()
+                .mapToLong(OrderResult::getCompletedTradeCount)
+                .sum();
+        double completionRateRaw = (completedTrades * 100.0) / totalTrades;
+        return BigDecimal.valueOf(completionRateRaw)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
 

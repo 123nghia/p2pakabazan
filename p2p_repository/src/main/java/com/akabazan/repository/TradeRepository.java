@@ -2,6 +2,8 @@ package com.akabazan.repository;
 
 import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.Trade;
+import com.akabazan.repository.projection.OrderTradeStatsProjection;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -21,11 +23,11 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
 
     Optional<Trade> findByTradeCode(String tradeCode);
 
-    @Query("""
-    SELECT t FROM Trade t
-    WHERE t.buyer.id = :userId OR t.seller.id = :userId
-    ORDER BY t.createdAt DESC
-""")
+  @Query("""
+  SELECT t FROM Trade t
+  WHERE t.buyer.id = :userId OR t.seller.id = :userId
+  ORDER BY t.createdAt DESC
+  """)
     List<Trade> findByUser(@Param("userId") Long userId);
 
     @Query("""
@@ -60,4 +62,30 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
               AND t.status = :status
             """)
     long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") TradeStatus status);
+
+    @Query("""
+            SELECT t FROM Trade t
+            WHERE t.status = :status
+              AND t.createdAt <= :threshold
+            """)
+    List<Trade> findByStatusAndCreatedAtBefore(@Param("status") TradeStatus status,
+                                               @Param("threshold") LocalDateTime threshold);
+
+    @Query("""
+            SELECT t FROM Trade t
+            WHERE t.order.id IN :orderIds
+            ORDER BY t.createdAt DESC
+            """)
+    List<Trade> findByOrderIds(@Param("orderIds") Collection<Long> orderIds);
+
+    @Query("""
+            SELECT t.order.id AS orderId,
+                   COUNT(t) AS totalTrades,
+                   SUM(CASE WHEN t.status = :completedStatus THEN 1 ELSE 0 END) AS completedTrades
+            FROM Trade t
+            WHERE t.order.id IN :orderIds
+            GROUP BY t.order.id
+            """)
+    List<OrderTradeStatsProjection> findTradeStatsByOrderIds(@Param("orderIds") Collection<Long> orderIds,
+                                                             @Param("completedStatus") TradeStatus completedStatus);
 }

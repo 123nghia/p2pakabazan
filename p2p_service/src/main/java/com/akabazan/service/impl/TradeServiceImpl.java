@@ -30,6 +30,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.LockModeType;
 import jakarta.transaction.Transactional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
 @Service
 public class TradeServiceImpl implements TradeService {
 
+    private static final Logger log = LoggerFactory.getLogger(TradeServiceImpl.class);
     private static final String INITIAL_CHAT_MESSAGE = "Khởi tạo chát, hai bên trao đôi với nhau";
 
     private final EntityManager entityManager;
@@ -53,7 +56,8 @@ public class TradeServiceImpl implements TradeService {
     private final NotificationService notificationService;
     private final FiatAccountRepository fiatAccountRepository;
     private final WalletTransactionService walletTransactionService;
-       @Value("${app.trade.auto-cancel-minutes:15}")
+    
+    @Value("${app.trade.auto-cancel-minutes:15}")
     private long autoCancelMinutes;
     public TradeServiceImpl(EntityManager entityManager,
             OrderRepository orderRepository,
@@ -79,55 +83,82 @@ public class TradeServiceImpl implements TradeService {
     @Override
     @Transactional
     public TradeResult createTrade(TradeCreateCommand command) {
+        log.info("Creating trade for order: {} with amount: {}", command.getOrderId(), command.getAmount());
+        
         User actor = getCurrentUser();
+        Order order = validateAndLockOrder(command.getOrderId());
+        validateTradeAmount(command, order);
+        
+        Trade trade = buildTrade(command, order, actor);
+        FiatAccount sellerAccount = resolveSellerAccount(trade.getSeller(), order, command);
+        setSellerAccountInfo(trade, sellerAccount);
+        
+        Trade savedTrade = tradeRepository.save(trade);
+        createInitialChat(savedTrade, actor.getId());
+        
+        log.info("Trade created successfully with ID: {} for order: {}", savedTrade.getId(), command.getOrderId());
+        return TradeMapper.toResult(savedTrade);
+    }
 
-        // Lock order tránh oversell
-        Order order = entityManager.find(Order.class, command.getOrderId(), LockModeType.PESSIMISTIC_WRITE);
-        if (order == null)
+    private Order validateAndLockOrder(Long orderId) {
+        Order order = entityManager.find(Order.class, orderId, LockModeType.PESSIMISTIC_WRITE);
+        if (order == null) {
             throw new ApplicationException(ErrorCode.ORDER_NOT_FOUND);
-
-        if (!OrderStatus.OPEN.name().equals(order.getStatus()))
+        }
+        if (!OrderStatus.OPEN.name().equals(order.getStatus())) {
             throw new ApplicationException(ErrorCode.ORDER_CLOSED);
+        }
+        return order;
+    }
 
-        // if (command.getAmount() < order.getMinLimit() || command.getAmount() > order.getMaxLimit())
-        //     throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
-
-        if (command.getAmount() > order.getAvailableAmount())
+    private void validateTradeAmount(TradeCreateCommand command, Order order) {
+        if (command.getAmount() > order.getAvailableAmount()) {
             throw new ApplicationException(ErrorCode.INSUFFICIENT_BALANCE);
-
+        }
         order.setAvailableAmount(order.getAvailableAmount() - command.getAmount());
         orderRepository.save(order);
+    }
+
+    private Trade buildTrade(TradeCreateCommand command, Order order, User actor) {
         Trade trade = new Trade();
         trade.setOrder(order);
+        trade.setAmount(command.getAmount());
+        trade.setStatus(TradeStatus.PENDING);
+        trade.setCreatedAt(LocalDateTime.now());
+        trade.setTradeCode(String.valueOf(System.currentTimeMillis()));
 
+        TradeParticipants participants = determineTradeParticipants(order, actor, command);
+        trade.setBuyer(participants.getBuyer());
+        trade.setSeller(participants.getSeller());
+        trade.setEscrow(participants.isEscrow());
+
+        return trade;
+    }
+
+    private TradeParticipants determineTradeParticipants(Order order, User actor, TradeCreateCommand command) {
         User buyer;
         User seller;
+        boolean escrow;
 
         if ("SELL".equalsIgnoreCase(order.getType())) {
             // Người tạo trade là buyer, seller là chủ order
             buyer = actor;
             seller = order.getUser();
-            trade.setEscrow(true); // coin đã lock từ seller
+            escrow = true; // coin đã lock từ seller
         } else if ("BUY".equalsIgnoreCase(order.getType())) {
             // Người tạo trade là seller
             seller = actor;
             buyer = order.getUser();
             sellerFundsManager.lock(seller, order.getToken(), command.getAmount());
-            trade.setEscrow(false); // buyer chưa có coin lock
+            escrow = false; // buyer chưa có coin lock
         } else {
             throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
         }
 
-        trade.setBuyer(buyer);
-        trade.setSeller(seller);
+        return new TradeParticipants(buyer, seller, escrow);
+    }
 
-        FiatAccount sellerAccount = resolveSellerAccount(seller, order, command);
-        
-        trade.setAmount(command.getAmount());
-        trade.setStatus(TradeStatus.PENDING);
-        trade.setCreatedAt(LocalDateTime.now());
-        trade.setTradeCode( String.valueOf(System.currentTimeMillis()));
-
+    private void setSellerAccountInfo(Trade trade, FiatAccount sellerAccount) {
         if (sellerAccount != null) {
             trade.setSellerFiatAccount(sellerAccount);
             trade.setSellerBankName(sellerAccount.getBankName());
@@ -136,80 +167,49 @@ public class TradeServiceImpl implements TradeService {
             trade.setSellerBankBranch(sellerAccount.getBranch());
             trade.setSellerPaymentType(sellerAccount.getPaymentType());
         }
+    }
 
-        // ✅ Lưu vào DB
-        Trade savedTrade = tradeRepository.save(trade);
-        createInitialChat(savedTrade, actor.getId());
-        return TradeMapper.toResult(savedTrade);
+    // Helper class for trade participants
+    private static class TradeParticipants {
+        private final User buyer;
+        private final User seller;
+        private final boolean escrow;
+
+        public TradeParticipants(User buyer, User seller, boolean escrow) {
+            this.buyer = buyer;
+            this.seller = seller;
+            this.escrow = escrow;
+        }
+
+        public User getBuyer() { return buyer; }
+        public User getSeller() { return seller; }
+        public boolean isEscrow() { return escrow; }
     }
 
     private FiatAccount resolveSellerAccount(User seller, Order order, TradeCreateCommand command) {
-        Long existingAccountId = command.getFiatAccountId();
-        if (existingAccountId != null) {
-            FiatAccount account = fiatAccountRepository.findById(existingAccountId)
-                    .orElseThrow(() -> new ApplicationException(ErrorCode.FIAT_ACCOUNT_NOT_FOUND));
-            if (!account.getUser().getId().equals(seller.getId())) {
+        if ("SELL".equalsIgnoreCase(order.getType())) {
+            FiatAccount account = order.getFiatAccount();
+            if (account != null && !account.getUser().getId().equals(seller.getId())) {
                 throw new ApplicationException(ErrorCode.FORBIDDEN);
             }
             return account;
         }
 
-        if ("SELL".equalsIgnoreCase(order.getType())) {
-            if (hasSellerAccountInput(command)) {
-                return findOrCreateSellerAccount(seller, command);
-            }
-            FiatAccount account = order.getFiatAccount();
-            if (account == null) {
-                throw new ApplicationException(ErrorCode.SELLER_PAYMENT_METHOD_REQUIRED);
-            }
-            return account;
-        }
-
-        return findOrCreateSellerAccount(seller, command);
-    }
-
-    private FiatAccount findOrCreateSellerAccount(User seller, TradeCreateCommand command) {
-        if (!hasSellerAccountInput(command)) {
+        Long accountId = command.getFiatAccountId();
+        if (accountId == null) {
             throw new ApplicationException(ErrorCode.SELLER_PAYMENT_METHOD_REQUIRED);
         }
 
-        User sellerRef = entityManager.getReference(User.class, seller.getId());
-        return fiatAccountRepository.findByUserAndBankNameAndAccountNumberAndAccountHolder(
-                        sellerRef,
-                        command.getBankName(),
-                        command.getAccountNumber(),
-                        command.getAccountHolder())
-                .map(account -> updateSellerAccount(account, command))
-                .orElseGet(() -> createSellerAccount(sellerRef, command));
+        FiatAccount account = fiatAccountRepository.findById(accountId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.FIAT_ACCOUNT_NOT_FOUND));
+
+        if (!account.getUser().getId().equals(seller.getId())) {
+            throw new ApplicationException(ErrorCode.FORBIDDEN);
+        }
+
+        return account;
     }
 
-    private FiatAccount updateSellerAccount(FiatAccount account, TradeCreateCommand command) {
-        account.setBranch(command.getBranch());
-        account.setPaymentType(command.getPaymentType());
-        return fiatAccountRepository.save(account);
-    }
-
-    private FiatAccount createSellerAccount(User seller, TradeCreateCommand command) {
-        FiatAccount account = new FiatAccount();
-        account.setUser(seller);
-        account.setBankName(command.getBankName());
-        account.setAccountNumber(command.getAccountNumber());
-        account.setAccountHolder(command.getAccountHolder());
-        account.setBranch(command.getBranch());
-        account.setPaymentType(command.getPaymentType());
-        return fiatAccountRepository.save(account);
-    }
-
-    private boolean hasSellerAccountInput(TradeCreateCommand command) {
-        return isNotBlank(command.getBankName())
-                && isNotBlank(command.getAccountNumber())
-                && isNotBlank(command.getAccountHolder())
-                && isNotBlank(command.getPaymentType());
-    }
-
-    private boolean isNotBlank(String value) {
-        return value != null && !value.isBlank();
-    }
 
     private void createInitialChat(Trade trade, Long senderId) {
         TradeChat chat = new TradeChat();
@@ -219,6 +219,7 @@ public class TradeServiceImpl implements TradeService {
         chat.setTimestamp(LocalDateTime.now());
         tradeChatRepository.save(chat);
     }
+    
     @Override
     @Transactional
     public TradeResult confirmPayment(Long tradeId) {
@@ -280,8 +281,6 @@ public class TradeServiceImpl implements TradeService {
         double sellerBalanceBefore = sellerWallet.getBalance();
         double sellerAvailableBefore = sellerWallet.getAvailableBalance();
         sellerWallet.setBalance(sellerBalanceBefore - trade.getAmount());
-        // sellerWallet.setAvailableBalance(sellerWallet.getAvailableBalance() -
-        // trade.getAmount());
         walletRepository.save(sellerWallet);
         walletTransactionService.record(
                 sellerWallet,
@@ -329,61 +328,32 @@ public class TradeServiceImpl implements TradeService {
     @Transactional
     public TradeResult cancelTrade(Long tradeId) {
         User currentUser = getCurrentUser();
-
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
+        return cancelTradeInternal(trade, currentUser.getId(), true);
+    }
 
-        String orderType = trade.getOrder().getType();
-          Long creatorId = "SELL".equalsIgnoreCase(orderType)
-            ? trade.getBuyer().getId() // người tạo order
-            : trade.getSeller().getId(); // người tạo order nếu là BUY
-
-        if (!creatorId.equals(currentUser.getId())) {
-            throw new ApplicationException(ErrorCode.FORBIDDEN);
-        }
-
-        if (trade.getStatus() != TradeStatus.PENDING) {
-            throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
-        }
-
-        double refundAmount = trade.getAmount();
-
-
-      if (currentUser.getId().equals(trade.getSeller().getId())) {
-                // 1. Hoàn coin lại cho seller (unlock funds)
-                Wallet sellerWallet = walletRepository.findByUserIdAndToken(
-                trade.getSeller().getId(),
-                trade.getOrder().getToken()).orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-
-                double balanceBefore = sellerWallet.getBalance();
-                double availableBefore = sellerWallet.getAvailableBalance();
-                sellerWallet.setAvailableBalance(availableBefore + refundAmount);
-                walletRepository.save(sellerWallet);
-                walletTransactionService.record(
-                        sellerWallet,
-                        WalletTransactionType.UNLOCK,
-                        refundAmount,
-                        balanceBefore,
-                        sellerWallet.getBalance(),
-                        availableBefore,
-                        sellerWallet.getAvailableBalance(),
-                        currentUser.getId(),
-                        "TRADE_CANCELLED",
-                        trade.getId(),
-                        "Cancel trade and unlock funds");
-        }
-
+    @Override
+    @Transactional
+    public int autoCancelExpiredTrades() {
+        log.debug("Starting auto-cancel expired trades process");
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(autoCancelMinutes);
+        List<Trade> expiredTrades = tradeRepository.findByStatusAndCreatedAtBefore(TradeStatus.PENDING, threshold);
         
-
-        // 2. Hoàn lại availableAmount trong order
-        Order order = trade.getOrder();
-        order.setAvailableAmount(order.getAvailableAmount() + refundAmount);
-        orderRepository.save(order);
-
-        // 3. Cập nhật trạng thái trade
-        trade.setStatus(TradeStatus.CANCELLED);
-        tradeRepository.save(trade);
-        return TradeMapper.toResult(trade);
+        log.info("Found {} expired trades to cancel", expiredTrades.size());
+        int cancelled = 0;
+        for (Trade trade : expiredTrades) {
+            if (trade.getStatus() != TradeStatus.PENDING) {
+                log.debug("Skipping trade {} - status is not PENDING", trade.getId());
+                continue;
+            }
+            log.info("Auto-cancelling expired trade: {}", trade.getId());
+            cancelTradeInternal(trade, trade.getSeller().getId(), false);
+            cancelled++;
+        }
+        
+        log.info("Auto-cancel process completed. Cancelled {} trades", cancelled);
+        return cancelled;
     }
 
     @Override
@@ -488,5 +458,56 @@ public class TradeServiceImpl implements TradeService {
 
         
         return r;
+    }
+
+    private TradeResult cancelTradeInternal(Trade trade, Long actorId, boolean enforceCreator) {
+        String orderType = trade.getOrder().getType();
+        Long creatorId = "SELL".equalsIgnoreCase(orderType)
+                ? trade.getBuyer().getId()
+                : trade.getSeller().getId();
+
+        if (enforceCreator && (actorId == null || !creatorId.equals(actorId))) {
+            throw new ApplicationException(ErrorCode.FORBIDDEN);
+        }
+
+        if (trade.getStatus() != TradeStatus.PENDING) {
+            throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
+        }
+
+        double refundAmount = trade.getAmount();
+
+        Wallet sellerWallet = walletRepository.findByUserIdAndToken(
+                        trade.getSeller().getId(),
+                        trade.getOrder().getToken())
+                .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+
+        double balanceBefore = sellerWallet.getBalance();
+        double availableBefore = sellerWallet.getAvailableBalance();
+        sellerWallet.setAvailableBalance(availableBefore + refundAmount);
+        walletRepository.save(sellerWallet);
+
+        Long performerId = actorId != null ? actorId : trade.getSeller().getId();
+
+        walletTransactionService.record(
+                sellerWallet,
+                WalletTransactionType.UNLOCK,
+                refundAmount,
+                balanceBefore,
+                sellerWallet.getBalance(),
+                availableBefore,
+                sellerWallet.getAvailableBalance(),
+                performerId,
+                "TRADE_CANCELLED",
+                trade.getId(),
+                "Cancel trade and unlock funds");
+
+        Order order = trade.getOrder();
+        order.setAvailableAmount(order.getAvailableAmount() + refundAmount);
+        orderRepository.save(order);
+
+        trade.setStatus(TradeStatus.CANCELLED);
+        tradeRepository.save(trade);
+
+        return TradeMapper.toResult(trade);
     }
 }

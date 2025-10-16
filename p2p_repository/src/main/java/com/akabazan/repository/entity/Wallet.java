@@ -1,7 +1,5 @@
 package com.akabazan.repository.entity;
 
-import java.math.BigDecimal;
-
 import jakarta.persistence.*;
 
 @Entity

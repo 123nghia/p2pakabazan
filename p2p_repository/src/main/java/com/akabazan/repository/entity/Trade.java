@@ -65,8 +65,7 @@ public class Trade extends AbstractEntity {
             @AttributeOverride(name = "reason", column = @Column(name = "dispute_reason")),
             @AttributeOverride(name = "evidence", column = @Column(name = "dispute_evidence"))
     })
-    // private DisputeMetadata disputeMetadata;
-
+  
     @OneToMany(mappedBy = "trade", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Dispute> disputes = new ArrayList<>();
 
@@ -191,14 +190,6 @@ public class Trade extends AbstractEntity {
     public void setChat(List<ChatMessage> chat) {
         this.chat = chat;
     }
-
-    // public DisputeMetadata getDisputeMetadata() {
-    //     return disputeMetadata;
-    // }
-
-    // public void setDisputeMetadata(DisputeMetadata disputeMetadata) {
-    //     this.disputeMetadata = disputeMetadata;
-    // }
 
     public List<Dispute> getDisputes() {
         return disputes;

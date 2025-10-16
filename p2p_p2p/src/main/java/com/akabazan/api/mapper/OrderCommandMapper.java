@@ -18,9 +18,7 @@ public final class OrderCommandMapper {
         command.setPaymentMethod(request.getPaymentMethod());
         command.setMinLimit(request.getMinLimit());
         command.setMaxLimit(request.getMaxLimit());
-        command.setBankName(request.getBankName());
-        command.setBankAccount(request.getBankAccount());
-        command.setAccountHolder(request.getAccountHolder());
+        command.setFiatAccountId(request.getFiatAccountId());
         command.setPriceMode(request.getPriceMode());
 
         return command;

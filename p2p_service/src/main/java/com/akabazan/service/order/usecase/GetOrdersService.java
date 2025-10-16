@@ -6,6 +6,7 @@ import com.akabazan.repository.constant.OrderStatus;
 import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.Order;
 import com.akabazan.repository.entity.User;
+import com.akabazan.repository.projection.OrderTradeStatsProjection;
 import com.akabazan.service.dto.OrderMapper;
 import com.akabazan.service.dto.OrderResult;
 import java.util.HashMap;
@@ -35,23 +36,35 @@ public class GetOrdersService implements GetOrdersQuery {
     @Override
     public Page<OrderResult> get(String type,
                                  String token,
-                                 String paymentMethod,
+                                 List<String> paymentMethods,
                                  String sortByPrice,
                                  String fiat,
                                  int page,
                                  int size) {
         Pageable pageable = buildPageable(sortByPrice, page, size);
 
+        boolean paymentFilterEnabled = paymentMethods != null && !paymentMethods.isEmpty();
+        List<String> normalizedPaymentMethods = paymentFilterEnabled
+                ? paymentMethods
+                : List.of("__ALL__");
+
+        String normalizedType = type != null ? type.toUpperCase() : null;
+        String normalizedToken = token != null ? token.toUpperCase() : null;
+        String normalizedFiat = fiat != null ? fiat.toUpperCase() : null;
+
         Page<Order> orders = orderRepository.searchOrders(
                 OrderStatus.OPEN.name(),
-                type != null ? type.toUpperCase() : null,
-                token,
-                paymentMethod,
-                fiat,
+                normalizedType,
+                normalizedToken,
+                paymentFilterEnabled,
+                normalizedPaymentMethods,
+                normalizedFiat,
                 pageable
         );
-        Map<Long, TradeStats> statsByUser = buildTradeStats(orders.getContent());
-        return orders.map(order -> enrich(OrderMapper.toResult(order), statsByUser));
+        List<Order> orderContent = orders.getContent();
+        Map<Long, TradeStats> statsByUser = buildTradeStats(orderContent);
+        Map<Long, OrderStats> statsByOrder = buildOrderStats(orderContent);
+        return orders.map(order -> enrich(OrderMapper.toResult(order), statsByUser, statsByOrder));
     }
 
     private Pageable buildPageable(String sortByPrice, int page, int size) {
@@ -83,10 +96,42 @@ public class GetOrdersService implements GetOrdersQuery {
         return stats;
     }
 
-    private OrderResult enrich(OrderResult result, Map<Long, TradeStats> statsByUser) {
+    private Map<Long, OrderStats> buildOrderStats(List<Order> orders) {
+        List<Long> orderIds = orders.stream()
+                .map(Order::getId)
+                .filter(Objects::nonNull)
+                .toList();
+        if (orderIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<OrderTradeStatsProjection> projections =
+                tradeRepository.findTradeStatsByOrderIds(orderIds, TradeStatus.COMPLETED);
+
+        Map<Long, OrderStats> stats = new HashMap<>();
+        for (OrderTradeStatsProjection projection : projections) {
+            long total = projection.getTotalTrades() != null ? projection.getTotalTrades() : 0L;
+            long completed = projection.getCompletedTrades() != null ? projection.getCompletedTrades() : 0L;
+            stats.put(projection.getOrderId(), new OrderStats(total, completed));
+        }
+        return stats;
+    }
+
+    private OrderResult enrich(OrderResult result,
+                               Map<Long, TradeStats> statsByUser,
+                               Map<Long, OrderStats> statsByOrder) {
         if (result == null) {
             return null;
         }
+
+        OrderStats orderStats = result.getId() != null ? statsByOrder.get(result.getId()) : null;
+        if (orderStats != null && orderStats.totalTrades() > 0) {
+            result.setTradeCount(orderStats.totalTrades());
+            result.setCompletedTradeCount(orderStats.completedTrades());
+            result.setCompletionRate(orderStats.completionRate());
+            return result;
+        }
+
         Long userId = result.getUserId();
         if (userId != null) {
             TradeStats stat = statsByUser.get(userId);
@@ -94,12 +139,26 @@ public class GetOrdersService implements GetOrdersQuery {
                 result.setTradeCount(stat.totalTrades());
                 result.setCompletedTradeCount(stat.completedTrades());
                 result.setCompletionRate(stat.completionRate());
+                return result;
             }
         }
+
+        if (orderStats != null) {
+            result.setTradeCount(orderStats.totalTrades());
+            result.setCompletedTradeCount(orderStats.completedTrades());
+            result.setCompletionRate(orderStats.completionRate());
+        }
+
         return result;
     }
 
     private record TradeStats(long totalTrades, long completedTrades) {
+        double completionRate() {
+            return totalTrades == 0 ? 0.0 : (completedTrades * 100.0) / totalTrades;
+        }
+    }
+
+    private record OrderStats(long totalTrades, long completedTrades) {
         double completionRate() {
             return totalTrades == 0 ? 0.0 : (completedTrades * 100.0) / totalTrades;
         }
