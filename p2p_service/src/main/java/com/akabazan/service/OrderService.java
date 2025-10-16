@@ -17,6 +17,7 @@ public interface OrderService {
                                 List<String> paymentMethods,
                                 String sortByPrice,
                                 String fiat,
+                                Long excludeUserId,
                                 int page,
                                 int size);
 

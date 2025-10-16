@@ -75,6 +75,7 @@ public class OrderServiceImpl implements OrderService {
                                        List<String> paymentMethods,
                                        String sortByPrice,
                                        String fiat,
+                                       Long excludeUserId,
                                        int page,
                                        int size) {
         String userAction = type; // hành động người dùng (mua hay bán)
@@ -91,6 +92,7 @@ public class OrderServiceImpl implements OrderService {
                 paymentMethods,
                 sortByPrice,
                 fiat,
+                excludeUserId,
                 page,
                 size);
     }

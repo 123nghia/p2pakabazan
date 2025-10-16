@@ -5,6 +5,7 @@ import com.akabazan.api.reponse.OrderResponse;
 import com.akabazan.api.request.OrderQueryRequest;
 import com.akabazan.common.dto.BaseResponse;
 import com.akabazan.common.dto.ResponseFactory;
+import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.MarketService;
 import com.akabazan.service.OrderService;
 import com.akabazan.service.dto.OrderResult;
@@ -19,10 +20,12 @@ import org.springframework.web.bind.annotation.*;
 public class MarketController extends BaseController {
     private final MarketService marketService;
     private final OrderService orderService;
+    private final CurrentUserService currentUserService;
 
-    public MarketController(MarketService marketService, OrderService orderService) {
+    public MarketController(MarketService marketService, OrderService orderService, CurrentUserService currentUserService) {
         this.marketService = marketService;
         this.orderService = orderService;
+        this.currentUserService = currentUserService;
     }
 
     @GetMapping("/price")
@@ -45,12 +48,15 @@ public class MarketController extends BaseController {
                 .anyMatch(pm -> "ALL-PAYMENTS".equalsIgnoreCase(pm));
         List<String> normalizedPaymentMethods = allPayments ? null : (!paymentMethods.isEmpty() ? paymentMethods : null);
 
+        Long currentUserId = currentUserService.getCurrentUserId().orElse(null);
+
         Page<OrderResult> orders = orderService.getOrders(
                 request.getType(),
                 request.getToken(),
                 normalizedPaymentMethods,
                 request.getSortByPrice(),
                 request.getFiat(),
+                currentUserId,
                 request.getPageOrDefault(),
                 request.getSizeOrDefault());
         

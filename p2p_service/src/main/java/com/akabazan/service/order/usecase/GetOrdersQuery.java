@@ -11,6 +11,7 @@ public interface GetOrdersQuery {
                           List<String> paymentMethods,
                           String sortByPrice,
                           String fiat,
+                          Long excludeUserId,
                           int page,
                           int size);
 }

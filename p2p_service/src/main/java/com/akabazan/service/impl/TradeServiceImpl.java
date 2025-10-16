@@ -87,6 +87,9 @@ public class TradeServiceImpl implements TradeService {
         
         User actor = getCurrentUser();
         Order order = validateAndLockOrder(command.getOrderId());
+        if (order.getUser() != null && order.getUser().getId().equals(actor.getId())) {
+            throw new ApplicationException(ErrorCode.FORBIDDEN);
+        }
         validateTradeAmount(command, order);
         
         Trade trade = buildTrade(command, order, actor);

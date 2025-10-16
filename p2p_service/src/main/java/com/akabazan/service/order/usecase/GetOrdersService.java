@@ -36,6 +36,7 @@ public class GetOrdersService implements GetOrdersQuery {
                                  List<String> paymentMethods,
                                  String sortByPrice,
                                  String fiat,
+                                 Long excludeUserId,
                                  int page,
                                  int size) {
         Pageable pageable = buildPageable(sortByPrice, page, size);
@@ -56,6 +57,7 @@ public class GetOrdersService implements GetOrdersQuery {
                 paymentFilterEnabled,
                 normalizedPaymentMethods,
                 normalizedFiat,
+                excludeUserId,
                 pageable
         );
         List<Order> orderContent = orders.getContent();

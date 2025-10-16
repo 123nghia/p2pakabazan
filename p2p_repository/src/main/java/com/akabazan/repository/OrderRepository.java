@@ -18,6 +18,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
               AND (:token IS NULL OR UPPER(o.token) = :token)
               AND (:paymentFilterEnabled = false OR UPPER(o.paymentMethod) IN :paymentMethods)
               AND (:fiat IS NULL OR UPPER(o.fiat) = :fiat)
+              AND (:excludeUserId IS NULL OR o.user.id <> :excludeUserId)
             """)
     Page<Order> searchOrders(@Param("status") String status,
                               @Param("type") String type,
@@ -25,6 +26,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                               @Param("paymentFilterEnabled") boolean paymentFilterEnabled,
                               @Param("paymentMethods") List<String> paymentMethods,
                               @Param("fiat") String fiat,
+                              @Param("excludeUserId") Long excludeUserId,
                               Pageable pageable);
        
             List<Order> findAllByStatusAndExpireAtBefore(String status, LocalDateTime time);
