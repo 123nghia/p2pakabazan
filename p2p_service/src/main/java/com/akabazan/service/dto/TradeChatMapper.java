@@ -14,6 +14,7 @@ public class TradeChatMapper {
         result.setSenderId(entity.getSenderId());
         result.setMessage(entity.getMessage());
         result.setTimestamp(entity.getTimestamp());
+        result.setRecipientRole(entity.getRecipientRole());
         return result;
     }
 }

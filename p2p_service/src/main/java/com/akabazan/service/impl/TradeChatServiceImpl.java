@@ -29,6 +29,10 @@ public class TradeChatServiceImpl implements TradeChatService {
     private final TradeRepository tradeRepository;
     private final TradeChatRepository tradeChatRepository;
 
+    private enum RecipientRole {
+        BUYER, SELLER, ALL
+    }
+
     public TradeChatServiceImpl(TradeRepository tradeRepository,
                                 TradeChatRepository tradeChatRepository) {
         this.tradeRepository = tradeRepository;
@@ -46,13 +50,20 @@ public class TradeChatServiceImpl implements TradeChatService {
         chat.setSenderId(getCurrentUserId());
         chat.setMessage(message);
         chat.setTimestamp(LocalDateTime.now());
+        chat.setRecipientRole(RecipientRole.ALL.name());
 
         return TradeChatMapper.toResult(tradeChatRepository.save(chat));
     }
 
     @Override
     public List<TradeChatResult> getMessages(Long tradeId) {
-        return mapChats(tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId));
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
+        RecipientRole viewerRole = determineUserRoleForTrade(trade, getCurrentUserId());
+        return tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId).stream()
+                .filter(chat -> isVisibleForRecipient(chat.getRecipientRole(), viewerRole))
+                .map(TradeChatMapper::toResult)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -83,7 +94,12 @@ public class TradeChatServiceImpl implements TradeChatService {
                     String counterpartyName = resolveCounterpartyName(trade, userId);
                     tradeResult.setCounterparty(counterpartyName);
                     thread.setCounterpartyName(counterpartyName);
-                    thread.setLastMessage(lastMessages.get(trade.getId()));
+                    RecipientRole viewerRole = determineUserRoleForTrade(trade, userId);
+                    TradeChatResult lastVisibleMessage = resolveLastVisibleMessage(
+                            trade.getId(),
+                            viewerRole,
+                            lastMessages.get(trade.getId()));
+                    thread.setLastMessage(lastVisibleMessage);
                     return thread;
                 })
                 .collect(Collectors.toList());
@@ -97,14 +113,6 @@ public class TradeChatServiceImpl implements TradeChatService {
         return threads;
     }
 
-
-
-    private List<TradeChatResult> mapChats(List<TradeChat> chats) {
-        return chats.stream()
-                .map(TradeChatMapper::toResult)
-                .collect(Collectors.toList());
-    }
-
     private String resolveCounterpartyName(Trade trade, Long currentUserId) {
         if (trade == null) {
             return null;
@@ -116,6 +124,49 @@ public class TradeChatServiceImpl implements TradeChatService {
             return extractDisplayName(trade.getBuyer());
         }
         return extractDisplayName(trade.getSeller() != null ? trade.getSeller() : trade.getBuyer());
+    }
+
+    private RecipientRole determineUserRoleForTrade(Trade trade, Long userId) {
+        if (trade == null || userId == null) {
+            return RecipientRole.ALL;
+        }
+        if (trade.getBuyer() != null && userId.equals(trade.getBuyer().getId())) {
+            return RecipientRole.BUYER;
+        }
+        if (trade.getSeller() != null && userId.equals(trade.getSeller().getId())) {
+            return RecipientRole.SELLER;
+        }
+        return RecipientRole.ALL;
+    }
+
+    private boolean isVisibleForRecipient(String recipientRole, RecipientRole viewerRole) {
+        if (recipientRole == null || recipientRole.isBlank()) {
+            return true;
+        }
+        if (RecipientRole.ALL.name().equalsIgnoreCase(recipientRole)) {
+            return true;
+        }
+        if (viewerRole == null) {
+            return true;
+        }
+        return recipientRole.equalsIgnoreCase(viewerRole.name());
+    }
+
+    private TradeChatResult resolveLastVisibleMessage(Long tradeId,
+                                                      RecipientRole viewerRole,
+                                                      TradeChatResult candidate) {
+        if (candidate != null && isVisibleForRecipient(candidate.getRecipientRole(), viewerRole)) {
+            return candidate;
+        }
+
+        TradeChat latestVisible = null;
+        List<TradeChat> chats = tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId);
+        for (TradeChat chat : chats) {
+            if (isVisibleForRecipient(chat.getRecipientRole(), viewerRole)) {
+                latestVisible = chat;
+            }
+        }
+        return latestVisible != null ? TradeChatMapper.toResult(latestVisible) : null;
     }
 
     private String extractDisplayName(User user) {

@@ -27,6 +27,8 @@ public class IntegrationController extends BaseController {
 
     @PostMapping("/users/sync")
     public ResponseEntity<BaseResponse<IntegrationUserResponse>> syncUser(@Valid @RequestBody IntegrationUserRequest request) {
+        
+        
         IntegrationSyncCommand command = IntegrationMapper.toCommand(request);
         IntegrationSyncResult result = integrationService.syncUserAndWallet(command);
         IntegrationUserResponse response = IntegrationMapper.toResponse(result);

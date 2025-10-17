@@ -8,6 +8,7 @@ public class TradeChatResult {
     private Long senderId;
     private String message;
     private LocalDateTime timestamp;
+    private String recipientRole;
 
     public Long getId() {
         return id;
@@ -47,5 +48,13 @@ public class TradeChatResult {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getRecipientRole() {
+        return recipientRole;
+    }
+
+    public void setRecipientRole(String recipientRole) {
+        this.recipientRole = recipientRole;
     }
 }

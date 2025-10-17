@@ -82,6 +82,12 @@ public class TradeController extends BaseController {
         return ResponseFactory.ok(TradeResponseMapper.from(result));
     }
 
+    @PostMapping("/trades/code/{tradeCode}/cancel")
+    public ResponseEntity<BaseResponse<TradeResponse>> cancelTradeByCode(@PathVariable String tradeCode) {
+        TradeResult result = tradeService.cancelTradeByCode(tradeCode);
+        return ResponseFactory.ok(TradeResponseMapper.from(result));
+    }
+
 
     @GetMapping("/trades/{tradeId}")
     public ResponseEntity<BaseResponse<TradeInfoResponse>> getTradeInfo(@PathVariable Long tradeId) {

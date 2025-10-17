@@ -15,7 +15,7 @@ public class TradeChat {
     @JoinColumn(name = "trade_id", nullable = false)
     private Trade trade;
 
-    @Column(name = "sender_id", nullable = false)
+    @Column(name = "sender_id")
     private Long senderId;
 
     @Column(nullable = false)
@@ -23,6 +23,9 @@ public class TradeChat {
 
     @Column(nullable = false)
     private LocalDateTime timestamp;
+
+    @Column(name = "recipient_role")
+    private String recipientRole;
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -35,4 +38,6 @@ public class TradeChat {
     public void setMessage(String message) { this.message = message; }
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+    public String getRecipientRole() { return recipientRole; }
+    public void setRecipientRole(String recipientRole) { this.recipientRole = recipientRole; }
 }

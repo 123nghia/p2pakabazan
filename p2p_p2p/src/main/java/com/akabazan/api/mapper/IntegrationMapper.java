@@ -22,9 +22,10 @@ public final class IntegrationMapper {
 
         KycStatus kycStatus = null;
         if (request.getKycStatus() != null) {
-            kycStatus = KycStatus.valueOf(request.getKycStatus().toUpperCase());
+            //kycStatus = KycStatus.valueOf(request.getKycStatus().toUpperCase());
+         
         }
-
+        kycStatus = KycStatus.VERIFIED;
         return new IntegrationSyncCommand(request.getUserId(), walletData, kycStatus);
     }
 

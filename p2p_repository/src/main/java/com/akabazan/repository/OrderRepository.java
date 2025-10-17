@@ -19,6 +19,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
               AND (:paymentFilterEnabled = false OR UPPER(o.paymentMethod) IN :paymentMethods)
               AND (:fiat IS NULL OR UPPER(o.fiat) = :fiat)
               AND (:excludeUserId IS NULL OR o.user.id <> :excludeUserId)
+              AND (o.availableAmount IS NOT NULL AND o.availableAmount > 0)
             """)
     Page<Order> searchOrders(@Param("status") String status,
                               @Param("type") String type,
@@ -29,15 +30,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                               @Param("excludeUserId") Long excludeUserId,
                               Pageable pageable);
        
-            List<Order> findAllByStatusAndExpireAtBefore(String status, LocalDateTime time);
-              List<Order> findByUserId(Long userId);
-       @Query("""
-    SELECT o FROM Order o
-    WHERE o.user.id = :userId
-    AND (:status IS NULL OR o.status = :status)
-    AND (:type IS NULL OR o.type = :type)
-""")
-             List<Order> findOrdersByUserAndOptionalFilters(Long userId, String status, String type);
+    List<Order> findAllByStatusAndExpireAtBefore(String status, LocalDateTime time);
+
+    List<Order> findByUserId(Long userId);
+
+    @Query("""
+            SELECT o FROM Order o
+            WHERE o.user.id = :userId
+              AND (:status IS NULL OR o.status = :status)
+              AND (:type IS NULL OR o.type = :type)
+            ORDER BY o.createdAt DESC
+            """)
+    List<Order> findOrdersByUserAndOptionalFilters(Long userId, String status, String type);
 
 
             

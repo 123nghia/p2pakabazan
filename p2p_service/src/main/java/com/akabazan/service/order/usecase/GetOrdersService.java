@@ -71,12 +71,12 @@ public class GetOrdersService implements GetOrdersQuery {
             sort = Sort.by(Sort.Direction.ASC, "price");
         } else if ("desc".equalsIgnoreCase(sortByPrice)) {
             sort = Sort.by(Sort.Direction.DESC, "price");
+        } else {
+            sort = Sort.by(Sort.Direction.DESC, "createdAt");
         }
         int resolvedPage = Math.max(page, 0);
         int resolvedSize = size > 0 ? size : 10;
-        return sort.isSorted()
-                ? PageRequest.of(resolvedPage, resolvedSize, sort)
-                : PageRequest.of(resolvedPage, resolvedSize);
+        return PageRequest.of(resolvedPage, resolvedSize, sort);
     }
 
     private Map<Long, OrderStats> buildOrderStats(List<Order> orders) {
