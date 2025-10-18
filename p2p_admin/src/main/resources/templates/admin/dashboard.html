@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .card { padding: 16px; border: 1px solid #eee; border-radius: 8px; background: #fff; }
+    </style>
+    </head>
+<body>
+<div th:replace="admin/layout :: layout(~{::section})">
+    <section>
+        <header>
+            <div class="title">Dashboard</div>
+        </header>
+        <div class="grid">
+            <div class="card"><h3>Users</h3><p th:text="${userCount}">0</p></div>
+            <div class="card"><h3>Orders</h3><p th:text="${orderCount}">0</p></div>
+            <div class="card"><h3>Trades</h3><p th:text="${tradeCount}">0</p></div>
+            <div class="card"><h3>Disputes</h3><p th:text="${disputeCount}">0</p></div>
+        </div>
+    </section>
+</div>
+</body>
+</html>
+
+

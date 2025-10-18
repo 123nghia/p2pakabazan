@@ -1,0 +1,37 @@
+:root{
+  --bg:#f7f9fc; --panel:#ffffff; --muted:#6b7280; --text:#111827; --primary:#2563eb; --primary-50:#e8f0fe; --border:#e5e7eb;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;background:var(--bg);color:var(--text)}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:260px;background:#ffffff;border-right:1px solid var(--border);padding:16px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--text);margin-bottom:16px}
+.brand .dot{width:10px;height:10px;background:var(--primary);border-radius:50%}
+.menu a{display:flex;align-items:center;gap:10px;color:#374151;text-decoration:none;padding:10px 12px;border-radius:8px;margin-bottom:6px}
+.menu a:hover{background:var(--primary-50);color:var(--primary)}
+.content{flex:1;display:flex;flex-direction:column}
+.topbar{height:56px;background:var(--panel);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:10}
+.topbar .search{flex:1;max-width:440px}
+.search input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:#fff}
+.topbar .actions{display:flex;align-items:center;gap:12px}
+.admin-info{color:var(--muted);font-size:14px}
+.admin-info strong{color:var(--primary);font-weight:600}
+.main{padding:24px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+.grid{display:grid;gap:16px}
+.grid.cols-4{grid-template-columns:repeat(4,1fr)}
+.stat .label{color:var(--muted);font-size:12px}
+.stat .value{font-weight:700;font-size:22px;margin-top:6px}
+table{border-collapse:collapse;width:100%;background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+th,td{border-bottom:1px solid var(--border);padding:12px 14px;text-align:left}
+th{background:#fafafa;color:#374151;font-weight:600}
+tr:hover td{background:#fafcff}
+.btn{display:inline-block;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;color:#374151;text-decoration:none}
+.btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn.ghost{background:transparent}
+.kpi{display:flex;gap:16px;margin-bottom:16px}
+.kpi .card{flex:1}
+.page-title{font-size:20px;font-weight:700;margin:0 0 16px 0}
+@media(max-width:1024px){.grid.cols-4{grid-template-columns:repeat(2,1fr)}.sidebar{width:220px}}
+

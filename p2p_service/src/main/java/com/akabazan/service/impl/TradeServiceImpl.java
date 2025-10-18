@@ -510,8 +510,15 @@ public class TradeServiceImpl implements TradeService {
         r.setBankBranch(t.getSellerBankBranch());
         r.setPaymentType(t.getSellerPaymentType());
 
-        boolean canCancel = t.getStatus() == TradeStatus.PENDING;
-         r.setCanCancel(canCancel);
+  
+        String orderType = t.getOrder().getType();
+                Long creatorId = "SELL".equalsIgnoreCase(orderType)
+                        ? t.getBuyer().getId()
+                        : t.getSeller().getId();
+                boolean canCancel = t.getStatus() == TradeStatus.PENDING
+                        && creatorId.equals(current.getId());
+                r.setCanCancel(canCancel);
+   
 
 
         var orderInfor = t.getOrder();

@@ -6,14 +6,16 @@ import com.akabazan.notification.enums.NotificationType;
 import com.akabazan.notification.service.NotificationService;
 import com.akabazan.repository.DisputeRepository;
 import com.akabazan.repository.TradeRepository;
-import com.akabazan.repository.UserRepository;
+import com.akabazan.repository.AdminUserRepository;
 import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.Dispute;
 import com.akabazan.repository.entity.Dispute.DisputeStatus;
 import com.akabazan.repository.entity.Dispute.ResolutionOutcome;
 import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.User;
+import com.akabazan.repository.entity.AdminUser;
 import com.akabazan.service.CurrentUserService;
+import com.akabazan.service.CurrentAdminService;
 import com.akabazan.service.DisputeService;
 import com.akabazan.service.dto.DisputeMapper;
 import com.akabazan.service.dto.DisputeResult;
@@ -32,22 +34,25 @@ public class DisputeServiceImpl implements DisputeService {
 
     private final TradeRepository tradeRepository;
     private final DisputeRepository disputeRepository;
-    private final UserRepository userRepository;
+    private final AdminUserRepository adminUserRepository;
     private final CurrentUserService currentUserService;
+    private final CurrentAdminService currentAdminService;
     private final NotificationService notificationService;
     private final SellerFundsManager sellerFundsManager;
 
 
     public DisputeServiceImpl(TradeRepository tradeRepository,
                               DisputeRepository disputeRepository,
-                              UserRepository userRepository,
+                              AdminUserRepository adminUserRepository,
                               CurrentUserService currentUserService,
+                              CurrentAdminService currentAdminService,
                               NotificationService notificationService,  
                               SellerFundsManager sellerFundsManager) {
         this.tradeRepository = tradeRepository;
         this.disputeRepository = disputeRepository;
-        this.userRepository = userRepository;
+        this.adminUserRepository = adminUserRepository;
         this.currentUserService = currentUserService;
+        this.currentAdminService = currentAdminService;
         this.notificationService = notificationService;
         this.sellerFundsManager = sellerFundsManager;
     }
@@ -103,9 +108,8 @@ public class DisputeServiceImpl implements DisputeService {
         List<Dispute> disputes;
 
         if (onlyAssignedToCurrentAdmin) {
-            User current = currentUserService.getCurrentUser()
+            AdminUser current = currentAdminService.getCurrentAdmin()
                     .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-            ensureStaff(current);
             disputes = status != null
                     ? disputeRepository.findByStatusAndAssignedAdminOrderByCreatedAtDesc(status, current)
                     : disputeRepository.findByAssignedAdminOrderByCreatedAtDesc(current);
@@ -121,22 +125,19 @@ public class DisputeServiceImpl implements DisputeService {
     @Override
     @Transactional
     public DisputeResult assignToCurrentAdmin(Long disputeId) {
-        User admin = currentUserService.getCurrentUser()
+        AdminUser admin = currentAdminService.getCurrentAdmin()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-        ensureStaff(admin);
         return assign(disputeId, admin);
     }
 
     @Override
     @Transactional
     public DisputeResult assignToAdmin(Long disputeId, Long adminId) {
-        User requester = currentUserService.getCurrentUser()
+        currentAdminService.getCurrentAdmin()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-        ensureAdmin(requester);
 
-        User admin = userRepository.findById(adminId)
+        AdminUser admin = adminUserRepository.findById(adminId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-        ensureStaff(admin);
 
         return assign(disputeId, admin);
     }
@@ -145,9 +146,8 @@ public class DisputeServiceImpl implements DisputeService {
     @Transactional
     public DisputeResult resolveDispute(Long disputeId, String outcome, String resolutionNote) {
         Dispute dispute = loadDispute(disputeId);
-        User admin = currentUserService.getCurrentUser()
+        AdminUser admin = currentAdminService.getCurrentAdmin()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-        ensureStaff(admin);
         ensureAssigned(dispute, admin);
 
         if (dispute.getStatus() == DisputeStatus.RESOLVED || dispute.getStatus() == DisputeStatus.REJECTED) {
@@ -173,6 +173,9 @@ public class DisputeServiceImpl implements DisputeService {
         // Trả coin lại cho seller
         sellerFundsManager.refundToSeller(dispute.getTrade());
         }
+        case CANCELLED -> {
+        // No funds movement needed
+        }
         }
         Dispute saved = disputeRepository.save(dispute);
 
@@ -185,9 +188,8 @@ public class DisputeServiceImpl implements DisputeService {
     @Transactional
     public DisputeResult rejectDispute(Long disputeId, String resolutionNote) {
         Dispute dispute = loadDispute(disputeId);
-        User admin = currentUserService.getCurrentUser()
+        AdminUser admin = currentAdminService.getCurrentAdmin()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-        ensureStaff(admin);
         ensureAssigned(dispute, admin);
 
         if (dispute.getStatus() == DisputeStatus.RESOLVED || dispute.getStatus() == DisputeStatus.REJECTED) {
@@ -212,7 +214,7 @@ public class DisputeServiceImpl implements DisputeService {
         return DisputeMapper.toResult(saved);
     }
 
-    private DisputeResult assign(Long disputeId, User admin) {
+    private DisputeResult assign(Long disputeId, AdminUser admin) {
         Dispute dispute = loadDispute(disputeId);
         if (dispute.getStatus() == DisputeStatus.RESOLVED || dispute.getStatus() == DisputeStatus.REJECTED) {
             throw new ApplicationException(ErrorCode.INVALID_DISPUTE_STATUS);
@@ -224,7 +226,7 @@ public class DisputeServiceImpl implements DisputeService {
 
         notificationService.notifyUser(admin.getId(),NotificationType.ADMIN_INREVIEW,
                 String.format("Dispute #%d has been assigned to you", dispute.getId()));
-        notifyParticipants(dispute, String.format("Dispute #%d is under review by %s", dispute.getId(), admin.getEmail()));
+        notifyParticipants(dispute, String.format("Dispute #%d is under review by %s", dispute.getId(), admin.getUsername()));
 
         return DisputeMapper.toResult(saved);
     }
@@ -234,23 +236,13 @@ public class DisputeServiceImpl implements DisputeService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.DISPUTE_NOT_FOUND));
     }
 
-    private void ensureStaff(User user) {
-        if (user.getRole() != User.Role.ADMIN && user.getRole() != User.Role.MODERATOR) {
-            throw new ApplicationException(ErrorCode.FORBIDDEN);
-        }
-    }
-
-    private void ensureAdmin(User user) {
-        if (user.getRole() != User.Role.ADMIN) {
-            throw new ApplicationException(ErrorCode.FORBIDDEN);
-        }
-    }
+    
 
     private boolean isParticipant(Trade trade, User user) {
         return trade.getBuyer().getId().equals(user.getId()) || trade.getSeller().getId().equals(user.getId());
     }
 
-    private void ensureAssigned(Dispute dispute, User admin) {
+    private void ensureAssigned(Dispute dispute, AdminUser admin) {
         if (dispute.getAssignedAdmin() == null || !dispute.getAssignedAdmin().getId().equals(admin.getId())) {
             throw new ApplicationException(ErrorCode.FORBIDDEN);
         }
@@ -279,14 +271,6 @@ public class DisputeServiceImpl implements DisputeService {
     private void notifyOnOpen(Trade trade, Dispute dispute) {
         String message = String.format("Trade #%d has a new dispute (#%d)", trade.getId(), dispute.getId());
         notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()),NotificationType.DISPUTE_OPENED, message);
-
-        List<User> admins = userRepository.findByRole(User.Role.ADMIN);
-        List<Long> adminIds = admins.stream().map(User::getId).toList();
-        notificationService.notifyUsers(adminIds,NotificationType.ADMIN_INREVIEW ,message + ". Please review");
-
-        List<User> moderators = userRepository.findByRole(User.Role.MODERATOR);
-        List<Long> moderatorIds = moderators.stream().map(User::getId).toList();
-        notificationService.notifyUsers(moderatorIds,NotificationType.ADMIN_INREVIEW , message + ". Please review");
     }
 
     private void notifyParticipants(Dispute dispute, String message) {

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Orders</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:8px}th{background:#f4f4f4}</style>
+    </head>
+<body>
+<div th:replace="admin/layout :: layout(~{::section})">
+  <section>
+    <header>
+      <div class="title">Orders</div>
+      <div th:if="${selectedUserId != null}" class="actions">
+        <a class="btn" th:href="@{'/admin-ui/users/' + ${selectedUserId} + '/trades'}">View trades of this user</a>
+      </div>
+    </header>
+    <table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Type</th>
+        <th>Token</th>
+        <th>Amount</th>
+        <th>Available</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Created</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="o: ${orders}">
+        <td th:text="${o.id}">1</td>
+        <td th:text="${o.user != null ? o.user.email : '-'}">user@example.com</td>
+        <td th:text="${o.type}">SELL</td>
+        <td th:text="${o.token}">USDT</td>
+        <td th:text="${o.amount}">1000</td>
+        <td th:text="${o.availableAmount}">800</td>
+        <td th:text="${o.price}">24000</td>
+        <td th:text="${o.status}">OPEN</td>
+        <td th:text="${o.createdAt}">2025-01-01</td>
+    </tr>
+    </tbody>
+    </table>
+  </section>
+</div>
+</body>
+</html>
+
+

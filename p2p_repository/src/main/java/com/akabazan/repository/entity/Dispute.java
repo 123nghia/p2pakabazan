@@ -23,7 +23,7 @@ public class Dispute extends AbstractEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_admin_id")
-    private User assignedAdmin;
+    private AdminUser assignedAdmin;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "resolution_outcome")
@@ -44,8 +44,8 @@ public class Dispute extends AbstractEntity {
     public void setEvidence(String evidence) { this.evidence = evidence; }
     public DisputeStatus getStatus() { return status; }
     public void setStatus(DisputeStatus status) { this.status = status; }
-    public User getAssignedAdmin() { return assignedAdmin; }
-    public void setAssignedAdmin(User assignedAdmin) { this.assignedAdmin = assignedAdmin; }
+    public AdminUser getAssignedAdmin() { return assignedAdmin; }
+    public void setAssignedAdmin(AdminUser assignedAdmin) { this.assignedAdmin = assignedAdmin; }
     public ResolutionOutcome getResolutionOutcome() { return resolutionOutcome; }
     public void setResolutionOutcome(ResolutionOutcome resolutionOutcome) { this.resolutionOutcome = resolutionOutcome; }
     public String getResolutionNote() { return resolutionNote; }

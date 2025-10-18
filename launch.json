@@ -3,11 +3,19 @@
   "configurations": [
     {
       "type": "java",
-      "name": "Debug Spring Boot p2p_p2p",
+      "name": "Debug Spring Boot p2p_admin (Attach)",
       "request": "attach",
       "hostName": "localhost",
-      "port": 5005,
-      "preLaunchTask": "mvn spring-boot:run p2p_p2p"
+      "port": 5005
+    },
+    {
+      "type": "java",
+      "name": "Debug Spring Boot p2p_admin (Launch)",
+      "request": "launch",
+      "mainClass": "com.akabazan.admin.AdminApplication",
+      "projectName": "p2p_admin",
+      "vmArgs": "-Dspring-boot.run.profiles=default -Dserver.port=8081 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005",
+      "cwd": "${workspaceFolder}/p2p_admin"
     }
   ]
 }

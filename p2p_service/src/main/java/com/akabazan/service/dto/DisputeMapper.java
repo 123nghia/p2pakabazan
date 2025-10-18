@@ -19,7 +19,7 @@ public class DisputeMapper {
         result.setStatus(dispute.getStatus().name());
         if (dispute.getAssignedAdmin() != null) {
             result.setAssignedAdminId(dispute.getAssignedAdmin().getId());
-            result.setAssignedAdminEmail(dispute.getAssignedAdmin().getEmail());
+            result.setAssignedAdminEmail(dispute.getAssignedAdmin().getUsername());
         }
         if (dispute.getResolutionOutcome() != null) {
             result.setResolutionOutcome(dispute.getResolutionOutcome().name());

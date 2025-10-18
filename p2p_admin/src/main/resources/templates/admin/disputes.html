@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Disputes</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:8px}th{background:#f4f4f4}</style>
+    <script>
+        async function resolveDispute(id, outcome) {
+            const note = prompt('Resolution note (optional):', '');
+            const params = new URLSearchParams({outcome, note: note || ''});
+            const res = await fetch(`/admin/disputes/${id}/resolve`, {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params});
+            if (res.ok) location.reload(); else alert('Failed');
+        }
+        async function rejectDispute(id) {
+            const note = prompt('Reject note (optional):', '');
+            const params = new URLSearchParams({note: note || ''});
+            const res = await fetch(`/admin/disputes/${id}/reject`, {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params});
+            if (res.ok) location.reload(); else alert('Failed');
+        }
+        async function assignDispute(id) {
+            const adminId = prompt('Assign to adminId (để trống = current admin):', '');
+            const params = new URLSearchParams({});
+            if (adminId) params.append('adminId', adminId);
+            
+            const res = await fetch(`/admin/disputes/${id}/assign`, {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: params});
+            if (res.ok) location.reload(); else alert('Failed');
+        }
+    </script>
+</head>
+<body>
+<div th:replace="admin/layout :: layout(~{::section})">
+  <section>
+    <header>
+      <div class="title">Disputes</div>
+    </header>
+    <table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>TradeId</th>
+        <th>Status</th>
+        <th>Reason</th>
+        <th>Created</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="d: ${disputes}">
+        <td th:text="${d.id}">1</td>
+        <td th:text="${d.tradeId}">1001</td>
+        <td th:text="${d.status}">OPEN</td>
+        <td th:text="${d.reason}">Seller not confirm</td>
+        <td th:text="${d.createdAt}">2025-01-01</td>
+        <td>
+            <button th:onclick="|resolveDispute(${d.id}, 'BUYER_FAVORED')|">Buyer favored</button>
+            <button th:onclick="|resolveDispute(${d.id}, 'SELLER_FAVORED')|">Seller favored</button>
+            <button th:onclick="|rejectDispute(${d.id})|">Reject</button>
+            <button th:onclick="|assignDispute(${d.id})|">Assign</button>
+        </td>
+    </tr>
+    </tbody>
+    </table>
+  </section>
+</div>
+</body>
+</html>
+
+

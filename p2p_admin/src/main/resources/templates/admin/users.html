@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Users</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>table{border-collapse:collapse;width:100%}th,td{border:1px solid #ddd;padding:8px}th{background:#f4f4f4}</style>
+    </head>
+<body>
+<div th:replace="admin/layout :: layout(~{::section})">
+  <section>
+    <header>
+      <div class="title">Users</div>
+    </header>
+    <table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Role</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="u: ${users}">
+        <td th:text="${u.id}">1</td>
+        <td>
+          <div th:text="${u.email}">user@example.com</div>
+          <div>
+            <a class="btn" th:href="@{'/admin-ui/users/' + ${u.id} + '/orders'}">View orders</a>
+            <a class="btn" th:href="@{'/admin-ui/users/' + ${u.id} + '/trades'}">View trades</a>
+          </div>
+        </td>
+        <td th:text="${u.phone}">+84...</td>
+        <td th:text="${u.role}">TRADER</td>
+    </tr>
+    </tbody>
+    </table>
+  </section>
+</div>
+</body>
+</html>
+
+
