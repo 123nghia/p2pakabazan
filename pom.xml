@@ -26,6 +26,7 @@
     <module>p2p_security</module>
     <module>p2p_p2p</module>
     <module>p2p_admin</module>
+    <module>p2p_framework_data</module>
     </modules>
   <dependencies>
  
