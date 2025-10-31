@@ -1,25 +1,17 @@
 package com.akabazan.repository.entity;
 
+import com.akabazan.framework.data.domain.AbstractEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "trade_chats")
-public class TradeChat {
-
-    @Id
-    @GeneratedValue
-    @UuidGenerator(style = UuidGenerator.Style.RANDOM)
-    @Column(columnDefinition = "uuid", updatable = false, nullable = false)
-    private UUID id;
+public class TradeChat extends AbstractEntity {
 
     @ManyToOne
     @JoinColumn(name = "trade_id", nullable = false)
@@ -38,8 +30,6 @@ public class TradeChat {
     private String recipientRole;
 
     // Getters & Setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
     public Trade getTrade() { return trade; }
     public void setTrade(Trade trade) { this.trade = trade; }
     public UUID getSenderId() { return senderId; }

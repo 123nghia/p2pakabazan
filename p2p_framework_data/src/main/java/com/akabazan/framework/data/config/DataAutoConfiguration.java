@@ -13,7 +13,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.data.auditing.DateTimeProvider;
 
 import java.time.Clock;
@@ -35,8 +34,9 @@ public class DataAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnProperty(name = "p2p.data.id-strategy", havingValue = "uuid-v7", matchIfMissing = false)
     public IdGenerator idGenerator(P2PDataProperties props, ClockProvider clockProvider) {
-        // Currently only uuid-v7 is implemented; extend via properties later.
+        // UUID v7 generator (time-ordered) - only used if explicitly enabled
         return new UuidV7Generator(clockProvider);
     }
 
@@ -73,5 +73,9 @@ public class DataAutoConfiguration {
     public DateTimeProvider dateTimeProvider(ClockProvider clockProvider) {
         return () -> Optional.of(OffsetDateTime.now(clockProvider.getClock()));
     }
+
+    // Note: UuidV7ValueGenerator is not registered as a bean here
+    // It will be instantiated by Hibernate via @GenericGenerator and will use
+    // BeanFactoryAware to access Spring context
 }
 

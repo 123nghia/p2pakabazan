@@ -11,8 +11,8 @@ public class P2PDataProperties {
     /** Enable snake_case physical naming strategy for Hibernate. */
     private boolean namingSnakeCase = false;
 
-    /** Strategy for ID generation (identity, uuid-v7, etc.). */
-    private String idStrategy = "uuid-v7";
+    /** Strategy for ID generation (identity, uuid-v4, etc.). */
+    private String idStrategy = "uuid-v4";
 
     /** Whether soft delete is enabled by convention. */
     private boolean softDeleteEnabled = false;

@@ -5,7 +5,7 @@ import org.hibernate.boot.model.naming.PhysicalNamingStrategy;
 import org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl;
 import org.hibernate.engine.jdbc.env.spi.JdbcEnvironment;
 
-public class SnakeCasePhysicalNamingStrategy extends PhysicalNamingStrategyStandardImpl implements PhysicalNamingStrategy {
+public class SnakeCasePhysicalNamingStrategy extends PhysicalNamingStrategyStandardImpl {
 
     @Override
     public Identifier toPhysicalTableName(Identifier name, JdbcEnvironment context) {

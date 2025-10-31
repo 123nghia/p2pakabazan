@@ -52,6 +52,7 @@ public class CreateOrderService implements CreateOrderUseCase {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
 
         ensureKycVerified(user);
+        validateInput(command);
         applyDefaultLimits(command);
 
         String orderType = normalizeOrderType(command.getType());
@@ -86,11 +87,33 @@ public class CreateOrderService implements CreateOrderUseCase {
     }
 
     private String normalizeOrderType(String type) {
-        String normalized = type == null ? "SELL" : type.trim().toUpperCase();
+        if (type == null) {
+            throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
+        }
+        String normalized = type.trim().toUpperCase();
         if (!"BUY".equals(normalized) && !"SELL".equals(normalized)) {
             throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
         }
         return normalized;
+    }
+
+    private void validateInput(OrderCreateCommand command) {
+        if (command.getAmount() == null || command.getAmount() <= 0) {
+            throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
+        }
+        if (command.getPrice() == null || command.getPrice() <= 0) {
+            throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
+        }
+        if (command.getMinLimit() != null && command.getMinLimit() <= 0) {
+            throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
+        }
+        if (command.getMaxLimit() != null && command.getMaxLimit() <= 0) {
+            throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
+        }
+        if (command.getMinLimit() != null && command.getMaxLimit() != null
+                && command.getMinLimit() > command.getMaxLimit()) {
+            throw new ApplicationException(ErrorCode.AMOUNT_OUT_OF_LIMIT);
+        }
     }
 
     private FiatAccount resolveFiatAccount(User user, OrderCreateCommand command) {
