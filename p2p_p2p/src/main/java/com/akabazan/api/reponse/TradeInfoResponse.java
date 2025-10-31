@@ -1,60 +1,32 @@
 package com.akabazan.api.reponse;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class TradeInfoResponse {
-    private Long tradeId;
+
+    private UUID tradeId;
     private String tradeCode;
     private String orderType;
     private String status;
     private Double amount;
-       private String role;
-           private boolean canCancel;
-
-    public boolean isCanCancel() {
-            return canCancel;
-        }
-
-           public void setCanCancel(boolean canCancel) {
-               this.canCancel = canCancel;
-           }
-
-    public String getRole() {
-        return role;
-    }
-
-       public void setRole(String role) {
-           this.role = role;
-       }
-    private Long sellerFiatAccountId;
+    private String role;
+    private boolean canCancel;
+    private UUID sellerFiatAccountId;
     private String bankName;
     private String accountNumber;
     private String accountHolder;
     private String bankBranch;
     private String paymentType;
-
-
-    // --- TTL ---
     private LocalDateTime autoCancelAt;
     private Long timeRemainingSeconds;
+    private double price;
 
-    private double Price;
-
-
-    public double getPrice() {
-        return Price;
-    }
-
-    public void setPrice(double price) {
-        Price = price;
-    }
-
-    // getters/setters
-    public Long getTradeId() {
+    public UUID getTradeId() {
         return tradeId;
     }
 
-    public void setTradeId(Long tradeId) {
+    public void setTradeId(UUID tradeId) {
         this.tradeId = tradeId;
     }
 
@@ -90,6 +62,30 @@ public class TradeInfoResponse {
         this.amount = amount;
     }
 
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public boolean isCanCancel() {
+        return canCancel;
+    }
+
+    public void setCanCancel(boolean canCancel) {
+        this.canCancel = canCancel;
+    }
+
+    public UUID getSellerFiatAccountId() {
+        return sellerFiatAccountId;
+    }
+
+    public void setSellerFiatAccountId(UUID sellerFiatAccountId) {
+        this.sellerFiatAccountId = sellerFiatAccountId;
+    }
+
     public String getBankName() {
         return bankName;
     }
@@ -114,14 +110,6 @@ public class TradeInfoResponse {
         this.accountHolder = accountHolder;
     }
 
-    public Long getSellerFiatAccountId() {
-        return sellerFiatAccountId;
-    }
-
-    public void setSellerFiatAccountId(Long sellerFiatAccountId) {
-        this.sellerFiatAccountId = sellerFiatAccountId;
-    }
-
     public String getBankBranch() {
         return bankBranch;
     }
@@ -138,9 +126,27 @@ public class TradeInfoResponse {
         this.paymentType = paymentType;
     }
 
+    public LocalDateTime getAutoCancelAt() {
+        return autoCancelAt;
+    }
 
-       public LocalDateTime getAutoCancelAt() { return autoCancelAt; }
-    public void setAutoCancelAt(LocalDateTime autoCancelAt) { this.autoCancelAt = autoCancelAt; }
-    public Long getTimeRemainingSeconds() { return timeRemainingSeconds; }
-    public void setTimeRemainingSeconds(Long timeRemainingSeconds) { this.timeRemainingSeconds = timeRemainingSeconds; }
+    public void setAutoCancelAt(LocalDateTime autoCancelAt) {
+        this.autoCancelAt = autoCancelAt;
+    }
+
+    public Long getTimeRemainingSeconds() {
+        return timeRemainingSeconds;
+    }
+
+    public void setTimeRemainingSeconds(Long timeRemainingSeconds) {
+        this.timeRemainingSeconds = timeRemainingSeconds;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
 }

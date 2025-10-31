@@ -2,12 +2,12 @@ package com.akabazan.repository;
 
 import com.akabazan.repository.entity.FiatAccount;
 import com.akabazan.repository.entity.User;
-
-import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface FiatAccountRepository extends JpaRepository<FiatAccount, Long> {
+public interface FiatAccountRepository extends JpaRepository<FiatAccount, UUID> {
     Optional<FiatAccount> findByUserAndBankNameAndAccountNumberAndAccountHolder(
             User user,
             String bankName,
@@ -15,5 +15,5 @@ public interface FiatAccountRepository extends JpaRepository<FiatAccount, Long> 
             String accountHolder
     );
 
-    List<FiatAccount> findByUserId(Long userId);
+    List<FiatAccount> findByUserId(UUID userId);
 }

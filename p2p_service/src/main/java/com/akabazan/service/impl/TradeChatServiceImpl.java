@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,7 +42,7 @@ public class TradeChatServiceImpl implements TradeChatService {
 
     @Override
     @Transactional
-    public TradeChatResult sendMessage(Long tradeId, String message) {
+    public TradeChatResult sendMessage(UUID tradeId, String message) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -56,7 +57,7 @@ public class TradeChatServiceImpl implements TradeChatService {
     }
 
     @Override
-    public List<TradeChatResult> getMessages(Long tradeId) {
+    public List<TradeChatResult> getMessages(UUID tradeId) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
         RecipientRole viewerRole = determineUserRoleForTrade(trade, getCurrentUserId());
@@ -68,17 +69,17 @@ public class TradeChatServiceImpl implements TradeChatService {
 
     @Override
     public List<TradeChatThreadResult> getChatThreadsForCurrentUser() {
-        Long userId = getCurrentUserId();
+        UUID userId = getCurrentUserId();
         List<Trade> trades = tradeRepository.findTradesWithChatsByUser(userId);
         if (trades.isEmpty()) {
             return List.of();
         }
 
-        List<Long> tradeIds = trades.stream()
+        List<UUID> tradeIds = trades.stream()
                 .map(Trade::getId)
                 .toList();
 
-        Map<Long, TradeChatResult> lastMessages = tradeChatRepository.findLatestMessagesByTradeIds(tradeIds)
+        Map<UUID, TradeChatResult> lastMessages = tradeChatRepository.findLatestMessagesByTradeIds(tradeIds)
                 .stream()
                 .collect(Collectors.toMap(
                         chat -> chat.getTrade().getId(),
@@ -113,7 +114,7 @@ public class TradeChatServiceImpl implements TradeChatService {
         return threads;
     }
 
-    private String resolveCounterpartyName(Trade trade, Long currentUserId) {
+    private String resolveCounterpartyName(Trade trade, UUID currentUserId) {
         if (trade == null) {
             return null;
         }
@@ -126,7 +127,7 @@ public class TradeChatServiceImpl implements TradeChatService {
         return extractDisplayName(trade.getSeller() != null ? trade.getSeller() : trade.getBuyer());
     }
 
-    private RecipientRole determineUserRoleForTrade(Trade trade, Long userId) {
+    private RecipientRole determineUserRoleForTrade(Trade trade, UUID userId) {
         if (trade == null || userId == null) {
             return RecipientRole.ALL;
         }
@@ -152,7 +153,7 @@ public class TradeChatServiceImpl implements TradeChatService {
         return recipientRole.equalsIgnoreCase(viewerRole.name());
     }
 
-    private TradeChatResult resolveLastVisibleMessage(Long tradeId,
+    private TradeChatResult resolveLastVisibleMessage(UUID tradeId,
                                                       RecipientRole viewerRole,
                                                       TradeChatResult candidate) {
         if (candidate != null && isVisibleForRecipient(candidate.getRecipientRole(), viewerRole)) {
@@ -181,7 +182,11 @@ public class TradeChatServiceImpl implements TradeChatService {
         return atIndex > 0 ? email.substring(0, atIndex) : email;
     }
 
-    private Long getCurrentUserId() {
-        return Long.valueOf(SecurityContextHolder.getContext().getAuthentication().getName());
+    private UUID getCurrentUserId() {
+        try {
+            return UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+        } catch (IllegalArgumentException ex) {
+            throw new ApplicationException(ErrorCode.USER_NOT_FOUND);
+        }
     }
 }

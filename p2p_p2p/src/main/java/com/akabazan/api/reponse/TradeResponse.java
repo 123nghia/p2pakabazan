@@ -1,135 +1,62 @@
 package com.akabazan.api.reponse;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class TradeResponse {
-    private Long id;
-    private Long orderId;
-    private Long buyerId;
-    private Long sellerId;
+
+    private UUID id;
+    private UUID orderId;
+    private UUID buyerId;
+    private UUID sellerId;
     private double amount;
+    private double price;
     private String status;
-    // private boolean escrow;
     private String tradeCode;
-    private String Fiat;
-    private String Token;
-    private String Counterparty;
-    private Long sellerFiatAccountId;
+    private String fiat;
+    private String token;
+    private String counterparty;
+    private String role;
+    private boolean canCancel;
+    private UUID sellerFiatAccountId;
     private String sellerBankName;
     private String sellerAccountNumber;
     private String sellerAccountHolder;
     private String sellerBankBranch;
     private String sellerPaymentType;
-
-    private boolean canCancel;
-
-public boolean isCanCancel() {
-    return canCancel;
-}
-
-public void setCanCancel(boolean canCancel) {
-    this.canCancel = canCancel;
-}
-     private String role;
-
-
-    public String getRole() {
-      return role;
-    }
-     public void setRole(String role) {
-       this.role = role;
-     }
-
-     public String getToken() {
-        return Token;
-    }
-
-    public void setToken(String token) {
-        Token = token;
-    }
-
-     public String getFiat() {
-        return Fiat;
-    }
-
-    public void setFiat(String fiat) {
-        Fiat = fiat;
-    }
-
-    public String getCounterparty() {
-        return Counterparty;
-    }
-
-    public void setCounterparty(String partnerUserName) {
-        this.Counterparty = partnerUserName;
-    }
-
-     private double price;
-    private String SenderUserName;
-
-    private String BuyerUserName;
-    public String getBuyerUserName() {
-        return BuyerUserName;
-    }
-
-    public void setBuyerUserName(String buyerUserName) {
-        BuyerUserName = buyerUserName;
-    }
-
-    public String getSenderUserName() {
-        return SenderUserName;
-    }
-
-    public void setSenderUserName(String senderUserName) {
-        SenderUserName = senderUserName;
-    }
-
+    private String senderUserName;
+    private String buyerUserName;
     private LocalDateTime createdAt;
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public Long getOrderId() {
+    public UUID getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Long orderId) {
+    public void setOrderId(UUID orderId) {
         this.orderId = orderId;
     }
 
-    public Long getBuyerId() {
+    public UUID getBuyerId() {
         return buyerId;
     }
 
-    public void setBuyerId(Long buyerId) {
+    public void setBuyerId(UUID buyerId) {
         this.buyerId = buyerId;
     }
 
-    public Long getSellerId() {
+    public UUID getSellerId() {
         return sellerId;
     }
 
-    public void setSellerId(Long sellerId) {
+    public void setSellerId(UUID sellerId) {
         this.sellerId = sellerId;
     }
 
@@ -141,6 +68,14 @@ public void setCanCancel(boolean canCancel) {
         this.amount = amount;
     }
 
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
     public String getStatus() {
         return status;
     }
@@ -148,8 +83,6 @@ public void setCanCancel(boolean canCancel) {
     public void setStatus(String status) {
         this.status = status;
     }
-
-   
 
     public String getTradeCode() {
         return tradeCode;
@@ -159,11 +92,51 @@ public void setCanCancel(boolean canCancel) {
         this.tradeCode = tradeCode;
     }
 
-    public Long getSellerFiatAccountId() {
+    public String getFiat() {
+        return fiat;
+    }
+
+    public void setFiat(String fiat) {
+        this.fiat = fiat;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getCounterparty() {
+        return counterparty;
+    }
+
+    public void setCounterparty(String counterparty) {
+        this.counterparty = counterparty;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public boolean isCanCancel() {
+        return canCancel;
+    }
+
+    public void setCanCancel(boolean canCancel) {
+        this.canCancel = canCancel;
+    }
+
+    public UUID getSellerFiatAccountId() {
         return sellerFiatAccountId;
     }
 
-    public void setSellerFiatAccountId(Long sellerFiatAccountId) {
+    public void setSellerFiatAccountId(UUID sellerFiatAccountId) {
         this.sellerFiatAccountId = sellerFiatAccountId;
     }
 
@@ -205,5 +178,29 @@ public void setCanCancel(boolean canCancel) {
 
     public void setSellerPaymentType(String sellerPaymentType) {
         this.sellerPaymentType = sellerPaymentType;
+    }
+
+    public String getSenderUserName() {
+        return senderUserName;
+    }
+
+    public void setSenderUserName(String senderUserName) {
+        this.senderUserName = senderUserName;
+    }
+
+    public String getBuyerUserName() {
+        return buyerUserName;
+    }
+
+    public void setBuyerUserName(String buyerUserName) {
+        this.buyerUserName = buyerUserName;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 }

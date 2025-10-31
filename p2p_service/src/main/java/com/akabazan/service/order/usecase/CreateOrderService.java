@@ -94,7 +94,7 @@ public class CreateOrderService implements CreateOrderUseCase {
     }
 
     private FiatAccount resolveFiatAccount(User user, OrderCreateCommand command) {
-        Long accountId = command.getFiatAccountId();
+        var accountId = command.getFiatAccountId();
         if (accountId == null) {
             return null;
         }

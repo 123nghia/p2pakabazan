@@ -1,11 +1,12 @@
 package com.akabazan.repository.entity;
 
+import com.akabazan.framework.data.domain.AuditEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "disputes")
-public class Dispute extends AbstractEntity {
+public class Dispute extends AuditEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trade_id", nullable = false)

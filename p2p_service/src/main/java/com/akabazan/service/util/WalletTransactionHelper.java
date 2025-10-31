@@ -3,6 +3,7 @@ package com.akabazan.service.util;
 import com.akabazan.repository.constant.WalletTransactionType;
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.WalletTransactionService;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
@@ -22,7 +23,7 @@ public class WalletTransactionHelper {
      * Records a wallet transaction with all necessary details
      */
     public void recordTransaction(Wallet wallet, WalletTransactionType type, double amount,
-                                 Long userId, String reference, String description) {
+                                 UUID userId, String reference, String description) {
         double balanceBefore = wallet.getBalance();
         double availableBefore = wallet.getAvailableBalance();
         
@@ -45,7 +46,7 @@ public class WalletTransactionHelper {
      * Records a wallet transaction with trade reference
      */
     public void recordTradeTransaction(Wallet wallet, WalletTransactionType type, double amount,
-                                      Long userId, Long tradeId, String reference, String description) {
+                                      UUID userId, UUID tradeId, String reference, String description) {
         double balanceBefore = wallet.getBalance();
         double availableBefore = wallet.getAvailableBalance();
         

@@ -1,18 +1,21 @@
 package com.akabazan.service.dto;
 
+import java.util.UUID;
+
+
 public class AuthResult {
 
-    private final Long userId;
+    private final UUID userId;
     private final String email;
     private final String token;
 
-    public AuthResult(Long userId, String email, String token) {
+    public AuthResult(UUID userId, String email, String token) {
         this.userId = userId;
         this.email = email;
         this.token = token;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 

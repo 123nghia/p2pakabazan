@@ -16,6 +16,8 @@ import com.akabazan.service.command.TradeCreateCommand;
 import com.akabazan.service.dto.TradeInfoResult;
 import com.akabazan.service.dto.TradeResult;
 import java.util.List;
+import java.util.UUID;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -36,7 +38,7 @@ public class TradeController extends BaseController {
     // ====================== ORDER ======================
     @GetMapping("/trades/me")
     public ResponseEntity<BaseResponse<List<TradeResponse>>> getTradesOfCurrentUser() {
-        Long userId = currentUserService.getCurrentUserId()
+        var userId = currentUserService.getCurrentUserId()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.UNAUTHORIZED));
 
         List<TradeResult> trades = tradeService.getTradesByUser(userId);
@@ -44,13 +46,13 @@ public class TradeController extends BaseController {
     }
 
     @GetMapping("/orders/{orderId}/trades")
-    public  ResponseEntity < BaseResponse<List<TradeResponse>>> getTradesByOrder(@PathVariable Long orderId) {
+    public  ResponseEntity < BaseResponse<List<TradeResponse>>> getTradesByOrder(@PathVariable UUID orderId) {
         List<TradeResult> trades = tradeService.getTradesByOrder(orderId);
         return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
     }
 
     @GetMapping("/trades/order/{orderId}")
-    public ResponseEntity<BaseResponse<List<TradeResponse>>> getTradesByOrderId(@PathVariable Long orderId) {
+    public ResponseEntity<BaseResponse<List<TradeResponse>>> getTradesByOrderId(@PathVariable UUID orderId) {
         List<TradeResult> trades = tradeService.getTradesByOrder(orderId);
         return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
     }
@@ -64,19 +66,19 @@ public class TradeController extends BaseController {
     }
 
     @PostMapping("/trades/{tradeId}/confirm-payment")
-    public ResponseEntity<BaseResponse<TradeResponse>> confirmPayment(@PathVariable Long tradeId) {
+    public ResponseEntity<BaseResponse<TradeResponse>> confirmPayment(@PathVariable UUID tradeId) {
         TradeResult result = tradeService.confirmPayment(tradeId);
         return ResponseFactory.ok(TradeResponseMapper.from(result));
     }
 
     @PostMapping("/trades/{tradeId}/confirm-received")
-    public ResponseEntity<BaseResponse<TradeResponse>> confirmReceived(@PathVariable Long tradeId) {
+    public ResponseEntity<BaseResponse<TradeResponse>> confirmReceived(@PathVariable UUID tradeId) {
         TradeResult result = tradeService.confirmReceived(tradeId);
         return ResponseFactory.ok(TradeResponseMapper.from(result));
     }
 
     @PostMapping("/trades/{tradeId}/cancel")
-    public ResponseEntity<BaseResponse<TradeResponse>> cancelTrade(@PathVariable Long tradeId) {
+    public ResponseEntity<BaseResponse<TradeResponse>> cancelTrade(@PathVariable UUID tradeId) {
 
         TradeResult result = tradeService.cancelTrade(tradeId);
         return ResponseFactory.ok(TradeResponseMapper.from(result));
@@ -90,7 +92,7 @@ public class TradeController extends BaseController {
 
 
     @GetMapping("/trades/{tradeId}")
-    public ResponseEntity<BaseResponse<TradeInfoResponse>> getTradeInfo(@PathVariable Long tradeId) {
+    public ResponseEntity<BaseResponse<TradeInfoResponse>> getTradeInfo(@PathVariable UUID tradeId) {
         TradeInfoResult info = tradeService.getTradeInfo(tradeId);
         return ResponseFactory.ok(TradeInfoResponseMapper.from(info));
     }

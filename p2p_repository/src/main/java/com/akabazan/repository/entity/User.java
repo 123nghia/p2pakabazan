@@ -1,16 +1,13 @@
 package com.akabazan.repository.entity;
 
+import com.akabazan.framework.data.domain.AuditEntity;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class User extends AbstractEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class User extends AuditEntity {
 
     @Column(nullable = false)
     private String email;
@@ -33,8 +30,6 @@ public class User extends AbstractEntity {
     private List<Wallet> wallets = new ArrayList<>();
 
     // Getters / Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getPhone() { return phone; }

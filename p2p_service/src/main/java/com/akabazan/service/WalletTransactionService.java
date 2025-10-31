@@ -2,6 +2,7 @@ package com.akabazan.service;
 
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.repository.constant.WalletTransactionType;
+import java.util.UUID;
 
 public interface WalletTransactionService {
 
@@ -12,8 +13,8 @@ public interface WalletTransactionService {
                 double balanceAfter,
                 double availableBefore,
                 double availableAfter,
-                Long performedBy,
+                UUID performedBy,
                 String referenceType,
-                Long referenceId,
+                UUID referenceId,
                 String description);
 }

@@ -1,25 +1,23 @@
 package com.akabazan.repository;
 
 import com.akabazan.repository.entity.Wallet;
-
 import jakarta.persistence.LockModeType;
-
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
-
 @Repository
-public interface WalletRepository extends JpaRepository<Wallet, Long> {
+public interface WalletRepository extends JpaRepository<Wallet, UUID> {
 
-    Optional<Wallet> findByUserIdAndToken(Long userId, String token);
+    Optional<Wallet> findByUserIdAndToken(UUID userId, String token);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT w FROM Wallet w WHERE w.user.id = :userId AND w.token = :token")
-    Optional<Wallet> lockByUserIdAndToken(Long userId, String token);
+    Optional<Wallet> lockByUserIdAndToken(UUID userId, String token);
 
-    List<Wallet> findByUserId(Long userId);
-
+    List<Wallet> findByUserId(UUID userId);
 }

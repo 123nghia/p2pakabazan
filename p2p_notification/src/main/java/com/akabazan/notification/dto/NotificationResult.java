@@ -1,23 +1,22 @@
 package com.akabazan.notification.dto;
 
 import com.akabazan.notification.enums.NotificationType;
-
 import java.time.LocalDateTime;
-
+import java.util.UUID;
 
 public class NotificationResult {
 
-    private Long id;
+    private UUID id;
     private String message;
     private boolean read;
     private LocalDateTime createdAt;
     private NotificationType type;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

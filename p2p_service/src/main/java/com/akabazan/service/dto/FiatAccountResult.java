@@ -1,19 +1,21 @@
 package com.akabazan.service.dto;
 
+import java.util.UUID;
+
 public class FiatAccountResult {
 
-    private Long id;
+    private UUID id;
     private String bankName;
     private String accountNumber;
     private String accountHolder;
     private String branch;
     private String paymentType;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

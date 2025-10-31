@@ -1,11 +1,12 @@
 package com.akabazan.service.dto;
 
 import com.akabazan.repository.entity.User;
+import java.util.UUID;
 
 public class IntegrationSyncResult {
 
     private final User user;
-    private final Long walletId;
+    private final UUID walletId;
     private final String walletToken;
     private final String walletAddress;
     private final double walletBalance;
@@ -13,7 +14,7 @@ public class IntegrationSyncResult {
     private final String token;
 
     public IntegrationSyncResult(User user,
-                                 Long walletId,
+                                 UUID walletId,
                                  String walletToken,
                                  String walletAddress,
                                  double walletBalance,
@@ -32,7 +33,7 @@ public class IntegrationSyncResult {
         return user;
     }
 
-    public Long getWalletId() {
+    public UUID getWalletId() {
         return walletId;
     }
 

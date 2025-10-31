@@ -1,9 +1,11 @@
 package com.akabazan.repository.entity;
+
+import com.akabazan.framework.data.domain.AuditEntity;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "fiat_accounts")
-public class FiatAccount extends AbstractEntity {
+public class FiatAccount extends AuditEntity {
 
     @Column(nullable = false)
     private String bankName; // Ví dụ: Vietcombank, Techcombank, MoMo...

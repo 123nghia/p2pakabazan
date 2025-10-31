@@ -2,6 +2,7 @@ package com.akabazan.service.order.usecase;
 
 import com.akabazan.service.dto.OrderResult;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 
 public interface GetOrdersQuery {
@@ -11,7 +12,7 @@ public interface GetOrdersQuery {
                           List<String> paymentMethods,
                           String sortByPrice,
                           String fiat,
-                          Long excludeUserId,
+                          UUID excludeUserId,
                           int page,
                           int size);
 }

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/p2p/trades")
@@ -24,14 +25,14 @@ public class TradeChatController extends BaseController {
     }
 
     @PostMapping("/{tradeId}/chat")
-    public ResponseEntity<TradeChatResponse> sendMessage(@PathVariable Long tradeId,
+    public ResponseEntity<TradeChatResponse> sendMessage(@PathVariable UUID tradeId,
                                                          @RequestBody ChatRequest req) {
         TradeChatResult dto = tradeChatService.sendMessage(tradeId, req.getMessages());
         return ResponseEntity.ok(TradeChatResponseMapper.from(dto));
     }
 
     @GetMapping("/{tradeId}/chat")
-    public ResponseEntity<List<TradeChatResponse>> getMessages(@PathVariable Long tradeId) {
+    public ResponseEntity<List<TradeChatResponse>> getMessages(@PathVariable UUID tradeId) {
         List<TradeChatResult> messages = tradeChatService.getMessages(tradeId);
         return ResponseEntity.ok(TradeChatResponseMapper.fromList(messages));
     }

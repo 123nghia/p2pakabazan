@@ -1,8 +1,7 @@
 package com.akabazan.repository.base;
 
+import com.akabazan.framework.data.domain.AbstractEntity;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-
-import com.akabazan.repository.entity.AbstractEntity;
 
 import java.io.Serializable;
 

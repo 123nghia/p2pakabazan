@@ -1,23 +1,24 @@
 package com.akabazan.admin.controller;
 
+import com.akabazan.admin.security.UserAdminRepository;
 import com.akabazan.common.dto.BaseResponse;
 import com.akabazan.common.dto.ResponseFactory;
+import com.akabazan.repository.OrderRepository;
+import com.akabazan.repository.TradeRepository;
+import com.akabazan.repository.UserRepository;
+import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.User;
-import com.akabazan.admin.security.UserAdminRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
 import com.akabazan.service.DisputeService;
 import com.akabazan.service.TradeService;
 import com.akabazan.service.dto.DisputeResult;
-import com.akabazan.service.dto.TradeResult;
-import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.dto.OrderMapper;
-import com.akabazan.repository.OrderRepository;
-import com.akabazan.repository.constant.TradeStatus;
-import com.akabazan.repository.TradeRepository;
-import com.akabazan.repository.UserRepository;
+import com.akabazan.service.dto.OrderResult;
+import com.akabazan.service.dto.TradeResult;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -62,7 +63,7 @@ public class AdminController {
     }
 
     @GetMapping("/users/{userId}/trades")
-    public ResponseEntity<BaseResponse<List<TradeResult>>> listTradesOfUser(@PathVariable Long userId) {
+    public ResponseEntity<BaseResponse<List<TradeResult>>> listTradesOfUser(@PathVariable UUID userId) {
         List<TradeResult> trades = tradeRepository.findByUser(userId).stream()
                 .map(com.akabazan.service.dto.TradeMapper::toResult)
                 .collect(Collectors.toList());
@@ -84,7 +85,7 @@ public class AdminController {
     }
 
     @GetMapping("/users/{userId}/orders")
-    public ResponseEntity<BaseResponse<List<OrderResult>>> listOrdersOfUser(@PathVariable Long userId,
+    public ResponseEntity<BaseResponse<List<OrderResult>>> listOrdersOfUser(@PathVariable UUID userId,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "type", required = false) String type) {
         var orders = orderRepository.findOrdersByUserAndOptionalFilters(userId, status, type).stream()
@@ -107,7 +108,7 @@ public class AdminController {
 
     @PostMapping("/disputes/{disputeId}/resolve")
     public ResponseEntity<BaseResponse<DisputeResult>> resolveDispute(
-            @PathVariable Long disputeId,
+            @PathVariable UUID disputeId,
             @RequestParam("outcome") String outcome,
             @RequestParam(value = "note", required = false) String note) {
         DisputeResult result = disputeService.resolveDispute(disputeId, outcome, note);
@@ -116,7 +117,7 @@ public class AdminController {
 
     @PostMapping("/disputes/{disputeId}/reject")
     public ResponseEntity<BaseResponse<DisputeResult>> rejectDispute(
-            @PathVariable Long disputeId,
+            @PathVariable UUID disputeId,
             @RequestParam(value = "note", required = false) String note) {
         DisputeResult result = disputeService.rejectDispute(disputeId, note);
         return ResponseFactory.ok(result);
@@ -124,14 +125,14 @@ public class AdminController {
 
     @PostMapping("/disputes/{disputeId}/assign")
     public ResponseEntity<BaseResponse<DisputeResult>> assignDispute(
-            @PathVariable Long disputeId,
-            @RequestParam(value = "adminId", required = false) Long adminId) {
+            @PathVariable UUID disputeId,
+            @RequestParam(value = "adminId", required = false) UUID adminId) {
         DisputeResult result;
         if (adminId == null) {
             // Lấy admin hiện tại từ session (username) → user_admin.id
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            Long currentAdminId = userAdminRepository.findByUsername(username)
-                    .map(a -> a.getId())
+            UUID currentAdminId = userAdminRepository.findByUsername(username)
+                    .map(user -> user.getId())
                     .orElseThrow(() -> new com.akabazan.common.exception.ApplicationException(com.akabazan.common.constant.ErrorCode.USER_NOT_FOUND));
             result = disputeService.assignToAdmin(disputeId, currentAdminId);
         } else {

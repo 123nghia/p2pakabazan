@@ -2,21 +2,22 @@ package com.akabazan.api.reponse;
 
 import com.akabazan.repository.entity.User.KycStatus;
 import java.util.List;
+import java.util.UUID;
 
 public class UserResponse {
 
-    private Long id;
+    private UUID id;
     private String email;
     private String phone;
     private KycStatus kycStatus;
     private List<WalletResponse> wallets;
     private List<LoginHistoryResponse> loginHistory;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

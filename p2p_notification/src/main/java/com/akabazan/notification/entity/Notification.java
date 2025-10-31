@@ -1,7 +1,7 @@
 package com.akabazan.notification.entity;
 
+import com.akabazan.framework.data.domain.AuditEntity;
 import com.akabazan.notification.enums.NotificationType;
-import com.akabazan.repository.entity.AbstractEntity;
 import com.akabazan.repository.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "notifications")
-public class Notification extends AbstractEntity {
+public class Notification extends AuditEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

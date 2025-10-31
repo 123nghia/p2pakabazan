@@ -1,8 +1,10 @@
 package com.akabazan.api.reponse;
 
+import java.util.UUID;
+
 public class PaymentMethodResponse {
 
-    private Long id;
+    private UUID id;
     private String type;
     private String code;
     private String name;
@@ -11,11 +13,11 @@ public class PaymentMethodResponse {
     private Integer displayOrder;
     private boolean active;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

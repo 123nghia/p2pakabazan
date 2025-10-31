@@ -10,10 +10,10 @@ import com.akabazan.common.exception.ApplicationException;
 import com.akabazan.repository.entity.Dispute.DisputeStatus;
 import com.akabazan.service.DisputeService;
 import com.akabazan.service.dto.DisputeResult;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/p2p")
@@ -46,7 +46,7 @@ public class DisputeController extends BaseController {
 
     @PostMapping("/trades/{tradeId}/dispute")
     public ResponseEntity<DisputeResponse> openDispute(
-            @PathVariable Long tradeId,
+            @PathVariable UUID tradeId,
             @RequestParam String reason,
             @RequestParam(required = false) String evidence) {
 
@@ -55,13 +55,13 @@ public class DisputeController extends BaseController {
     }
 
     @GetMapping("/trades/{tradeId}/disputes")
-    public ResponseEntity<List<DisputeResponse>> getDisputesByTrade(@PathVariable Long tradeId) {
+    public ResponseEntity<List<DisputeResponse>> getDisputesByTrade(@PathVariable UUID tradeId) {
         List<DisputeResult> disputes = disputeService.getDisputesByTrade(tradeId);
         return ResponseEntity.ok(DisputeResponseMapper.fromList(disputes));
     }
 
     @PostMapping("/disputes/{disputeId}/assign")
-    public ResponseEntity<DisputeResponse> assignDispute(@PathVariable Long disputeId,
+    public ResponseEntity<DisputeResponse> assignDispute(@PathVariable UUID disputeId,
                                                          @RequestBody(required = false) DisputeAssignRequest request) {
         DisputeResult result = (request == null || request.getAdminId() == null)
                 ? disputeService.assignToCurrentAdmin(disputeId)
@@ -70,7 +70,7 @@ public class DisputeController extends BaseController {
     }
 
     @PostMapping("/disputes/{disputeId}/resolve")
-    public ResponseEntity<DisputeResponse> resolveDispute(@PathVariable Long disputeId,
+    public ResponseEntity<DisputeResponse> resolveDispute(@PathVariable UUID disputeId,
                                                           @RequestBody DisputeResolutionRequest request) {
         if (request == null || request.getOutcome() == null || request.getOutcome().isBlank()) {
             throw new ApplicationException(ErrorCode.INVALID_DISPUTE_STATUS);
@@ -80,7 +80,7 @@ public class DisputeController extends BaseController {
     }
 
     @PostMapping("/disputes/{disputeId}/reject")
-    public ResponseEntity<DisputeResponse> rejectDispute(@PathVariable Long disputeId,
+    public ResponseEntity<DisputeResponse> rejectDispute(@PathVariable UUID disputeId,
                                                          @RequestBody(required = false) DisputeRejectRequest request) {
         String note = request != null ? request.getNote() : null;
         DisputeResult result = disputeService.rejectDispute(disputeId, note);

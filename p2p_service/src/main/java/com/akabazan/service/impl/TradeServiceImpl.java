@@ -42,6 +42,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -137,7 +138,7 @@ public class TradeServiceImpl implements TradeService {
         return TradeMapper.toResult(savedTrade);
     }
 
-    private Order validateAndLockOrder(Long orderId) {
+    private Order validateAndLockOrder(UUID orderId) {
         Order order = entityManager.find(Order.class, orderId, LockModeType.PESSIMISTIC_WRITE);
         if (order == null) {
             throw new ApplicationException(ErrorCode.ORDER_NOT_FOUND);
@@ -232,7 +233,7 @@ public class TradeServiceImpl implements TradeService {
             return account;
         }
 
-        Long accountId = command.getFiatAccountId();
+        UUID accountId = command.getFiatAccountId();
         if (accountId == null) {
             throw new ApplicationException(ErrorCode.SELLER_PAYMENT_METHOD_REQUIRED);
         }
@@ -271,7 +272,7 @@ public class TradeServiceImpl implements TradeService {
     
     @Override
     @Transactional
-    public TradeResult confirmPayment(Long tradeId) {
+    public TradeResult confirmPayment(UUID tradeId) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
         User buyer = getCurrentUser();
@@ -290,7 +291,7 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     @Transactional
-    public TradeResult confirmReceived(Long tradeId) {
+    public TradeResult confirmReceived(UUID tradeId) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -372,15 +373,16 @@ public class TradeServiceImpl implements TradeService {
     private User getCurrentUser() {
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
-            return entityManager.getReference(User.class, Long.valueOf(userId));
-        } catch (EntityNotFoundException ex) {
+            UUID uuid = UUID.fromString(userId);
+            return entityManager.getReference(User.class, uuid);
+        } catch (IllegalArgumentException | EntityNotFoundException ex) {
             throw new ApplicationException(ErrorCode.USER_NOT_FOUND);
         }
     }
 
     @Override
     @Transactional
-    public TradeResult cancelTrade(Long tradeId) {
+    public TradeResult cancelTrade(UUID tradeId) {
         User currentUser = getCurrentUser();
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
@@ -424,7 +426,7 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     @Transactional
-    public List<TradeResult> getTradesByOrder(Long orderId) {
+    public List<TradeResult> getTradesByOrder(UUID orderId) {
         orderRepository.findById(orderId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 
@@ -436,7 +438,7 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     @Transactional
-    public List<TradeResult> getTradesByUser(Long userId) {
+    public List<TradeResult> getTradesByUser(UUID userId) {
         return tradeRepository.findByUser(userId)
                 .stream()
                 .map(trade -> {
@@ -452,7 +454,7 @@ public class TradeServiceImpl implements TradeService {
                     }
 
                     String orderType = trade.getOrder().getType();
-                    Long creatorId = "SELL".equalsIgnoreCase(orderType)
+                    UUID creatorId = "SELL".equalsIgnoreCase(orderType)
                             ? trade.getBuyer().getId()
                             : trade.getSeller().getId();
                     boolean canCancel = trade.getStatus() == TradeStatus.PENDING
@@ -467,7 +469,7 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     @Transactional
-    public TradeInfoResult getTradeInfo(Long tradeId) {
+    public TradeInfoResult getTradeInfo(UUID tradeId) {
         Trade t = tradeRepository.findById(tradeId)
             .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -512,7 +514,7 @@ public class TradeServiceImpl implements TradeService {
 
   
         String orderType = t.getOrder().getType();
-                Long creatorId = "SELL".equalsIgnoreCase(orderType)
+                UUID creatorId = "SELL".equalsIgnoreCase(orderType)
                         ? t.getBuyer().getId()
                         : t.getSeller().getId();
                 boolean canCancel = t.getStatus() == TradeStatus.PENDING
@@ -533,9 +535,9 @@ public class TradeServiceImpl implements TradeService {
         return r;
     }
 
-    private TradeResult cancelTradeInternal(Trade trade, Long actorId, boolean enforceCreator) {
+    private TradeResult cancelTradeInternal(Trade trade, UUID actorId, boolean enforceCreator) {
         String orderType = trade.getOrder().getType();
-        Long creatorId = "SELL".equalsIgnoreCase(orderType)
+        UUID creatorId = "SELL".equalsIgnoreCase(orderType)
                 ? trade.getBuyer().getId()
                 : trade.getSeller().getId();
 
@@ -559,7 +561,7 @@ public class TradeServiceImpl implements TradeService {
         sellerWallet.setAvailableBalance(availableBefore + refundAmount);
         walletRepository.save(sellerWallet);
 
-        Long performerId = actorId != null ? actorId : trade.getSeller().getId();
+        UUID performerId = actorId != null ? actorId : trade.getSeller().getId();
 
         walletTransactionService.record(
                 sellerWallet,
@@ -612,7 +614,7 @@ public class TradeServiceImpl implements TradeService {
                 RecipientRole.SELLER);
     }
 
-    private void addTradeCancelledMessage(Trade trade, boolean autoCancelled, Long actorId) {
+    private void addTradeCancelledMessage(Trade trade, boolean autoCancelled, UUID actorId) {
         String tradeCode = resolveTradeCode(trade);
         if (autoCancelled) {
             appendSystemMessage(
@@ -678,7 +680,7 @@ public class TradeServiceImpl implements TradeService {
         if (tradeCode != null && !tradeCode.isBlank()) {
             return tradeCode;
         }
-        Long id = trade.getId();
+        UUID id = trade.getId();
         return id != null ? id.toString() : "-";
     }
 
@@ -702,7 +704,7 @@ public class TradeServiceImpl implements TradeService {
                 .toPlainString();
     }
 
-    private RecipientRole determineRecipientRole(Trade trade, Long userId) {
+    private RecipientRole determineRecipientRole(Trade trade, UUID userId) {
         if (trade == null || userId == null) {
             return RecipientRole.ALL;
         }

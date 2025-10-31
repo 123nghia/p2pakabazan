@@ -5,24 +5,25 @@ import com.akabazan.service.dto.TradeInfoResult;
 import com.akabazan.service.dto.TradeResult;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface TradeService {
 
     TradeResult createTrade(TradeCreateCommand command);
 
-    TradeResult confirmPayment(Long tradeId);
+    TradeResult confirmPayment(UUID tradeId);
 
-    TradeResult confirmReceived(Long tradeId);
+    TradeResult confirmReceived(UUID tradeId);
 
-    TradeResult cancelTrade(Long tradeId);
+    TradeResult cancelTrade(UUID tradeId);
 
     TradeResult cancelTradeByCode(String tradeCode);
 
-    List<TradeResult> getTradesByOrder(Long orderId);
+    List<TradeResult> getTradesByOrder(UUID orderId);
 
-    List<TradeResult> getTradesByUser(Long userId);
+    List<TradeResult> getTradesByUser(UUID userId);
     
-    TradeInfoResult getTradeInfo(Long tradeId);
+    TradeInfoResult getTradeInfo(UUID tradeId);
 
     int autoCancelExpiredTrades();
 }

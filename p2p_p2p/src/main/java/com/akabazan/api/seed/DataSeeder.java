@@ -19,12 +19,16 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class DataSeeder implements CommandLineRunner {
+
+    private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
 
     private static final int TARGET_USER_COUNT = 24;
     private static final int ORDERS_PER_USER = 20;
@@ -70,7 +74,7 @@ public class DataSeeder implements CommandLineRunner {
         List<Currency> tokens =
                 currencyRepository.findAllByTypeAndActiveTrueOrderByDisplayOrderAscCodeAsc(CurrencyType.TOKEN);
         if (tokens.isEmpty()) {
-            System.out.println("[DataSeeder] No token master data found. Skipping demo seed.");
+            log.debug("No token master data found. Skipping demo seed.");
             return;
         }
 
@@ -85,9 +89,8 @@ public class DataSeeder implements CommandLineRunner {
             totalOrdersCreated += seedOrdersForUser(user, fiatAccount, tokens, index);
         }
 
-        System.out.printf(
-                Locale.US,
-                "[DataSeeder] Prepared %d users with wallets for %d active tokens. Orders created this run: %d (target total %d).%n",
+        log.debug(
+                "Prepared {} users with wallets for {} active tokens. Orders created this run: {} (target total {}).",
                 seedUsers.size(),
                 tokens.size(),
                 totalOrdersCreated,

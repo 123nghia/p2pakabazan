@@ -2,26 +2,27 @@ package com.akabazan.common.event;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.UUID;
 
 public class TradeStatusEvent implements Serializable {
 
-    private Long tradeId;
-    private Long orderId;
+    private UUID tradeId;
+    private UUID orderId;
     private String status;
     private Double amount;
-    private Long buyerId;
-    private Long sellerId;
+    private UUID buyerId;
+    private UUID sellerId;
     private Instant occurredAt;
 
     public TradeStatusEvent() {
     }
 
-    public TradeStatusEvent(Long tradeId,
-                            Long orderId,
+    public TradeStatusEvent(UUID tradeId,
+                            UUID orderId,
                             String status,
                             Double amount,
-                            Long buyerId,
-                            Long sellerId,
+                            UUID buyerId,
+                            UUID sellerId,
                             Instant occurredAt) {
         this.tradeId = tradeId;
         this.orderId = orderId;
@@ -32,19 +33,19 @@ public class TradeStatusEvent implements Serializable {
         this.occurredAt = occurredAt;
     }
 
-    public Long getTradeId() {
+    public UUID getTradeId() {
         return tradeId;
     }
 
-    public void setTradeId(Long tradeId) {
+    public void setTradeId(UUID tradeId) {
         this.tradeId = tradeId;
     }
 
-    public Long getOrderId() {
+    public UUID getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Long orderId) {
+    public void setOrderId(UUID orderId) {
         this.orderId = orderId;
     }
 
@@ -64,19 +65,19 @@ public class TradeStatusEvent implements Serializable {
         this.amount = amount;
     }
 
-    public Long getBuyerId() {
+    public UUID getBuyerId() {
         return buyerId;
     }
 
-    public void setBuyerId(Long buyerId) {
+    public void setBuyerId(UUID buyerId) {
         this.buyerId = buyerId;
     }
 
-    public Long getSellerId() {
+    public UUID getSellerId() {
         return sellerId;
     }
 
-    public void setSellerId(Long sellerId) {
+    public void setSellerId(UUID sellerId) {
         this.sellerId = sellerId;
     }
 
@@ -88,4 +89,3 @@ public class TradeStatusEvent implements Serializable {
         this.occurredAt = occurredAt;
     }
 }
-

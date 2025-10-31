@@ -1,9 +1,9 @@
 package com.akabazan.repository.base;
+
+import com.akabazan.framework.data.domain.AbstractEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.NoRepositoryBean;
-
-import com.akabazan.repository.entity.AbstractEntity;
 
 import java.io.Serializable;
 

@@ -1,5 +1,8 @@
 package com.akabazan.service.command;
 
+import java.util.UUID;
+
+
 public class OrderCreateCommand {
 
     private String type;
@@ -11,7 +14,7 @@ public class OrderCreateCommand {
     private Double maxLimit;
     private String priceMode;
     private String paymentMethod;
-    private Long fiatAccountId;
+    private UUID fiatAccountId;
 
     public String getType() {
         return type;
@@ -85,11 +88,11 @@ public class OrderCreateCommand {
         this.paymentMethod = paymentMethod;
     }
 
-    public Long getFiatAccountId() {
+    public UUID getFiatAccountId() {
         return fiatAccountId;
     }
 
-    public void setFiatAccountId(Long fiatAccountId) {
+    public void setFiatAccountId(UUID fiatAccountId) {
         this.fiatAccountId = fiatAccountId;
     }
 }

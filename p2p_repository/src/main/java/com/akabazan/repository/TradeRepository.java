@@ -7,19 +7,20 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface TradeRepository extends JpaRepository<Trade, Long> {
+public interface TradeRepository extends JpaRepository<Trade, UUID> {
 
-    List<Trade> findByBuyerId(Long buyerId);
+    List<Trade> findByBuyerId(UUID buyerId);
 
-    List<Trade> findBySellerId(Long sellerId);
+    List<Trade> findBySellerId(UUID sellerId);
 
-    List<Trade> findByOrderId(Long orderId);
+    List<Trade> findByOrderId(UUID orderId);
 
-    boolean existsByOrderId(Long orderId);
+    boolean existsByOrderId(UUID orderId);
 
     Optional<Trade> findByTradeCode(String tradeCode);
 
@@ -28,7 +29,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
   WHERE t.buyer.id = :userId OR t.seller.id = :userId
   ORDER BY t.createdAt DESC
   """)
-    List<Trade> findByUser(@Param("userId") Long userId);
+    List<Trade> findByUser(@Param("userId") UUID userId);
 
     @Query("""
             SELECT t FROM Trade t
@@ -37,7 +38,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
                 SELECT 1 FROM TradeChat chat WHERE chat.trade = t
               )
             """)
-    List<Trade> findTradesWithChatsByUser(@Param("userId") Long userId);
+    List<Trade> findTradesWithChatsByUser(@Param("userId") UUID userId);
 
     @Query("""
             SELECT COUNT(t)
@@ -45,7 +46,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
             WHERE t.order.id = :orderId
               AND t.status NOT IN (:allowedStatuses)
             """)
-    long countByOrderIdAndStatusNotIn(@Param("orderId") Long orderId,
+    long countByOrderIdAndStatusNotIn(@Param("orderId") UUID orderId,
                                       @Param("allowedStatuses") Collection<TradeStatus> allowedStatuses);
 
     @Query("""
@@ -53,7 +54,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
             FROM Trade t
             WHERE t.buyer.id = :userId OR t.seller.id = :userId
             """)
-    long countByUserId(@Param("userId") Long userId);
+    long countByUserId(@Param("userId") UUID userId);
 
     @Query("""
             SELECT COUNT(t)
@@ -61,7 +62,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
             WHERE (t.buyer.id = :userId OR t.seller.id = :userId)
               AND t.status = :status
             """)
-    long countByUserIdAndStatus(@Param("userId") Long userId, @Param("status") TradeStatus status);
+    long countByUserIdAndStatus(@Param("userId") UUID userId, @Param("status") TradeStatus status);
 
     @Query("""
             SELECT t FROM Trade t
@@ -76,7 +77,7 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
             WHERE t.order.id IN :orderIds
             ORDER BY t.createdAt DESC
             """)
-    List<Trade> findByOrderIds(@Param("orderIds") Collection<Long> orderIds);
+    List<Trade> findByOrderIds(@Param("orderIds") Collection<UUID> orderIds);
 
     @Query("""
             SELECT t.order.id AS orderId,
@@ -86,6 +87,6 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
             WHERE t.order.id IN :orderIds
             GROUP BY t.order.id
             """)
-    List<OrderTradeStatsProjection> findTradeStatsByOrderIds(@Param("orderIds") Collection<Long> orderIds,
+    List<OrderTradeStatsProjection> findTradeStatsByOrderIds(@Param("orderIds") Collection<UUID> orderIds,
                                                              @Param("completedStatus") TradeStatus completedStatus);
 }

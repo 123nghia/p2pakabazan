@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CurrentUserServiceImpl implements CurrentUserService {
@@ -25,15 +26,15 @@ public class CurrentUserServiceImpl implements CurrentUserService {
     }
 
     @Override
-    public Optional<Long> getCurrentUserId() {
+    public Optional<UUID> getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal() == null) {
             return Optional.empty();
         }
 
         try {
-            return Optional.of(Long.parseLong(auth.getPrincipal().toString()));
-        } catch (NumberFormatException e) {
+            return Optional.of(UUID.fromString(auth.getPrincipal().toString()));
+        } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
     }

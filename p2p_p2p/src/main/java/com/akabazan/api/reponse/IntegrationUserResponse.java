@@ -1,5 +1,7 @@
 package com.akabazan.api.reponse;
 
+import java.util.UUID;
+
 public class IntegrationUserResponse {
 
     private UserResponse user;
@@ -31,17 +33,17 @@ public class IntegrationUserResponse {
     }
 
     public static class WalletResponse {
-        private Long id;
+        private UUID id;
         private String token;
         private String address;
         private double balance;
         private Double availableBalance;
 
-        public Long getId() {
+        public UUID getId() {
             return id;
         }
 
-        public void setId(Long id) {
+        public void setId(UUID id) {
             this.id = id;
         }
 

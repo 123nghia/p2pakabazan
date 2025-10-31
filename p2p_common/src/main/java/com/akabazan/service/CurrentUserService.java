@@ -1,9 +1,8 @@
 package com.akabazan.service;
 
-
 import com.akabazan.repository.entity.User;
-
 import java.util.Optional;
+import java.util.UUID;
 
 public interface CurrentUserService {
 
@@ -17,9 +16,9 @@ public interface CurrentUserService {
     /**
      * Lấy ID của User đang đăng nhập.
      *
-     * @return Optional<Long>, empty nếu chưa login
+     * @return Optional<UUID>, empty nếu chưa login
      */
-    Optional<Long> getCurrentUserId();
+    Optional<UUID> getCurrentUserId();
 
     /**
      * Kiểm tra xem user hiện tại đã đăng nhập hay chưa

@@ -1,9 +1,9 @@
 package com.akabazan.service;
+
 import com.akabazan.service.command.OrderCreateCommand;
 import com.akabazan.service.dto.OrderResult;
-
 import java.util.List;
-
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 
 public interface OrderService {
@@ -17,15 +17,15 @@ public interface OrderService {
                                 List<String> paymentMethods,
                                 String sortByPrice,
                                 String fiat,
-                                Long excludeUserId,
+                                UUID excludeUserId,
                                 int page,
                                 int size);
 
     List<OrderResult> getOrdersByUserToken(String token, String status , String type);
 
-    void cancelOrder(Long orderId);
+    void cancelOrder(UUID orderId);
 
-    void closeOrder(Long orderId);
+    void closeOrder(UUID orderId);
 
     void expireOrders();
 }

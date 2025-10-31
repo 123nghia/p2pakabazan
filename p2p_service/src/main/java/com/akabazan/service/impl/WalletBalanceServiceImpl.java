@@ -7,10 +7,9 @@ import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.WalletBalanceService;
 import com.akabazan.service.dto.WalletBalanceResult;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
 
 @Service
 public class WalletBalanceServiceImpl implements WalletBalanceService {
@@ -26,12 +25,12 @@ public class WalletBalanceServiceImpl implements WalletBalanceService {
 
     @Override
     public List<WalletBalanceResult> getCurrentUserBalances() {
-        Long userId = currentUserService.getCurrentUserId()
+        UUID userId = currentUserService.getCurrentUserId()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
 
         return walletRepository.findByUserId(userId).stream()
                 .map(this::toResult)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private WalletBalanceResult toResult(Wallet wallet) {

@@ -1,14 +1,16 @@
 package com.akabazan.api.request;
 
+import java.util.UUID;
+
 public class DisputeAssignRequest {
 
-    private Long adminId;
+    private UUID adminId;
 
-    public Long getAdminId() {
+    public UUID getAdminId() {
         return adminId;
     }
 
-    public void setAdminId(Long adminId) {
+    public void setAdminId(UUID adminId) {
         this.adminId = adminId;
     }
 }

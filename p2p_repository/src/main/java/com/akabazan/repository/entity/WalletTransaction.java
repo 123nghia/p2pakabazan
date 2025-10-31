@@ -1,18 +1,27 @@
 package com.akabazan.repository.entity;
 
+import com.akabazan.framework.data.domain.AuditEntity;
 import com.akabazan.repository.constant.WalletTransactionType;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.util.UUID;
 
 @Entity
 @Table(name = "wallet_transactions")
-public class WalletTransaction extends AbstractEntity {
+public class WalletTransaction extends AuditEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "wallet_id", nullable = false)
     private Wallet wallet;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
+    @Column(name = "user_id", nullable = false, columnDefinition = "uuid")
+    private UUID userId;
 
     @Column(nullable = false)
     private String token;
@@ -36,14 +45,14 @@ public class WalletTransaction extends AbstractEntity {
     @Column(name = "available_after", nullable = false)
     private double availableAfter;
 
-    @Column(name = "performed_by")
-    private Long performedBy;
+    @Column(name = "performed_by", columnDefinition = "uuid")
+    private UUID performedBy;
 
     @Column(name = "reference_type")
     private String referenceType;
 
-    @Column(name = "reference_id")
-    private Long referenceId;
+    @Column(name = "reference_id", columnDefinition = "uuid")
+    private UUID referenceId;
 
     @Column(length = 255)
     private String description;
@@ -56,11 +65,11 @@ public class WalletTransaction extends AbstractEntity {
         this.wallet = wallet;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 
@@ -120,11 +129,11 @@ public class WalletTransaction extends AbstractEntity {
         this.availableAfter = availableAfter;
     }
 
-    public Long getPerformedBy() {
+    public UUID getPerformedBy() {
         return performedBy;
     }
 
-    public void setPerformedBy(Long performedBy) {
+    public void setPerformedBy(UUID performedBy) {
         this.performedBy = performedBy;
     }
 
@@ -136,11 +145,11 @@ public class WalletTransaction extends AbstractEntity {
         this.referenceType = referenceType;
     }
 
-    public Long getReferenceId() {
+    public UUID getReferenceId() {
         return referenceId;
     }
 
-    public void setReferenceId(Long referenceId) {
+    public void setReferenceId(UUID referenceId) {
         this.referenceId = referenceId;
     }
 

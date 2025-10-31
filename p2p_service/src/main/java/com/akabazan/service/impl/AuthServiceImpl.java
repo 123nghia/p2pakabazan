@@ -17,6 +17,7 @@ import jakarta.transaction.Transactional;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Locale;
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -68,7 +69,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public String issueToken(Long userId) {
+    public String issueToken(UUID userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
         return authenticateAndGenerateToken(user);

@@ -1,10 +1,11 @@
 package com.akabazan.admin.controller;
 
-import com.akabazan.repository.UserRepository;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
+import com.akabazan.repository.UserRepository;
 import com.akabazan.service.DisputeService;
 import com.akabazan.service.dto.DisputeResult;
+import java.util.UUID;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,7 +60,7 @@ public class AdminViewController {
     }
 
     @GetMapping("/users/{userId}/orders")
-    public String ordersOfUser(@PathVariable Long userId, Model model) {
+    public String ordersOfUser(@PathVariable UUID userId, Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
         model.addAttribute("orders", orderRepository.findOrdersByUserAndOptionalFilters(userId, null, null));
         model.addAttribute("selectedUserId", userId);
@@ -74,7 +75,7 @@ public class AdminViewController {
     }
 
     @GetMapping("/users/{userId}/trades")
-    public String tradesOfUser(@PathVariable Long userId, Model model) {
+    public String tradesOfUser(@PathVariable UUID userId, Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
         model.addAttribute("trades", tradeRepository.findByUser(userId));
         model.addAttribute("selectedUserId", userId);

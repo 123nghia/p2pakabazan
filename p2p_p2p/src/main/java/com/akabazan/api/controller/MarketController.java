@@ -10,6 +10,7 @@ import com.akabazan.service.MarketService;
 import com.akabazan.service.OrderService;
 import com.akabazan.service.dto.OrderResult;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -48,7 +49,7 @@ public class MarketController extends BaseController {
                 .anyMatch(pm -> "ALL-PAYMENTS".equalsIgnoreCase(pm));
         List<String> normalizedPaymentMethods = allPayments ? null : (!paymentMethods.isEmpty() ? paymentMethods : null);
 
-        Long currentUserId = currentUserService.getCurrentUserId().orElse(null);
+        UUID currentUserId = currentUserService.getCurrentUserId().orElse(null);
 
         Page<OrderResult> orders = orderService.getOrders(
                 request.getType(),

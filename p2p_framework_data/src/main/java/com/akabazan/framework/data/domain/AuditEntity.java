@@ -2,19 +2,24 @@ package com.akabazan.framework.data.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import java.util.UUID;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.LastModifiedBy;
 
 @MappedSuperclass
 public abstract class AuditEntity extends AbstractEntity {
 
+    @CreatedBy
     @Column(name = "created_by")
-    private Long createdBy;
+    private UUID createdBy;
 
+    @LastModifiedBy
     @Column(name = "updated_by")
-    private Long updatedBy;
+    private UUID updatedBy;
 
-    public Long getCreatedBy() { return createdBy; }
-    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
-    public Long getUpdatedBy() { return updatedBy; }
-    public void setUpdatedBy(Long updatedBy) { this.updatedBy = updatedBy; }
+    public UUID getCreatedBy() { return createdBy; }
+    public void setCreatedBy(UUID createdBy) { this.createdBy = createdBy; }
+    public UUID getUpdatedBy() { return updatedBy; }
+    public void setUpdatedBy(UUID updatedBy) { this.updatedBy = updatedBy; }
 }
 

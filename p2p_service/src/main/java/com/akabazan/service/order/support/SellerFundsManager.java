@@ -8,6 +8,7 @@ import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.User;
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.service.WalletTransactionService;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -48,7 +49,7 @@ public class SellerFundsManager {
                 "Lock funds for P2P trade");
     }
 
-    public void release(Long userId, String token, double amount) {
+    public void release(UUID userId, String token, double amount) {
         Wallet wallet = walletRepository.lockByUserIdAndToken(userId, token)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
         double balanceBefore = wallet.getBalance();

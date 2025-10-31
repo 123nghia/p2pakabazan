@@ -4,20 +4,21 @@ import com.akabazan.repository.entity.Dispute.DisputeStatus;
 import com.akabazan.service.dto.DisputeResult;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface DisputeService {
 
-    DisputeResult openDispute(Long tradeId, String reason, String evidence);
+    DisputeResult openDispute(UUID tradeId, String reason, String evidence);
 
-    List<DisputeResult> getDisputesByTrade(Long tradeId);
+    List<DisputeResult> getDisputesByTrade(UUID tradeId);
 
     List<DisputeResult> getDisputes(DisputeStatus status, boolean onlyAssignedToCurrentAdmin);
 
-    DisputeResult assignToCurrentAdmin(Long disputeId);
+    DisputeResult assignToCurrentAdmin(UUID disputeId);
 
-    DisputeResult assignToAdmin(Long disputeId, Long adminId);
+    DisputeResult assignToAdmin(UUID disputeId, UUID adminId);
 
-    DisputeResult resolveDispute(Long disputeId, String outcome, String resolutionNote);
+    DisputeResult resolveDispute(UUID disputeId, String outcome, String resolutionNote);
 
-    DisputeResult rejectDispute(Long disputeId, String resolutionNote);
+    DisputeResult rejectDispute(UUID disputeId, String resolutionNote);
 }

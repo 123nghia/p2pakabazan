@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>P2P Trading Quick Test UI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+    <h1>P2P Trading – Quick API Test Harness</h1>
+    <p>Use this lightweight console to hit the backend endpoints without spinning up a full client.</p>
+</header>
+
+<section class="environment">
+    <h2>Environment</h2>
+    <div class="grid">
+        <label>
+            Base URL
+            <input id="base-url" type="text" value="http://localhost:8080" spellcheck="false">
+        </label>
+        <label>
+            Auth Token (Bearer)
+            <input id="auth-token" type="text" placeholder="Will be auto-filled after login" spellcheck="false">
+        </label>
+        <label>
+            Default User Email
+            <input id="default-email" type="email" placeholder="demo@example.com">
+        </label>
+        <label>
+            Default Password
+            <input id="default-password" type="password" placeholder="123456">
+        </label>
+    </div>
+    <button id="clear-logs" class="secondary">Clear Logs</button>
+</section>
+
+<main>
+    <details open>
+        <summary>Authentication</summary>
+        <form id="login-form" class="form-grid" data-action="POST /auth/login">
+            <label>Email <input name="email" type="email" required></label>
+            <label>Password <input name="password" type="password" required></label>
+            <button type="submit">Login</button>
+        </form>
+        <form id="register-form" class="form-grid" data-action="POST /auth/register">
+            <label>Email <input name="email" type="email" required></label>
+            <label>Password <input name="password" type="password" required></label>
+            <button type="submit" class="secondary">Register</button>
+        </form>
+    </details>
+
+    <details>
+        <summary>Orders</summary>
+        <form id="create-order-form" class="form-grid" data-action="POST /p2p/orders">
+            <label>Type
+                <select name="type">
+                    <option value="BUY">BUY</option>
+                    <option value="SELL">SELL</option>
+                </select>
+            </label>
+            <label>Token <input name="token" value="USDT"></label>
+            <label>Fiat <input name="fiat" value="VND"></label>
+            <label>Price Mode
+                <select name="priceMode">
+                    <option value="MARKET">MARKET</option>
+                    <option value="CUSTOM" selected>CUSTOM</option>
+                </select>
+            </label>
+            <label>Price <input name="price" type="number" step="0.01" value="25000"></label>
+            <label>Amount <input name="amount" type="number" step="0.0001" value="10"></label>
+            <label>Min Limit <input name="minLimit" type="number" step="0.01" value="100000"></label>
+            <label>Max Limit <input name="maxLimit" type="number" step="0.01" value="500000"></label>
+            <label>Payment Method <input name="paymentMethod" value="BANK_TRANSFER"></label>
+            <label>Fiat Account UUID <input name="fiatAccountId" placeholder="Optional"></label>
+            <button type="submit">Create Order</button>
+        </form>
+
+        <form id="my-orders-form" class="form-grid" data-action="GET /p2p/orders/me">
+            <label>Status <input name="status" placeholder="OPEN/SELL..."></label>
+            <label>Type <input name="type" placeholder="BUY/SELL"></label>
+            <label>Token Filter <input name="token" placeholder="Optional token symbol"></label>
+            <button type="submit" class="secondary">Fetch My Orders</button>
+        </form>
+
+        <form id="cancel-order-form" class="form-grid" data-action="POST /p2p/{orderId}/cancel">
+            <label>Order UUID <input name="orderId" required></label>
+            <button type="submit" class="danger">Cancel Order</button>
+        </form>
+    </details>
+
+    <details>
+        <summary>Trades</summary>
+        <form id="create-trade-form" class="form-grid" data-action="POST /p2p/trades">
+            <label>Order UUID <input name="orderId" required></label>
+            <label>Amount <input name="amount" type="number" step="0.0001" value="1"></label>
+            <label>Fiat Account UUID <input name="fiatAccountId" placeholder="Optional"></label>
+            <label>Initial Message
+                <input name="chatMessage" placeholder="Optional chat message">
+            </label>
+            <label>Trade Type <input name="type" placeholder="Optional (BUY/SELL)"></label>
+            <button type="submit">Create Trade</button>
+        </form>
+
+        <div class="multi-column">
+            <form id="confirm-payment-form" data-action="POST /p2p/trades/{tradeId}/confirm-payment">
+                <label>Trade UUID <input name="tradeId" required></label>
+                <button type="submit">Confirm Payment</button>
+            </form>
+            <form id="confirm-received-form" data-action="POST /p2p/trades/{tradeId}/confirm-received">
+                <label>Trade UUID <input name="tradeId" required></label>
+                <button type="submit">Confirm Received</button>
+            </form>
+            <form id="cancel-trade-form" data-action="POST /p2p/trades/{tradeId}/cancel">
+                <label>Trade UUID <input name="tradeId" required></label>
+                <button type="submit" class="danger">Cancel Trade</button>
+            </form>
+            <form id="cancel-trade-code-form" data-action="POST /p2p/trades/code/{tradeCode}/cancel">
+                <label>Trade Code <input name="tradeCode" required></label>
+                <button type="submit" class="danger">Cancel Trade by Code</button>
+            </form>
+        </div>
+
+        <div class="multi-column">
+            <form id="trade-info-form" data-action="GET /p2p/trades/{tradeId}">
+                <label>Trade UUID <input name="tradeId" required></label>
+                <button type="submit" class="secondary">Get Trade Info</button>
+            </form>
+            <form id="trades-by-order-form" data-action="GET /p2p/orders/{orderId}/trades">
+                <label>Order UUID <input name="orderId" required></label>
+                <button type="submit" class="secondary">Trades by Order</button>
+            </form>
+            <form id="my-trades-form" data-action="GET /p2p/trades/me">
+                <button type="submit" class="secondary">My Trades</button>
+            </form>
+        </div>
+    </details>
+
+    <details>
+        <summary>Trade Chat</summary>
+        <form id="send-chat-form" class="form-grid" data-action="POST /p2p/trades/{tradeId}/chat">
+            <label>Trade UUID <input name="tradeId" required></label>
+            <label>Message <textarea name="messages" rows="2" required></textarea></label>
+            <button type="submit">Send Message</button>
+        </form>
+        <form id="get-chat-form" class="form-grid" data-action="GET /p2p/trades/{tradeId}/chat">
+            <label>Trade UUID <input name="tradeId" required></label>
+            <button type="submit" class="secondary">Fetch Messages</button>
+        </form>
+        <form id="chat-threads-form" data-action="GET /p2p/trades/chat/threads">
+            <button type="submit" class="secondary">My Chat Threads</button>
+        </form>
+    </details>
+
+    <details>
+        <summary>Disputes</summary>
+        <form id="open-dispute-form" class="form-grid" data-action="POST /p2p/trades/{tradeId}/dispute">
+            <label>Trade UUID <input name="tradeId" required></label>
+            <label>Reason <input name="reason" required></label>
+            <label>Evidence <input name="evidence"></label>
+            <button type="submit" class="danger">Open Dispute</button>
+        </form>
+        <div class="multi-column">
+            <form id="list-disputes-form" data-action="GET /p2p/disputes">
+                <label>Status <input name="status" placeholder="OPEN/RESOLVED"></label>
+                <label><input type="checkbox" name="onlyMine"> Only Mine</label>
+                <button type="submit" class="secondary">List Disputes</button>
+            </form>
+            <form id="disputes-by-trade-form" data-action="GET /p2p/trades/{tradeId}/disputes">
+                <label>Trade UUID <input name="tradeId" required></label>
+                <button type="submit" class="secondary">Disputes for Trade</button>
+            </form>
+        </div>
+        <div class="multi-column">
+            <form id="assign-dispute-form" data-action="POST /p2p/disputes/{disputeId}/assign">
+                <label>Dispute UUID <input name="disputeId" required></label>
+                <label>Admin UUID <input name="adminId" placeholder="Omit to assign to self"></label>
+                <button type="submit">Assign</button>
+            </form>
+            <form id="resolve-dispute-form" data-action="POST /p2p/disputes/{disputeId}/resolve">
+                <label>Dispute UUID <input name="disputeId" required></label>
+                <label>Outcome <input name="outcome" placeholder="APPROVED/DENIED" required></label>
+                <label>Note <input name="note"></label>
+                <button type="submit">Resolve</button>
+            </form>
+            <form id="reject-dispute-form" data-action="POST /p2p/disputes/{disputeId}/reject">
+                <label>Dispute UUID <input name="disputeId" required></label>
+                <label>Note <input name="note" placeholder="Optional reason"></label>
+                <button type="submit" class="danger">Reject</button>
+            </form>
+        </div>
+    </details>
+
+    <details>
+        <summary>Fiat Accounts & Wallets</summary>
+        <form id="create-fiat-account-form" class="form-grid" data-action="POST /p2p/fiat-accounts">
+            <label>Bank Name <input name="bankName" required></label>
+            <label>Account Number <input name="accountNumber" required></label>
+            <label>Account Holder <input name="accountHolder" required></label>
+            <label>Branch <input name="branch"></label>
+            <label>Payment Type <input name="paymentType" value="BANK_TRANSFER" required></label>
+            <button type="submit">Create Fiat Account</button>
+        </form>
+        <form id="list-fiat-accounts-form" data-action="GET /p2p/fiat-accounts">
+            <button type="submit" class="secondary">My Fiat Accounts</button>
+        </form>
+        <form id="wallet-balances-form" data-action="GET /p2p/wallets">
+            <button type="submit" class="secondary">Wallet Balances</button>
+        </form>
+    </details>
+
+    <details>
+        <summary>Market & Master Data</summary>
+        <form id="market-price-form" class="form-grid" data-action="GET /market/price">
+            <label>Token <input name="token" value="USDT"></label>
+            <label>Fiat <input name="fiat" value="VND"></label>
+            <label>Trade Type <input name="tradeType" value="SELL"></label>
+            <label>Top <input name="top" type="number" value="5"></label>
+            <button type="submit" class="secondary">Get Indicative Price</button>
+        </form>
+        <form id="market-orders-form" class="form-grid" data-action="GET /market/orders">
+            <label>Type <input name="type" placeholder="BUY/SELL"></label>
+            <label>Token <input name="token" placeholder="USDT"></label>
+            <label>Fiat <input name="fiat" placeholder="VND"></label>
+            <label>Payment Methods (CSV) <input name="paymentMethods" placeholder="BANK_TRANSFER,MOMO"></label>
+            <label>Sort By Price <input name="sortByPrice" placeholder="ASC/DESC"></label>
+            <label>Page <input name="page" type="number" min="0" value="0"></label>
+            <label>Size <input name="size" type="number" min="1" value="20"></label>
+            <button type="submit" class="secondary">Search Market Orders</button>
+        </form>
+        <div class="multi-column">
+            <form id="currencies-form" data-action="GET /p2p/masterdata/currencies">
+                <label>Type Filter <input name="type" placeholder="TOKEN/FIAT"></label>
+                <button type="submit" class="secondary">Currencies</button>
+            </form>
+            <form id="currencies-grouped-form" data-action="GET /p2p/masterdata/currencies/grouped">
+                <button type="submit" class="secondary">Grouped Currencies</button>
+            </form>
+            <form id="payment-methods-form" data-action="GET /p2p/masterdata/payment-methods">
+                <label>Type Filter <input name="type" placeholder="BANK/EWALLET"></label>
+                <button type="submit" class="secondary">Payment Methods</button>
+            </form>
+        </div>
+    </details>
+
+    <details>
+        <summary>Notifications & Users</summary>
+        <form id="notifications-form" class="form-grid" data-action="GET /p2p/notifications">
+            <label><input type="checkbox" name="unreadOnly"> Unread Only</label>
+            <button type="submit" class="secondary">Load Notifications</button>
+        </form>
+        <form id="notification-read-form" class="form-grid" data-action="POST /p2p/notifications/{notificationId}/read">
+            <label>Notification UUID <input name="notificationId" required></label>
+            <button type="submit">Mark as Read</button>
+        </form>
+        <div class="multi-column">
+            <form id="current-user-form" data-action="GET /me">
+                <button type="submit" class="secondary">Current User</button>
+            </form>
+            <form id="my-activities-form" data-action="GET /my-activities">
+                <button type="submit" class="secondary">My Trades &amp; Orders</button>
+            </form>
+        </div>
+    </details>
+
+    <details>
+        <summary>Integration</summary>
+        <form id="integration-sync-form" class="form-grid" data-action="POST /integration/users/sync">
+            <label>Payload (JSON)
+                <textarea name="payload" rows="6" spellcheck="false" required>
+{
+  "userId": "demo.user@example.com",
+  "wallet": {
+    "token": "USDT",
+    "address": "demo-wallet-address",
+    "balance": 1000,
+    "availableBalance": 1000
+  },
+  "kycStatus": "VERIFIED"
+}
+                </textarea>
+            </label>
+            <button type="submit">Sync External User</button>
+        </form>
+    </details>
+
+    <details>
+        <summary>Custom Request</summary>
+        <form id="custom-request-form" class="form-grid" data-action="Custom">
+            <label>Method
+                <select name="method">
+                    <option>GET</option>
+                    <option>POST</option>
+                    <option>PUT</option>
+                    <option>PATCH</option>
+                    <option>DELETE</option>
+                </select>
+            </label>
+            <label>Path (relative to base URL)
+                <input name="path" value="/p2p/orders">
+            </label>
+            <label>Query (JSON object)
+                <textarea name="query" rows="2" placeholder='{"status":"OPEN"}'></textarea>
+            </label>
+            <label>Body (JSON)
+                <textarea name="body" rows="6" placeholder='{"token":"USDT"}'></textarea>
+            </label>
+            <button type="submit">Send Request</button>
+        </form>
+    </details>
+</main>
+
+<section class="logs">
+    <h2>Activity Log</h2>
+    <div id="logs"></div>
+</section>
+
+<footer>
+    <p>Tip: After a successful login the bearer token is copied to the environment box automatically.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,12 +1,13 @@
 package com.akabazan.service.dto;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class TradeResult {
-    private Long id;
-    private Long orderId;
-    private Long buyerId;
-    private Long sellerId;
+    private UUID id;
+    private UUID orderId;
+    private UUID buyerId;
+    private UUID sellerId;
     private double amount;
     private double price;
     private String SenderUserName;
@@ -40,7 +41,7 @@ public void setCanCancel(boolean canCancel) {
     }
 
     private String BuyerUserName;
-    private Long sellerFiatAccountId;
+    private UUID sellerFiatAccountId;
     private String sellerBankName;
     private String sellerAccountNumber;
     private String sellerAccountHolder;
@@ -102,35 +103,35 @@ public void setCanCancel(boolean canCancel) {
     private boolean escrow;
     private String tradeCode;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public Long getOrderId() {
+    public UUID getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Long orderId) {
+    public void setOrderId(UUID orderId) {
         this.orderId = orderId;
     }
 
-    public Long getBuyerId() {
+    public UUID getBuyerId() {
         return buyerId;
     }
 
-    public void setBuyerId(Long buyerId) {
+    public void setBuyerId(UUID buyerId) {
         this.buyerId = buyerId;
     }
 
-    public Long getSellerId() {
+    public UUID getSellerId() {
         return sellerId;
     }
 
-    public void setSellerId(Long sellerId) {
+    public void setSellerId(UUID sellerId) {
         this.sellerId = sellerId;
     }
 
@@ -166,11 +167,11 @@ public void setCanCancel(boolean canCancel) {
         this.tradeCode = tradeCode;
     }
 
-    public Long getSellerFiatAccountId() {
+    public UUID getSellerFiatAccountId() {
         return sellerFiatAccountId;
     }
 
-    public void setSellerFiatAccountId(Long sellerFiatAccountId) {
+    public void setSellerFiatAccountId(UUID sellerFiatAccountId) {
         this.sellerFiatAccountId = sellerFiatAccountId;
     }
 

@@ -1,8 +1,10 @@
 package com.akabazan.repository.projection;
 
+import java.util.UUID;
+
 public interface OrderTradeStatsProjection {
 
-    Long getOrderId();
+    UUID getOrderId();
 
     Long getTotalTrades();
 

@@ -1,15 +1,17 @@
 package com.akabazan.repository.entity;
 
+import com.akabazan.framework.data.domain.AuditEntity;
 import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.util.SnowflakeIdGenerator;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "trades")
-public class Trade extends AbstractEntity {
+public class Trade extends AuditEntity {
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
@@ -209,15 +211,15 @@ public class Trade extends AbstractEntity {
 
     @Embeddable
     public static class ChatMessage {
-        private Long senderId;
+        private UUID senderId;
         private String message;
         private LocalDateTime timestamp;
 
-        public Long getSenderId() {
+        public UUID getSenderId() {
             return senderId;
         }
 
-        public void setSenderId(Long senderId) {
+        public void setSenderId(UUID senderId) {
             this.senderId = senderId;
         }
 

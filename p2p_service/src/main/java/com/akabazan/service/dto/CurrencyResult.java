@@ -1,10 +1,11 @@
 package com.akabazan.service.dto;
 
 import com.akabazan.repository.constant.CurrencyType;
+import java.util.UUID;
 
 public class CurrencyResult {
 
-    private Long id;
+    private UUID id;
     private CurrencyType type;
     private String code;
     private String name;
@@ -14,11 +15,11 @@ public class CurrencyResult {
     private Integer displayOrder;
     private boolean active;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

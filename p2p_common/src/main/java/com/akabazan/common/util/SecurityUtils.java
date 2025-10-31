@@ -1,22 +1,26 @@
 package com.akabazan.common.util;
 
+import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-public class SecurityUtils {
+public final class SecurityUtils {
+
+    private SecurityUtils() {
+    }
 
     /**
-     * Lấy userId của người dùng đang login từ SecurityContext
+     * Lấy userId của người dùng đang đăng nhập từ SecurityContext.
      */
-    public static Long getCurrentUserId() {
+    public static UUID getCurrentUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal() == null) {
             return null;
         }
 
         try {
-            return Long.parseLong(auth.getPrincipal().toString());
-        } catch (NumberFormatException e) {
+            return UUID.fromString(auth.getPrincipal().toString());
+        } catch (IllegalArgumentException ex) {
             return null;
         }
     }

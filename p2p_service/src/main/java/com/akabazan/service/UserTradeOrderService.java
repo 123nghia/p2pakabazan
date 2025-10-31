@@ -1,7 +1,9 @@
 package com.akabazan.service;
+
 import com.akabazan.service.dto.UserTradesOrdersResult;
+import java.util.UUID;
 
 public interface UserTradeOrderService {
-    /** Tạo một order mới */
-    public UserTradesOrdersResult getUserTradesAndOrders(Long userId);
+    /** Returns combined trades and orders for a user. */
+    UserTradesOrdersResult getUserTradesAndOrders(UUID userId);
 }

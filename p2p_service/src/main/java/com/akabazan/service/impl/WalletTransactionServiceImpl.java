@@ -5,6 +5,7 @@ import com.akabazan.repository.constant.WalletTransactionType;
 import com.akabazan.repository.entity.Wallet;
 import com.akabazan.repository.entity.WalletTransaction;
 import com.akabazan.service.WalletTransactionService;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +27,9 @@ public class WalletTransactionServiceImpl implements WalletTransactionService {
                        double balanceAfter,
                        double availableBefore,
                        double availableAfter,
-                       Long performedBy,
+                       UUID performedBy,
                        String referenceType,
-                       Long referenceId,
+                       UUID referenceId,
                        String description) {
         if (wallet == null || wallet.getUser() == null) {
             return;

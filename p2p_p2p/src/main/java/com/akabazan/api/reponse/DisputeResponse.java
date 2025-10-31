@@ -1,14 +1,15 @@
 package com.akabazan.api.reponse;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class DisputeResponse {
-    private Long id;
-    private Long tradeId;
+    private UUID id;
+    private UUID tradeId;
     private String reason;
     private String evidence;
     private String status;
-    private Long assignedAdminId;
+    private UUID assignedAdminId;
     private String assignedAdminEmail;
     private String resolutionOutcome;
     private String resolutionNote;
@@ -16,19 +17,19 @@ public class DisputeResponse {
     private LocalDateTime updatedAt;
     private LocalDateTime resolvedAt;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public Long getTradeId() {
+    public UUID getTradeId() {
         return tradeId;
     }
 
-    public void setTradeId(Long tradeId) {
+    public void setTradeId(UUID tradeId) {
         this.tradeId = tradeId;
     }
 
@@ -56,11 +57,11 @@ public class DisputeResponse {
         this.status = status;
     }
 
-    public Long getAssignedAdminId() {
+    public UUID getAssignedAdminId() {
         return assignedAdminId;
     }
 
-    public void setAssignedAdminId(Long assignedAdminId) {
+    public void setAssignedAdminId(UUID assignedAdminId) {
         this.assignedAdminId = assignedAdminId;
     }
 

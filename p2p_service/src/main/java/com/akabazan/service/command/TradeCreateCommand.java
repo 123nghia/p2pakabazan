@@ -1,17 +1,20 @@
 package com.akabazan.service.command;
 
+import java.util.UUID;
+
+
 public class TradeCreateCommand {
 
-    private Long orderId;
+    private UUID orderId;
     private double amount;
     private String chatMessage;
-    private Long fiatAccountId;
+    private UUID fiatAccountId;
     
-    public Long getOrderId() {
+    public UUID getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Long orderId) {
+    public void setOrderId(UUID orderId) {
         this.orderId = orderId;
     }
 
@@ -31,11 +34,11 @@ public class TradeCreateCommand {
         this.chatMessage = chatMessage;
     }
 
-    public Long getFiatAccountId() {
+    public UUID getFiatAccountId() {
         return fiatAccountId;
     }
 
-    public void setFiatAccountId(Long fiatAccountId) {
+    public void setFiatAccountId(UUID fiatAccountId) {
         this.fiatAccountId = fiatAccountId;
     }
 }

@@ -20,14 +20,13 @@ import com.akabazan.service.order.usecase.CloseOrderUseCase;
 import com.akabazan.service.order.usecase.CreateOrderUseCase;
 import com.akabazan.service.order.usecase.ExpireOrdersUseCase;
 import com.akabazan.service.order.usecase.GetOrdersQuery;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -75,7 +74,7 @@ public class OrderServiceImpl implements OrderService {
                                        List<String> paymentMethods,
                                        String sortByPrice,
                                        String fiat,
-                                       Long excludeUserId,
+                                       UUID excludeUserId,
                                        int page,
                                        int size) {
         String userAction = type; // hành động người dùng (mua hay bán)
@@ -101,15 +100,15 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResult> getOrdersByUserToken(String token, String status , String type) {
 
         User user = currentUserService.getCurrentUser().orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
-        Long userId = user.getId();
+        UUID userId = user.getId();
         List<Order> orders;
         orders = orderRepository.findOrdersByUserAndOptionalFilters(userId, status, type);
-        List<Long> orderIds = orders.stream()
+        List<UUID> orderIds = orders.stream()
                 .map(Order::getId)
                 .filter(Objects::nonNull)
                 .toList();
-        Map<Long, OrderStats> statsByOrder = loadOrderStats(orderIds);
-        Map<Long, List<Trade>> tradesByOrder = loadTradesByOrder(orderIds);
+        Map<UUID, OrderStats> statsByOrder = loadOrderStats(orderIds);
+        Map<UUID, List<Trade>> tradesByOrder = loadTradesByOrder(orderIds);
 
         return orders.stream()
                 .map(order -> {
@@ -134,12 +133,12 @@ public class OrderServiceImpl implements OrderService {
 
     
     @Override
-    public void cancelOrder(Long orderId) {
+    public void cancelOrder(UUID orderId) {
         cancelOrderUseCase.cancel(orderId);
     }
 
     @Override
-    public void closeOrder(Long orderId) {
+    public void closeOrder(UUID orderId) {
         closeOrderUseCase.close(orderId);
     }
 
@@ -148,14 +147,14 @@ public class OrderServiceImpl implements OrderService {
         expireOrdersUseCase.expire();
     }
 
-    private Map<Long, OrderStats> loadOrderStats(List<Long> orderIds) {
+    private Map<UUID, OrderStats> loadOrderStats(List<UUID> orderIds) {
         if (orderIds == null || orderIds.isEmpty()) {
             return Map.of();
         }
         List<OrderTradeStatsProjection> projections =
                 tradeRepository.findTradeStatsByOrderIds(orderIds, TradeStatus.COMPLETED);
 
-        Map<Long, OrderStats> stats = new HashMap<>();
+        Map<UUID, OrderStats> stats = new HashMap<>();
         for (OrderTradeStatsProjection projection : projections) {
             long total = projection.getTotalTrades() != null ? projection.getTotalTrades() : 0L;
             long completed = projection.getCompletedTrades() != null ? projection.getCompletedTrades() : 0L;
@@ -164,7 +163,7 @@ public class OrderServiceImpl implements OrderService {
         return stats;
     }
 
-    private Map<Long, List<Trade>> loadTradesByOrder(List<Long> orderIds) {
+    private Map<UUID, List<Trade>> loadTradesByOrder(List<UUID> orderIds) {
         if (orderIds == null || orderIds.isEmpty()) {
             return Map.of();
         }

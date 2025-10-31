@@ -1,8 +1,10 @@
 package com.akabazan.api.reponse;
 
+import java.util.UUID;
+
 public class TradeChatThreadResponse {
 
-    private Long tradeId;
+    private UUID tradeId;
     private String tradeCode;
     private Double amount;
     private Double price;
@@ -12,11 +14,11 @@ public class TradeChatThreadResponse {
     private String counterpartyName;
     private TradeChatResponse lastMessage;
 
-    public Long getTradeId() {
+    public UUID getTradeId() {
         return tradeId;
     }
 
-    public void setTradeId(Long tradeId) {
+    public void setTradeId(UUID tradeId) {
         this.tradeId = tradeId;
     }
 

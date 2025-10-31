@@ -8,6 +8,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class CurrentAdminServiceImpl implements CurrentAdminService {
@@ -24,14 +25,14 @@ public class CurrentAdminServiceImpl implements CurrentAdminService {
     }
 
     @Override
-    public Optional<Long> getCurrentAdminId() {
+    public Optional<UUID> getCurrentAdminId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || auth.getPrincipal() == null) {
             return Optional.empty();
         }
         try {
-            return Optional.of(Long.parseLong(auth.getPrincipal().toString()));
-        } catch (NumberFormatException e) {
+            return Optional.of(UUID.fromString(auth.getPrincipal().toString()));
+        } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
     }

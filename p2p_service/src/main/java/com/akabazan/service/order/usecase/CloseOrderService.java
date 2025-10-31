@@ -8,6 +8,7 @@ import com.akabazan.repository.entity.Order;
 import com.akabazan.service.order.support.SellerFundsManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -23,7 +24,7 @@ public class CloseOrderService implements CloseOrderUseCase {
 
     @Override
     @Transactional
-    public void close(Long orderId) {
+    public void close(UUID orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.ORDER_NOT_FOUND));
 

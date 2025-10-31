@@ -2,10 +2,11 @@ package com.akabazan.api.reponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class OrderResponse {
 
-    private Long id;
+    private UUID id;
     private String type;
     private String token;
     private Double amount;
@@ -19,35 +20,26 @@ public class OrderResponse {
     private Double availableAmount;
     private LocalDateTime expireAt;
     private LocalDateTime createdAt;
-    private Long fiatAccountId;
-    private Long userId;
+    private UUID fiatAccountId;
+    private UUID userId;
     private String userName;
     private String bankName;
     private String bankAccount;
     private String accountHolder;
-    private List<TradeResponse> trades;
     private String paymentType;
     private String bankBranch;
     private Long tradeCount = 0L;
     private Long completedTradeCount = 0L;
     private Double completionRate = 0.0;
     private boolean canCancel;
+    private List<TradeResponse> trades;
 
-
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
-    }
-
-     public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     public String getType() {
@@ -154,20 +146,28 @@ public class OrderResponse {
         this.createdAt = createdAt;
     }
 
-    public Long getFiatAccountId() {
+    public UUID getFiatAccountId() {
         return fiatAccountId;
     }
 
-    public void setFiatAccountId(Long fiatAccountId) {
+    public void setFiatAccountId(UUID fiatAccountId) {
         this.fiatAccountId = fiatAccountId;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getBankName() {
@@ -192,14 +192,6 @@ public class OrderResponse {
 
     public void setAccountHolder(String accountHolder) {
         this.accountHolder = accountHolder;
-    }
-
-    public List<TradeResponse> getTrades() {
-        return trades;
-    }
-
-    public void setTrades(List<TradeResponse> trades) {
-        this.trades = trades;
     }
 
     public String getPaymentType() {
@@ -250,5 +242,11 @@ public class OrderResponse {
         this.canCancel = canCancel;
     }
 
-  
+    public List<TradeResponse> getTrades() {
+        return trades;
+    }
+
+    public void setTrades(List<TradeResponse> trades) {
+        this.trades = trades;
+    }
 }

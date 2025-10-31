@@ -1,14 +1,11 @@
 package com.akabazan.repository.entity;
 
+import com.akabazan.framework.data.domain.AuditEntity;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "wallets")
-public class Wallet  extends AbstractEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Wallet  extends AuditEntity {
 
     private String token;
     private String address;
@@ -22,8 +19,6 @@ public class Wallet  extends AbstractEntity {
     private User user;
 
     // Getters / Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
     public String getAddress() { return address; }

@@ -2,10 +2,11 @@ package com.akabazan.service.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class OrderResult {
 
-    private Long id;
+    private UUID id;
     private String type; // BUY / SELL
     private String token; // BTC, USDT, ETH
     private Double amount = 0.0;
@@ -22,8 +23,8 @@ public class OrderResult {
     private LocalDateTime createdAt;
 
     // flatten từ fiatAccount và user
-    private Long fiatAccountId;
-    private Long userId;
+    private UUID fiatAccountId;
+    private UUID userId;
 
     private String bankName;
     private String bankAccount;
@@ -47,11 +48,11 @@ public class OrderResult {
 
     private List<TradeResult> trades;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
@@ -159,19 +160,19 @@ public class OrderResult {
         this.createdAt = createdAt;
     }
 
-    public Long getFiatAccountId() {
+    public UUID getFiatAccountId() {
         return fiatAccountId;
     }
 
-    public void setFiatAccountId(Long fiatAccountId) {
+    public void setFiatAccountId(UUID fiatAccountId) {
         this.fiatAccountId = fiatAccountId;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 

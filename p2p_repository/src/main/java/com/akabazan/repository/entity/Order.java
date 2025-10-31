@@ -1,5 +1,6 @@
 package com.akabazan.repository.entity;
 
+import com.akabazan.framework.data.domain.AuditEntity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -7,7 +8,7 @@ import com.akabazan.repository.constant.OrderStatus;
 
 @Entity
 @Table(name = "orders")
-public class Order extends AbstractEntity {
+public class Order extends AuditEntity {
 
     @Column(nullable = false)
     private String type; // BUY / SELL

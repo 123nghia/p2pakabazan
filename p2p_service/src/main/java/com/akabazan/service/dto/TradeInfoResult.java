@@ -1,16 +1,17 @@
 package com.akabazan.service.dto;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class TradeInfoResult {
-    private Long tradeId;
+    private UUID tradeId;
     private String tradeCode;
     private String orderType; // "BUY" | "SELL"
     private String status;    // enum name, ví dụ: PENDING/PAID/COMPLETED/CANCELLED
     private Double amount;
 
 
-    private Long sellerFiatAccountId;
+    private UUID sellerFiatAccountId;
     private String bankName;
     private String accountNumber;
     private String accountHolder;
@@ -46,8 +47,8 @@ public void setCanCancel(boolean canCancel) {
        this.role = role;
      }
     // getters/setters
-    public Long getTradeId() { return tradeId; }
-    public void setTradeId(Long tradeId) { this.tradeId = tradeId; }
+    public UUID getTradeId() { return tradeId; }
+    public void setTradeId(UUID tradeId) { this.tradeId = tradeId; }
     public String getTradeCode() { return tradeCode; }
     public void setTradeCode(String tradeCode) { this.tradeCode = tradeCode; }
     public String getOrderType() { return orderType; }
@@ -67,8 +68,8 @@ public void setCanCancel(boolean canCancel) {
     public void setBankBranch(String bankBranch) { this.bankBranch = bankBranch; }
     public String getPaymentType() { return paymentType; }
     public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
-    public Long getSellerFiatAccountId() { return sellerFiatAccountId; }
-    public void setSellerFiatAccountId(Long sellerFiatAccountId) { this.sellerFiatAccountId = sellerFiatAccountId; }
+    public UUID getSellerFiatAccountId() { return sellerFiatAccountId; }
+    public void setSellerFiatAccountId(UUID sellerFiatAccountId) { this.sellerFiatAccountId = sellerFiatAccountId; }
 
     public LocalDateTime getAutoCancelAt() { return autoCancelAt; }
     public void setAutoCancelAt(LocalDateTime autoCancelAt) { this.autoCancelAt = autoCancelAt; }

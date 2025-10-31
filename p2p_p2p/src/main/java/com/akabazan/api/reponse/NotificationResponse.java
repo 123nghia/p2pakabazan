@@ -1,19 +1,20 @@
 package com.akabazan.api.reponse;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public class NotificationResponse {
 
-    private Long id;
+    private UUID id;
     private String message;
     private boolean read;
     private LocalDateTime createdAt;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

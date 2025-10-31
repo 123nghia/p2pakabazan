@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.akabazan.notification.enums.NotificationType;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,7 +32,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void notifyUser(Long userId, NotificationType type, String message) {
+    public void notifyUser(UUID userId, NotificationType type, String message) {
       if (message == null || message.isBlank()) return;
         userRepository.findById(userId).ifPresent(user -> {
             Notification n = new Notification();
@@ -43,7 +44,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
        @Override
-    public void notifyUsers(List<Long> userIds, NotificationType type, String message) {
+    public void notifyUsers(List<UUID> userIds, NotificationType type, String message) {
         if (message == null || message.isBlank() || userIds == null || userIds.isEmpty()) return;
         List<User> users = userRepository.findAllById(userIds.stream().distinct().collect(Collectors.toList()));
         if (users.isEmpty()) return;
@@ -72,7 +73,7 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(UUID notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.NOTIFICATION_NOT_FOUND));
 

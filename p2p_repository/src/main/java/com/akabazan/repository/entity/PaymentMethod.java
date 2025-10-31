@@ -1,5 +1,6 @@
 package com.akabazan.repository.entity;
 
+import com.akabazan.framework.data.domain.AuditEntity;
 import com.akabazan.repository.constant.PaymentMethodType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +10,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "payment_methods")
-public class PaymentMethod extends AbstractEntity {
+public class PaymentMethod extends AuditEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 30)

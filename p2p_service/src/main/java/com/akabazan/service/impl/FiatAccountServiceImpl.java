@@ -10,6 +10,7 @@ import com.akabazan.service.FiatAccountService;
 import com.akabazan.service.dto.FiatAccountMapper;
 import com.akabazan.service.dto.FiatAccountResult;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,7 @@ public class FiatAccountServiceImpl implements FiatAccountService {
 
     @Override
     public List<FiatAccountResult> getCurrentUserAccounts() {
-        Long userId = currentUserService.getCurrentUserId()
+        UUID userId = currentUserService.getCurrentUserId()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.UNAUTHORIZED));
 
         return fiatAccountRepository.findByUserId(userId)

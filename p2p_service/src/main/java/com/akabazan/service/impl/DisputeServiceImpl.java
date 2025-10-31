@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,7 +60,7 @@ public class DisputeServiceImpl implements DisputeService {
 
     @Override
     @Transactional
-    public DisputeResult openDispute(Long tradeId, String reason, String evidence) {
+    public DisputeResult openDispute(UUID tradeId, String reason, String evidence) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -92,7 +93,7 @@ public class DisputeServiceImpl implements DisputeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DisputeResult> getDisputesByTrade(Long tradeId) {
+    public List<DisputeResult> getDisputesByTrade(UUID tradeId) {
         tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -124,7 +125,7 @@ public class DisputeServiceImpl implements DisputeService {
 
     @Override
     @Transactional
-    public DisputeResult assignToCurrentAdmin(Long disputeId) {
+    public DisputeResult assignToCurrentAdmin(UUID disputeId) {
         AdminUser admin = currentAdminService.getCurrentAdmin()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
         return assign(disputeId, admin);
@@ -132,7 +133,7 @@ public class DisputeServiceImpl implements DisputeService {
 
     @Override
     @Transactional
-    public DisputeResult assignToAdmin(Long disputeId, Long adminId) {
+    public DisputeResult assignToAdmin(UUID disputeId, UUID adminId) {
         currentAdminService.getCurrentAdmin()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
 
@@ -144,7 +145,7 @@ public class DisputeServiceImpl implements DisputeService {
 
     @Override
     @Transactional
-    public DisputeResult resolveDispute(Long disputeId, String outcome, String resolutionNote) {
+    public DisputeResult resolveDispute(UUID disputeId, String outcome, String resolutionNote) {
         Dispute dispute = loadDispute(disputeId);
         AdminUser admin = currentAdminService.getCurrentAdmin()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
@@ -179,14 +180,14 @@ public class DisputeServiceImpl implements DisputeService {
         }
         Dispute saved = disputeRepository.save(dispute);
 
-        notifyParticipants(dispute, String.format("Dispute #%d resolved in favour of %s", dispute.getId(), resolutionOutcome.name()));
+        notifyParticipants(dispute, String.format("Dispute #%s resolved in favour of %s", dispute.getId(), resolutionOutcome.name()));
 
         return DisputeMapper.toResult(saved);
     }
 
     @Override
     @Transactional
-    public DisputeResult rejectDispute(Long disputeId, String resolutionNote) {
+    public DisputeResult rejectDispute(UUID disputeId, String resolutionNote) {
         Dispute dispute = loadDispute(disputeId);
         AdminUser admin = currentAdminService.getCurrentAdmin()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
@@ -209,12 +210,12 @@ public class DisputeServiceImpl implements DisputeService {
 
         Dispute saved = disputeRepository.save(dispute);
 
-        notifyParticipants(dispute, String.format("Dispute #%d was rejected", dispute.getId()));
+        notifyParticipants(dispute, String.format("Dispute #%s was rejected", dispute.getId()));
 
         return DisputeMapper.toResult(saved);
     }
 
-    private DisputeResult assign(Long disputeId, AdminUser admin) {
+    private DisputeResult assign(UUID disputeId, AdminUser admin) {
         Dispute dispute = loadDispute(disputeId);
         if (dispute.getStatus() == DisputeStatus.RESOLVED || dispute.getStatus() == DisputeStatus.REJECTED) {
             throw new ApplicationException(ErrorCode.INVALID_DISPUTE_STATUS);
@@ -225,13 +226,13 @@ public class DisputeServiceImpl implements DisputeService {
         Dispute saved = disputeRepository.save(dispute);
 
         notificationService.notifyUser(admin.getId(),NotificationType.ADMIN_INREVIEW,
-                String.format("Dispute #%d has been assigned to you", dispute.getId()));
-        notifyParticipants(dispute, String.format("Dispute #%d is under review by %s", dispute.getId(), admin.getUsername()));
+                String.format("Dispute #%s has been assigned to you", dispute.getId()));
+        notifyParticipants(dispute, String.format("Dispute #%s is under review by %s", dispute.getId(), admin.getUsername()));
 
         return DisputeMapper.toResult(saved);
     }
 
-    private Dispute loadDispute(Long disputeId) {
+    private Dispute loadDispute(UUID disputeId) {
         return disputeRepository.findByIdWithTrade(disputeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.DISPUTE_NOT_FOUND));
     }
@@ -269,7 +270,7 @@ public class DisputeServiceImpl implements DisputeService {
     }
 
     private void notifyOnOpen(Trade trade, Dispute dispute) {
-        String message = String.format("Trade #%d has a new dispute (#%d)", trade.getId(), dispute.getId());
+        String message = String.format("Trade #%s has a new dispute (#%s)", trade.getId(), dispute.getId());
         notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()),NotificationType.DISPUTE_OPENED, message);
     }
 

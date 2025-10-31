@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -35,7 +36,7 @@ public class CancelOrderService implements CancelOrderUseCase {
     }
 
     @Override
-    public void cancel(Long orderId) {
+    public void cancel(UUID orderId) {
         User seller = currentUserService.getCurrentUser()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.USER_NOT_FOUND));
 

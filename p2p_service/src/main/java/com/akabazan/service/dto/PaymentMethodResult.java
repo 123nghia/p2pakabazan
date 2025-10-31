@@ -1,10 +1,11 @@
 package com.akabazan.service.dto;
 
 import com.akabazan.repository.constant.PaymentMethodType;
+import java.util.UUID;
 
 public class PaymentMethodResult {
 
-    private Long id;
+    private UUID id;
     private PaymentMethodType type;
     private String code;
     private String name;
@@ -13,11 +14,11 @@ public class PaymentMethodResult {
     private Integer displayOrder;
     private boolean active;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 

@@ -1,36 +1,38 @@
 package com.akabazan.service.dto;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
+
 
 public class ChatMessageResult {
 
-    private Long id;
-    private Long tradeId;
-    private Long senderId;
+    private UUID id;
+    private UUID tradeId;
+    private UUID senderId;
     private String message;
     private LocalDateTime timestamp;
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(UUID id) {
         this.id = id;
     }
 
-    public Long getTradeId() {
+    public UUID getTradeId() {
         return tradeId;
     }
 
-    public void setTradeId(Long tradeId) {
+    public void setTradeId(UUID tradeId) {
         this.tradeId = tradeId;
     }
 
-    public Long getSenderId() {
+    public UUID getSenderId() {
         return senderId;
     }
 
-    public void setSenderId(Long senderId) {
+    public void setSenderId(UUID senderId) {
         this.senderId = senderId;
     }
 

@@ -1,15 +1,17 @@
 package com.akabazan.api.reponse;
 
+import java.util.UUID;
+
 public class AuthResponse {
 
     private String token;
-    private Long userId;
+    private UUID userId;
     private String email;
 
     public AuthResponse() {
     }
 
-    public AuthResponse(String token, Long userId, String email) {
+    public AuthResponse(String token, UUID userId, String email) {
         this.token = token;
         this.userId = userId;
         this.email = email;
@@ -23,11 +25,11 @@ public class AuthResponse {
         this.token = token;
     }
 
-    public Long getUserId() {
+    public UUID getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(UUID userId) {
         this.userId = userId;
     }
 
@@ -39,7 +41,7 @@ public class AuthResponse {
         this.email = email;
     }
 
-    public static AuthResponse from(String token, Long userId, String email) {
+    public static AuthResponse from(String token, UUID userId, String email) {
         return new AuthResponse(token, userId, email);
     }
 }

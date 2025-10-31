@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,7 +37,7 @@ public class GetOrdersService implements GetOrdersQuery {
                                  List<String> paymentMethods,
                                  String sortByPrice,
                                  String fiat,
-                                 Long excludeUserId,
+                                 UUID excludeUserId,
                                  int page,
                                  int size) {
         Pageable pageable = buildPageable(sortByPrice, page, size);
@@ -61,7 +62,7 @@ public class GetOrdersService implements GetOrdersQuery {
                 pageable
         );
         List<Order> orderContent = orders.getContent();
-        Map<Long, OrderStats> statsByOrder = buildOrderStats(orderContent);
+        Map<UUID, OrderStats> statsByOrder = buildOrderStats(orderContent);
         return orders.map(order -> enrich(OrderMapper.toResult(order), statsByOrder));
     }
 
@@ -79,8 +80,8 @@ public class GetOrdersService implements GetOrdersQuery {
         return PageRequest.of(resolvedPage, resolvedSize, sort);
     }
 
-    private Map<Long, OrderStats> buildOrderStats(List<Order> orders) {
-        List<Long> orderIds = orders.stream()
+    private Map<UUID, OrderStats> buildOrderStats(List<Order> orders) {
+        List<UUID> orderIds = orders.stream()
                 .map(Order::getId)
                 .filter(Objects::nonNull)
                 .toList();
@@ -91,7 +92,7 @@ public class GetOrdersService implements GetOrdersQuery {
         List<OrderTradeStatsProjection> projections =
                 tradeRepository.findTradeStatsByOrderIds(orderIds, TradeStatus.COMPLETED);
 
-        Map<Long, OrderStats> stats = new HashMap<>();
+        Map<UUID, OrderStats> stats = new HashMap<>();
         for (OrderTradeStatsProjection projection : projections) {
             long total = projection.getTotalTrades() != null ? projection.getTotalTrades() : 0L;
             long completed = projection.getCompletedTrades() != null ? projection.getCompletedTrades() : 0L;
@@ -101,7 +102,7 @@ public class GetOrdersService implements GetOrdersQuery {
     }
 
     private OrderResult enrich(OrderResult result,
-                               Map<Long, OrderStats> statsByOrder) {
+                               Map<UUID, OrderStats> statsByOrder) {
         if (result == null) {
             return null;
         }

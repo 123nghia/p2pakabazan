@@ -9,8 +9,9 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, UUID> {
     @Query("""
             SELECT o FROM Order o
             WHERE (:status IS NULL OR o.status = :status)
@@ -27,12 +28,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                               @Param("paymentFilterEnabled") boolean paymentFilterEnabled,
                               @Param("paymentMethods") List<String> paymentMethods,
                               @Param("fiat") String fiat,
-                              @Param("excludeUserId") Long excludeUserId,
+                              @Param("excludeUserId") UUID excludeUserId,
                               Pageable pageable);
        
     List<Order> findAllByStatusAndExpireAtBefore(String status, LocalDateTime time);
 
-    List<Order> findByUserId(Long userId);
+    List<Order> findByUserId(UUID userId);
 
     @Query("""
             SELECT o FROM Order o
@@ -41,7 +42,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
               AND (:type IS NULL OR o.type = :type)
             ORDER BY o.createdAt DESC
             """)
-    List<Order> findOrdersByUserAndOptionalFilters(Long userId, String status, String type);
+    List<Order> findOrdersByUserAndOptionalFilters(UUID userId, String status, String type);
 
 
             

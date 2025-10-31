@@ -4,10 +4,10 @@ import com.akabazan.api.mapper.NotificationResponseMapper;
 import com.akabazan.api.reponse.NotificationResponse;
 import com.akabazan.notification.dto.NotificationResult;
 import com.akabazan.notification.service.NotificationService;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/p2p")
@@ -29,7 +29,7 @@ public class NotificationController extends BaseController {
     }
 
     @PostMapping("/notifications/{notificationId}/read")
-    public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId) {
+    public ResponseEntity<Void> markAsRead(@PathVariable UUID notificationId) {
         notificationService.markAsRead(notificationId);
         return ResponseEntity.ok().build();
     }
