@@ -226,6 +226,7 @@ public class TradeServiceImpl implements TradeService {
 
     private FiatAccount resolveSellerAccount(User seller, Order order, TradeCreateCommand command) {
         if ("SELL".equalsIgnoreCase(order.getType())) {
+            // For SELL orders, seller is order owner, use order's fiatAccount
             FiatAccount account = order.getFiatAccount();
             if (account != null && !account.getUser().getId().equals(seller.getId())) {
                 throw new ApplicationException(ErrorCode.FORBIDDEN);
@@ -233,6 +234,16 @@ public class TradeServiceImpl implements TradeService {
             return account;
         }
 
+        if ("BUY".equalsIgnoreCase(order.getType())) {
+            // For BUY orders, seller is actor (person creating trade)
+            // Get fiatAccount from order (as per requirement: don't require fiatAccountId in request)
+            FiatAccount account = order.getFiatAccount();
+            // For BUY orders, we use the order's fiatAccount without checking seller ownership
+            // since the order's fiatAccount belongs to the buyer, not the seller
+            return account;
+        }
+
+        // Fallback for other cases (should not reach here)
         UUID accountId = command.getFiatAccountId();
         if (accountId == null) {
             throw new ApplicationException(ErrorCode.SELLER_PAYMENT_METHOD_REQUIRED);

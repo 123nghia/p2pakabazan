@@ -52,7 +52,6 @@ public final class OrderResponseMapper {
         }
         return response;
     }
-
     public static List<OrderResponse> fromList(List<OrderResult> results) {
         return results.stream()
                 .map(OrderResponseMapper::from)

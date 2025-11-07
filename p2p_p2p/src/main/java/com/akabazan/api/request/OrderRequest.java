@@ -33,7 +33,7 @@ public class OrderRequest {
     @NotBlank(message = "Payment method is required")
     private String paymentMethod;
 
-    @NotNull(message = "Fiat account id is required")
+ 
     private UUID fiatAccountId;
 
     @Positive(message = "Min limit must be positive")

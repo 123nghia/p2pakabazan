@@ -1,5 +1,4 @@
 package com.akabazan.api.controller;
-
 import com.akabazan.api.mapper.OrderCommandMapper;
 import com.akabazan.api.mapper.OrderResponseMapper;
 import com.akabazan.api.reponse.MyOrdersResponse;
@@ -80,13 +79,9 @@ public class P2PController extends BaseController {
                 .doubleValue();
     }
 
-
-    
     @PostMapping("/{orderId}/cancel")
     public ResponseEntity<Void> cancelOrder(@PathVariable UUID orderId) {
         orderService.cancelOrder(orderId);
         return ResponseEntity.ok().build();
     }
-    
-
 }

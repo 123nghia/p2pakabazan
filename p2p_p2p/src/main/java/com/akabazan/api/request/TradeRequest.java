@@ -12,7 +12,6 @@ public class TradeRequest {
 
     private String type;
 
-    @NotNull(message = "Fiat account id is required")
     private UUID fiatAccountId;
 
     @NotNull(message = "Amount is required")

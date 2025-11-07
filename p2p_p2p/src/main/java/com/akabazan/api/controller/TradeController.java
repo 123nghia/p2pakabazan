@@ -2,8 +2,10 @@ package com.akabazan.api.controller;
 
 import com.akabazan.api.mapper.TradeCommandMapper;
 import com.akabazan.api.mapper.TradeInfoResponseMapper;
+import com.akabazan.api.mapper.TradeCreatedResponseMapper;
 import com.akabazan.api.mapper.TradeResponseMapper;
 import com.akabazan.api.reponse.TradeInfoResponse;
+import com.akabazan.api.reponse.TradeCreatedResponse;
 import com.akabazan.api.reponse.TradeResponse;
 import com.akabazan.api.request.TradeRequest;
 import com.akabazan.common.constant.ErrorCode;
@@ -59,10 +61,10 @@ public class TradeController extends BaseController {
 
 
     @PostMapping("/trades")
-    public ResponseEntity < BaseResponse<TradeResponse>> createTrade(@Valid @RequestBody TradeRequest tradeRequest) {
+    public ResponseEntity < BaseResponse<TradeCreatedResponse>> createTrade(@Valid @RequestBody TradeRequest tradeRequest) {
         TradeCreateCommand command = TradeCommandMapper.toCommand(tradeRequest); // map từ API request sang Command
         TradeResult result = tradeService.createTrade(command);
-        return ResponseFactory.ok(TradeResponseMapper.from(result));
+        return ResponseFactory.ok(TradeCreatedResponseMapper.from(result));
     }
 
     @PostMapping("/trades/{tradeId}/confirm-payment")
