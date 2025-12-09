@@ -8,9 +8,11 @@ import com.akabazan.api.request.ChatRequest;
 import com.akabazan.service.TradeChatService;
 import com.akabazan.service.dto.TradeChatResult;
 import com.akabazan.service.dto.TradeChatThreadResult;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,8 +34,10 @@ public class TradeChatController extends BaseController {
     }
 
     @GetMapping("/{tradeId}/chat")
-    public ResponseEntity<List<TradeChatResponse>> getMessages(@PathVariable UUID tradeId) {
-        List<TradeChatResult> messages = tradeChatService.getMessages(tradeId);
+    public ResponseEntity<List<TradeChatResponse>> getMessages(
+            @PathVariable UUID tradeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime since) {
+        List<TradeChatResult> messages = tradeChatService.getMessages(tradeId, since);
         return ResponseEntity.ok(TradeChatResponseMapper.fromList(messages));
     }
 

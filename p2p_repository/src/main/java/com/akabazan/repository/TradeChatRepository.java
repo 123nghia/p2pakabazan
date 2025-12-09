@@ -1,6 +1,7 @@
 package com.akabazan.repository;
 
 import com.akabazan.repository.entity.TradeChat;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -10,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface TradeChatRepository extends JpaRepository<TradeChat, UUID> {
     List<TradeChat> findByTradeIdOrderByTimestampAsc(UUID tradeId);
+    
+    List<TradeChat> findByTradeIdAndTimestampAfterOrderByTimestampAsc(UUID tradeId, LocalDateTime since);
 
     @Query("""
             SELECT tc FROM TradeChat tc

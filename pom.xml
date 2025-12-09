@@ -27,6 +27,7 @@
     <module>p2p_p2p</module>
     <module>p2p_admin</module>
     <module>p2p_framework_data</module>
+    <module>p2p_websocket</module>
     </modules>
   <dependencies>
  

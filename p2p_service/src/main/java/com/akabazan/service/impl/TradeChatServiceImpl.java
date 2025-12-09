@@ -1,6 +1,7 @@
 package com.akabazan.service.impl;
 
 import com.akabazan.common.constant.ErrorCode;
+import com.akabazan.common.event.ChatMessageEvent;
 import com.akabazan.common.exception.ApplicationException;
 import com.akabazan.repository.TradeChatRepository;
 import com.akabazan.repository.TradeRepository;
@@ -13,11 +14,14 @@ import com.akabazan.service.dto.TradeChatThreadResult;
 import com.akabazan.service.dto.TradeMapper;
 import com.akabazan.service.dto.TradeResult;
 import com.akabazan.service.dto.TradeChatMapper;
+import com.akabazan.service.event.ChatEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -29,15 +33,18 @@ public class TradeChatServiceImpl implements TradeChatService {
 
     private final TradeRepository tradeRepository;
     private final TradeChatRepository tradeChatRepository;
+    private final ChatEventPublisher chatEventPublisher;
 
     private enum RecipientRole {
         BUYER, SELLER, ALL
     }
 
     public TradeChatServiceImpl(TradeRepository tradeRepository,
-                                TradeChatRepository tradeChatRepository) {
+                                TradeChatRepository tradeChatRepository,
+                                ChatEventPublisher chatEventPublisher) {
         this.tradeRepository = tradeRepository;
         this.tradeChatRepository = tradeChatRepository;
+        this.chatEventPublisher = chatEventPublisher;
     }
 
     @Override
@@ -53,15 +60,54 @@ public class TradeChatServiceImpl implements TradeChatService {
         chat.setTimestamp(LocalDateTime.now());
         chat.setRecipientRole(RecipientRole.ALL.name());
 
-        return TradeChatMapper.toResult(tradeChatRepository.save(chat));
+        TradeChat savedChat = tradeChatRepository.save(chat);
+        
+        // Publish chat message event
+        publishChatEvent(savedChat, false);
+        
+        return TradeChatMapper.toResult(savedChat);
+    }
+    
+    private void publishChatEvent(TradeChat chat, boolean isSystemMessage) {
+        if (chat == null || chat.getTrade() == null) {
+            return;
+        }
+        Instant timestamp = chat.getTimestamp() != null 
+            ? chat.getTimestamp().atZone(ZoneId.systemDefault()).toInstant()
+            : Instant.now();
+        
+        ChatMessageEvent event = new ChatMessageEvent(
+            chat.getTrade().getId(),
+            chat.getId(),
+            chat.getSenderId(),
+            chat.getMessage(),
+            chat.getRecipientRole(),
+            isSystemMessage,
+            timestamp,
+            Instant.now()
+        );
+        chatEventPublisher.publish(event);
     }
 
     @Override
     public List<TradeChatResult> getMessages(UUID tradeId) {
+        return getMessages(tradeId, null);
+    }
+    
+    @Override
+    public List<TradeChatResult> getMessages(UUID tradeId, LocalDateTime since) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
         RecipientRole viewerRole = determineUserRoleForTrade(trade, getCurrentUserId());
-        return tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId).stream()
+        
+        List<TradeChat> chats;
+        if (since != null) {
+            chats = tradeChatRepository.findByTradeIdAndTimestampAfterOrderByTimestampAsc(tradeId, since);
+        } else {
+            chats = tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId);
+        }
+        
+        return chats.stream()
                 .filter(chat -> isVisibleForRecipient(chat.getRecipientRole(), viewerRole))
                 .map(TradeChatMapper::toResult)
                 .collect(Collectors.toList());

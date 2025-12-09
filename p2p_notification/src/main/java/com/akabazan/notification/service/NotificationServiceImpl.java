@@ -1,9 +1,11 @@
 package com.akabazan.notification.service;
 
 import com.akabazan.common.constant.ErrorCode;
+import com.akabazan.common.event.NotificationEvent;
 import com.akabazan.common.exception.ApplicationException;
 import com.akabazan.notification.dto.NotificationResult;
 import com.akabazan.notification.entity.Notification;
+import com.akabazan.notification.event.NotificationEventPublisher;
 import com.akabazan.notification.repository.NotificationRepository;
 import com.akabazan.repository.UserRepository;
 import com.akabazan.repository.entity.User;
@@ -11,6 +13,7 @@ import com.akabazan.service.CurrentUserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.akabazan.notification.enums.NotificationType;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,13 +25,16 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final CurrentUserService currentUserService;
+    private final NotificationEventPublisher notificationEventPublisher;
 
     public NotificationServiceImpl(NotificationRepository notificationRepository,
                                     UserRepository userRepository,
-                                    CurrentUserService currentUserService) {
+                                    CurrentUserService currentUserService,
+                                    NotificationEventPublisher notificationEventPublisher) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.currentUserService = currentUserService;
+        this.notificationEventPublisher = notificationEventPublisher;
     }
 
     @Override
@@ -39,7 +45,10 @@ public class NotificationServiceImpl implements NotificationService {
             n.setUser(user);
             n.setType(type == null ? NotificationType.GENERIC : type);
             n.setMessage(message);
-            notificationRepository.save(n);
+            Notification savedNotification = notificationRepository.save(n);
+            
+            // Publish notification event
+            publishNotificationEvent(savedNotification);
         });
     }
 
@@ -53,8 +62,29 @@ public class NotificationServiceImpl implements NotificationService {
             n.setUser(u);
             n.setType(type == null ? NotificationType.GENERIC : type);
             n.setMessage(message);
-            notificationRepository.save(n);
+            Notification savedNotification = notificationRepository.save(n);
+            
+            // Publish notification event
+            publishNotificationEvent(savedNotification);
         }
+    }
+    
+    private void publishNotificationEvent(Notification notification) {
+        if (notification == null || notification.getUser() == null) {
+            return;
+        }
+        Instant occurredAt = notification.getCreatedAt() != null
+            ? notification.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()
+            : Instant.now();
+        
+        NotificationEvent event = new NotificationEvent(
+            notification.getUser().getId(),
+            notification.getId(),
+            notification.getType() != null ? notification.getType().name() : NotificationType.GENERIC.name(),
+            notification.getMessage(),
+            occurredAt
+        );
+        notificationEventPublisher.publish(event);
     }
 
     @Override

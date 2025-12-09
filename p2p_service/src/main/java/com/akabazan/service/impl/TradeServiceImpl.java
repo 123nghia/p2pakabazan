@@ -17,8 +17,10 @@ import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.TradeChat;
 import com.akabazan.repository.entity.User;
 import com.akabazan.repository.entity.Wallet;
+import com.akabazan.common.event.ChatMessageEvent;
 import com.akabazan.common.event.TradeStatusEvent;
 import com.akabazan.service.TradeService;
+import com.akabazan.service.event.ChatEventPublisher;
 import com.akabazan.service.WalletTransactionService;
 import com.akabazan.service.command.TradeCreateCommand;
 import com.akabazan.service.dto.TradeInfoResult;
@@ -40,6 +42,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -88,6 +91,7 @@ public class TradeServiceImpl implements TradeService {
     private final FiatAccountRepository fiatAccountRepository;
     private final WalletTransactionService walletTransactionService;
     private final TradeEventPublisher tradeEventPublisher;
+    private final ChatEventPublisher chatEventPublisher;
     
     @Value("${app.trade.auto-cancel-minutes:15}")
     private long autoCancelMinutes;
@@ -100,7 +104,8 @@ public class TradeServiceImpl implements TradeService {
             NotificationService  notificationService,
             FiatAccountRepository fiatAccountRepository,
             WalletTransactionService walletTransactionService,
-            TradeEventPublisher tradeEventPublisher
+            TradeEventPublisher tradeEventPublisher,
+            ChatEventPublisher chatEventPublisher
             ) {
         this.entityManager = entityManager;
         this.orderRepository = orderRepository;
@@ -112,6 +117,7 @@ public class TradeServiceImpl implements TradeService {
         this.fiatAccountRepository = fiatAccountRepository;
         this.walletTransactionService = walletTransactionService;
         this.tradeEventPublisher = tradeEventPublisher;
+        this.chatEventPublisher = chatEventPublisher;
     }
 
     @Override
@@ -680,7 +686,31 @@ public class TradeServiceImpl implements TradeService {
         chat.setMessage(message);
         chat.setTimestamp(LocalDateTime.now());
         chat.setRecipientRole(recipient != null ? recipient.name() : RecipientRole.ALL.name());
-        tradeChatRepository.save(chat);
+        TradeChat savedChat = tradeChatRepository.save(chat);
+        
+        // Publish system message event
+        publishSystemChatEvent(savedChat);
+    }
+    
+    private void publishSystemChatEvent(TradeChat chat) {
+        if (chat == null || chat.getTrade() == null) {
+            return;
+        }
+        Instant timestamp = chat.getTimestamp() != null 
+            ? chat.getTimestamp().atZone(java.time.ZoneId.systemDefault()).toInstant()
+            : Instant.now();
+        
+        ChatMessageEvent event = new ChatMessageEvent(
+            chat.getTrade().getId(),
+            chat.getId(),
+            chat.getSenderId(),
+            chat.getMessage(),
+            chat.getRecipientRole(),
+            true, // isSystemMessage = true
+            timestamp,
+            Instant.now()
+        );
+        chatEventPublisher.publish(event);
     }
 
     private String resolveTradeCode(Trade trade) {

@@ -1,4 +1,4 @@
-package com.akabazan.notification.listener;
+package com.akabazan.websocket.listener;
 
 import com.akabazan.common.event.TradeStatusEvent;
 import org.slf4j.Logger;
@@ -17,7 +17,7 @@ public class TradeEventListener {
         this.messagingTemplate = messagingTemplate;
     }
 
-    @RabbitListener(queues = "${app.rabbitmq.trade.queue:trade.events.queue}")
+    @RabbitListener(queues = "${app.rabbitmq.websocket.trade.queue:websocket.trade.events.queue}")
     public void handleTradeEvent(TradeStatusEvent event) {
         if (event == null) {
             return;
@@ -37,3 +37,4 @@ public class TradeEventListener {
         }
     }
 }
+
