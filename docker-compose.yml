@@ -3,27 +3,98 @@ version: "3.9"
 services:
   db:
     image: postgres:15
+    container_name: p2p-postgres
     environment:
-      POSTGRES_DB: p2p_trading
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-p2p_trading_dev}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-p2p_trading_dev}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - p2p-network
 
-  app:
-    build: .
-    ports:
-      - "8080:8080"
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: p2p-pgadmin
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/p2p_trading
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      SPRING_FLYWAY_ENABLED: "true"
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@p2p.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin123}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json
     depends_on:
       - db
+    networks:
+      - p2p-network
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: p2p-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - p2p-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: p2p-app
+    ports:
+      - "${APP_PORT:-9000}:${SERVER_PORT:-9000}"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      DB_URL: ${DB_URL:-jdbc:postgresql://db:5432/p2p_trading_dev}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-15}
+      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL:-false}
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SPRING_RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST:-rabbitmq}
+      SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT:-5672}
+      SPRING_RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      SPRING_RABBITMQ_PASS: ${RABBITMQ_PASSWORD:-guest}
+      SERVER_PORT: ${SERVER_PORT:-9000}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this-in-production-min-256-bits}
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - p2p-network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
+  pgadmin_data:
+  rabbitmq_data:
+
+networks:
+  p2p-network:
+    driver: bridge

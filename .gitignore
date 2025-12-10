@@ -39,3 +39,8 @@ application-*.properties
 ### Docker / Deployment ###
 *.pid
 *.seed
+
+### Environment variables ###
+.env
+.env.local
+.env.*.local
