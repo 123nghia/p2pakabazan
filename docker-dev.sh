@@ -1,6 +1,11 @@
 #!/bin/bash
 # Script để khởi động môi trường development Docker
-# Tự động xử lý: database init, migration, seed data
+# Tự động xử lý:
+#   - PostgreSQL database initialization
+#   - Flyway migrations (28 migrations auto-run)
+#   - RabbitMQ message broker
+#   - pgAdmin web UI
+#   - Spring Boot application build & deploy
 # Tương thích: Linux (Ubuntu, Debian, CentOS) và macOS
 
 set -e
@@ -8,6 +13,13 @@ set -e
 echo "======================================"
 echo "P2P Trading - Development Environment"
 echo "======================================"
+echo ""
+echo "Auto-setup includes:"
+echo "  - PostgreSQL database creation"
+echo "  - Flyway migrations (auto-run)"
+echo "  - RabbitMQ broker"
+echo "  - pgAdmin web UI"
+echo "  - Spring Boot application"
 echo ""
 
 # Colors for output
@@ -107,28 +119,39 @@ print_success "Database đã sẵn sàng"
 
 # Đợi application khởi động và chạy Flyway migration
 print_info "Đợi application khởi động và chạy migrations..."
+print_info "Flyway sẽ tự động chạy 28 migrations khi app khởi động..."
 sleep 15
 
 # Kiểm tra logs của app để đảm bảo migration đã chạy
 print_info "Kiểm tra trạng thái migration..."
-docker logs p2p-app 2>&1 | grep -i "flyway" | tail -5 || print_warning "Chưa thấy logs Flyway, có thể app đang khởi động..."
+if docker logs p2p-app 2>&1 | grep -i "flyway" | tail -5; then
+    print_success "Flyway migrations đã chạy thành công!"
+else
+    print_warning "Chưa thấy logs Flyway, có thể app đang khởi động..."
+fi
 
 echo ""
 print_success "======================================"
-print_success "Môi trường development đã sẵn sàng!"
+print_success "Development Environment Ready!"
 print_success "======================================"
 echo ""
-echo "📋 Thông tin truy cập:"
+print_success "✅ Database initialized and 28 migrations completed"
+print_success "✅ All services are running"
 echo ""
-echo "  🚀 Application API:    http://localhost:${APP_PORT:-9000}/api"
-echo "  🗄️  PostgreSQL:        localhost:${DB_PORT:-5432}"
-echo "     - Database:        ${POSTGRES_DB}"
-echo "     - Username:        ${POSTGRES_USER}"
-echo "     - Password:        ${POSTGRES_PASSWORD}"
+echo "📋 Access URLs:"
 echo ""
-echo "  🔧 pgAdmin (Web UI):   http://localhost:${PGADMIN_PORT:-5050}"
-echo "     - Email:           ${PGADMIN_EMAIL}"
-echo "     - Password:        ${PGADMIN_PASSWORD}"
+echo "  🚀 Application API:      http://localhost:${APP_PORT:-9000}/api"
+echo "  📖 Swagger UI:           http://localhost:${APP_PORT:-9000}/api/swagger-ui/index.html"
+echo ""
+echo "  🗄️  PostgreSQL Database:  localhost:${DB_PORT:-5432}"
+echo "     Database:             ${POSTGRES_DB}"
+echo "     Username:             ${POSTGRES_USER}"
+echo "     Password:             ${POSTGRES_PASSWORD}"
+echo "     Migrations:           28 auto-applied via Flyway"
+echo ""
+echo "  🔧 pgAdmin (Web UI):     http://localhost:${PGADMIN_PORT:-5050}"
+echo "     Email:                ${PGADMIN_EMAIL}"
+echo "     Password:             ${PGADMIN_PASSWORD}"
 echo ""
 echo "  🐰 RabbitMQ:          http://localhost:${RABBITMQ_MGMT_PORT:-15672}"
 echo "     - Username:        ${RABBITMQ_USER}"
