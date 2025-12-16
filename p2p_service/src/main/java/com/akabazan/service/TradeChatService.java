@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface TradeChatService {
-    TradeChatResult sendMessage(UUID tradeId, String message);
+    TradeChatResult sendMessage(UUID tradeId, String message, String image);
+
     List<TradeChatResult> getMessages(UUID tradeId);
+
     List<TradeChatResult> getMessages(UUID tradeId, LocalDateTime since);
+
     List<TradeChatThreadResult> getChatThreadsForCurrentUser();
 }

@@ -4,11 +4,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class TradeChatResponse {
-   
+
     private UUID id;
     private UUID tradeId;
     private UUID senderId;
     private String message;
+    private String image;
     private LocalDateTime timestamp;
     private String recipientRole;
 
@@ -58,5 +59,13 @@ public class TradeChatResponse {
 
     public void setRecipientRole(String recipientRole) {
         this.recipientRole = recipientRole;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

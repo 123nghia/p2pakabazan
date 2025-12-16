@@ -19,6 +19,7 @@ public final class TradeChatResponseMapper {
         response.setTradeId(result.getTradeId());
         response.setSenderId(result.getSenderId());
         response.setMessage(result.getMessage());
+        response.setImage(result.getImage());
         response.setTimestamp(result.getTimestamp());
         response.setRecipientRole(result.getRecipientRole());
         return response;

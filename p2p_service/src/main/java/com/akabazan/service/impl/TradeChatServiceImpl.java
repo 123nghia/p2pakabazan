@@ -40,8 +40,8 @@ public class TradeChatServiceImpl implements TradeChatService {
     }
 
     public TradeChatServiceImpl(TradeRepository tradeRepository,
-                                TradeChatRepository tradeChatRepository,
-                                ChatEventPublisher chatEventPublisher) {
+            TradeChatRepository tradeChatRepository,
+            ChatEventPublisher chatEventPublisher) {
         this.tradeRepository = tradeRepository;
         this.tradeChatRepository = tradeChatRepository;
         this.chatEventPublisher = chatEventPublisher;
@@ -49,7 +49,7 @@ public class TradeChatServiceImpl implements TradeChatService {
 
     @Override
     @Transactional
-    public TradeChatResult sendMessage(UUID tradeId, String message) {
+    public TradeChatResult sendMessage(UUID tradeId, String message, String image) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
@@ -57,35 +57,36 @@ public class TradeChatServiceImpl implements TradeChatService {
         chat.setTrade(trade);
         chat.setSenderId(getCurrentUserId());
         chat.setMessage(message);
+        chat.setImage(image);
         chat.setTimestamp(LocalDateTime.now());
         chat.setRecipientRole(RecipientRole.ALL.name());
 
         TradeChat savedChat = tradeChatRepository.save(chat);
-        
+
         // Publish chat message event
         publishChatEvent(savedChat, false);
-        
+
         return TradeChatMapper.toResult(savedChat);
     }
-    
+
     private void publishChatEvent(TradeChat chat, boolean isSystemMessage) {
         if (chat == null || chat.getTrade() == null) {
             return;
         }
-        Instant timestamp = chat.getTimestamp() != null 
-            ? chat.getTimestamp().atZone(ZoneId.systemDefault()).toInstant()
-            : Instant.now();
-        
+        Instant timestamp = chat.getTimestamp() != null
+                ? chat.getTimestamp().atZone(ZoneId.systemDefault()).toInstant()
+                : Instant.now();
+
         ChatMessageEvent event = new ChatMessageEvent(
-            chat.getTrade().getId(),
-            chat.getId(),
-            chat.getSenderId(),
-            chat.getMessage(),
-            chat.getRecipientRole(),
-            isSystemMessage,
-            timestamp,
-            Instant.now()
-        );
+                chat.getTrade().getId(),
+                chat.getId(),
+                chat.getSenderId(),
+                chat.getMessage(),
+                chat.getImage(),
+                chat.getRecipientRole(),
+                isSystemMessage,
+                timestamp,
+                Instant.now());
         chatEventPublisher.publish(event);
     }
 
@@ -93,20 +94,20 @@ public class TradeChatServiceImpl implements TradeChatService {
     public List<TradeChatResult> getMessages(UUID tradeId) {
         return getMessages(tradeId, null);
     }
-    
+
     @Override
     public List<TradeChatResult> getMessages(UUID tradeId, LocalDateTime since) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
         RecipientRole viewerRole = determineUserRoleForTrade(trade, getCurrentUserId());
-        
+
         List<TradeChat> chats;
         if (since != null) {
             chats = tradeChatRepository.findByTradeIdAndTimestampAfterOrderByTimestampAsc(tradeId, since);
         } else {
             chats = tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId);
         }
-        
+
         return chats.stream()
                 .filter(chat -> isVisibleForRecipient(chat.getRecipientRole(), viewerRole))
                 .map(TradeChatMapper::toResult)
@@ -130,8 +131,7 @@ public class TradeChatServiceImpl implements TradeChatService {
                 .collect(Collectors.toMap(
                         chat -> chat.getTrade().getId(),
                         chat -> TradeChatMapper.toResult(chat),
-                        (existing, ignored) -> existing
-                ));
+                        (existing, ignored) -> existing));
 
         List<TradeChatThreadResult> threads = trades.stream()
                 .map(trade -> {
@@ -200,8 +200,8 @@ public class TradeChatServiceImpl implements TradeChatService {
     }
 
     private TradeChatResult resolveLastVisibleMessage(UUID tradeId,
-                                                      RecipientRole viewerRole,
-                                                      TradeChatResult candidate) {
+            RecipientRole viewerRole,
+            TradeChatResult candidate) {
         if (candidate != null && isVisibleForRecipient(candidate.getRecipientRole(), viewerRole)) {
             return candidate;
         }

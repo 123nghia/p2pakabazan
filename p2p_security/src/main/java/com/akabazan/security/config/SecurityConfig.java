@@ -8,8 +8,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.akabazan.security.config.*;
-
 import org.springframework.beans.factory.annotation.Value;
 import io.jsonwebtoken.security.Keys;
 

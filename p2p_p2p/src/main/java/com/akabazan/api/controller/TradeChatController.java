@@ -28,8 +28,8 @@ public class TradeChatController extends BaseController {
 
     @PostMapping("/{tradeId}/chat")
     public ResponseEntity<TradeChatResponse> sendMessage(@PathVariable UUID tradeId,
-                                                         @RequestBody ChatRequest req) {
-        TradeChatResult dto = tradeChatService.sendMessage(tradeId, req.getMessages());
+            @RequestBody ChatRequest req) {
+        TradeChatResult dto = tradeChatService.sendMessage(tradeId, req.getMessages(), req.getImage());
         return ResponseEntity.ok(TradeChatResponseMapper.from(dto));
     }
 
