@@ -15,6 +15,7 @@ import com.akabazan.repository.entity.Dispute.ResolutionOutcome;
 import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.User;
 import com.akabazan.repository.entity.AdminUser;
+import com.akabazan.repository.entity.DisputeEvidence;
 import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.CurrentAdminService;
 import com.akabazan.service.DisputeService;
@@ -45,15 +46,14 @@ public class DisputeServiceImpl implements DisputeService {
     private final SellerFundsManager sellerFundsManager;
     private final TradeEventPublisher tradeEventPublisher;
 
-
     public DisputeServiceImpl(TradeRepository tradeRepository,
-                              DisputeRepository disputeRepository,
-                              AdminUserRepository adminUserRepository,
-                              CurrentUserService currentUserService,
-                              CurrentAdminService currentAdminService,
-                              NotificationService notificationService,  
-                              SellerFundsManager sellerFundsManager,
-                              TradeEventPublisher tradeEventPublisher) {
+            DisputeRepository disputeRepository,
+            AdminUserRepository adminUserRepository,
+            CurrentUserService currentUserService,
+            CurrentAdminService currentAdminService,
+            NotificationService notificationService,
+            SellerFundsManager sellerFundsManager,
+            TradeEventPublisher tradeEventPublisher) {
         this.tradeRepository = tradeRepository;
         this.disputeRepository = disputeRepository;
         this.adminUserRepository = adminUserRepository;
@@ -81,6 +81,16 @@ public class DisputeServiceImpl implements DisputeService {
             throw new ApplicationException(ErrorCode.ALREADY_IN_DISPUTE);
         }
 
+        // Validate multiple images (1-5)
+        if (evidence == null || evidence.isBlank()) {
+            throw new ApplicationException(ErrorCode.INVALID_INPUT, "Evidence is required (1-5 images)");
+        }
+
+        String[] images = evidence.split(",");
+        if (images.length > 5) {
+            throw new ApplicationException(ErrorCode.INVALID_INPUT, "Maximum 5 evidence images allowed");
+        }
+
         trade.setStatus(TradeStatus.DISPUTED);
         tradeRepository.save(trade);
         publishTradeEvent(trade);
@@ -88,8 +98,22 @@ public class DisputeServiceImpl implements DisputeService {
         Dispute dispute = new Dispute();
         dispute.setTrade(trade);
         dispute.setReason(reason);
-        dispute.setEvidence(evidence);
+        dispute.setEvidence(evidence); // Keep raw string for compatibility
         dispute.setStatus(DisputeStatus.OPEN);
+
+        // Save multiple evidence images
+        for (String url : images) {
+            if (!url.isBlank()) {
+                DisputeEvidence de = new DisputeEvidence();
+                de.setDispute(dispute);
+                de.setUrl(url.trim());
+                dispute.getEvidenceImages().add(de);
+            }
+        }
+
+        if (dispute.getEvidenceImages().isEmpty()) {
+            throw new ApplicationException(ErrorCode.INVALID_INPUT, "At least one evidence image is required");
+        }
 
         Dispute saved = disputeRepository.save(dispute);
 
@@ -173,21 +197,22 @@ public class DisputeServiceImpl implements DisputeService {
         updateTradeAfterResolution(dispute.getTrade(), resolutionOutcome);
 
         switch (resolutionOutcome) {
-        case BUYER_FAVORED -> {
-        // Giải phóng coin cho buyer
-        sellerFundsManager.releaseToBuyer(dispute.getTrade());
-        }
-        case SELLER_FAVORED -> {
-        // Trả coin lại cho seller
-        sellerFundsManager.refundToSeller(dispute.getTrade());
-        }
-        case CANCELLED -> {
-        // No funds movement needed
-        }
+            case BUYER_FAVORED -> {
+                // Giải phóng coin cho buyer
+                sellerFundsManager.releaseToBuyer(dispute.getTrade());
+            }
+            case SELLER_FAVORED -> {
+                // Trả coin lại cho seller
+                sellerFundsManager.refundToSeller(dispute.getTrade());
+            }
+            case CANCELLED -> {
+                // No funds movement needed
+            }
         }
         Dispute saved = disputeRepository.save(dispute);
 
-        notifyParticipants(dispute, String.format("Dispute #%s resolved in favour of %s", dispute.getId(), resolutionOutcome.name()));
+        notifyParticipants(dispute,
+                String.format("Dispute #%s resolved in favour of %s", dispute.getId(), resolutionOutcome.name()));
 
         return DisputeMapper.toResult(saved);
     }
@@ -233,9 +258,10 @@ public class DisputeServiceImpl implements DisputeService {
 
         Dispute saved = disputeRepository.save(dispute);
 
-        notificationService.notifyUser(admin.getId(),NotificationType.ADMIN_INREVIEW,
+        notificationService.notifyUser(admin.getId(), NotificationType.ADMIN_INREVIEW,
                 String.format("Dispute #%s has been assigned to you", dispute.getId()));
-        notifyParticipants(dispute, String.format("Dispute #%s is under review by %s", dispute.getId(), admin.getUsername()));
+        notifyParticipants(dispute,
+                String.format("Dispute #%s is under review by %s", dispute.getId(), admin.getUsername()));
 
         return DisputeMapper.toResult(saved);
     }
@@ -244,8 +270,6 @@ public class DisputeServiceImpl implements DisputeService {
         return disputeRepository.findByIdWithTrade(disputeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.DISPUTE_NOT_FOUND));
     }
-
-    
 
     private boolean isParticipant(Trade trade, User user) {
         return trade.getBuyer().getId().equals(user.getId()) || trade.getSeller().getId().equals(user.getId());
@@ -280,12 +304,14 @@ public class DisputeServiceImpl implements DisputeService {
 
     private void notifyOnOpen(Trade trade, Dispute dispute) {
         String message = String.format("Trade #%s has a new dispute (#%s)", trade.getId(), dispute.getId());
-        notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()),NotificationType.DISPUTE_OPENED, message);
+        notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()),
+                NotificationType.DISPUTE_OPENED, message);
     }
 
     private void notifyParticipants(Dispute dispute, String message) {
         Trade trade = dispute.getTrade();
-        notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()), NotificationType.DISPUTE_RESOLVED ,message);
+        notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()),
+                NotificationType.DISPUTE_RESOLVED, message);
     }
 
     private void publishTradeEvent(Trade trade) {
@@ -299,8 +325,7 @@ public class DisputeServiceImpl implements DisputeService {
                 trade.getAmount(),
                 trade.getBuyer() != null ? trade.getBuyer().getId() : null,
                 trade.getSeller() != null ? trade.getSeller().getId() : null,
-                Instant.now()
-        );
+                Instant.now());
         tradeEventPublisher.publish(event);
     }
 }

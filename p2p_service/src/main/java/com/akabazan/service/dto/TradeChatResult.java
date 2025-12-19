@@ -8,6 +8,7 @@ public class TradeChatResult {
     private UUID tradeId;
     private UUID senderId;
     private String message;
+    private String image;
     private LocalDateTime timestamp;
     private String recipientRole;
 
@@ -41,6 +42,14 @@ public class TradeChatResult {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 
     public LocalDateTime getTimestamp() {

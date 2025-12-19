@@ -19,6 +19,7 @@ public final class DisputeResponseMapper {
         response.setTradeId(result.getTradeId());
         response.setReason(result.getReason());
         response.setEvidence(result.getEvidence());
+        response.setEvidenceImages(result.getEvidenceImages());
         response.setStatus(result.getStatus());
         response.setAssignedAdminId(result.getAssignedAdminId());
         response.setAssignedAdminEmail(result.getAssignedAdminEmail());

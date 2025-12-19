@@ -1,43 +1,44 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8" />
     <title>Admin</title>
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
     <link rel="stylesheet" th:href="@{/css/admin.css}" />
 </head>
+
 <body>
-<div th:fragment="layout(content)">
-    <div class="layout">
-        <aside class="sidebar">
-            <div class="brand"><span class="dot"></span> <span>Admin Center</span></div>
-            <div class="menu">
-                <a th:href="@{/admin-ui}">Dashboard</a>
-                <a th:href="@{/admin-ui/users}">Users</a>
-                <a th:href="@{/admin-ui/orders}">Orders</a>
-                <a th:href="@{/admin-ui/trades}">Trades</a>
-                <a th:href="@{/admin-ui/disputes}">Disputes</a>
-                <a th:href="@{/swagger-ui/index.html}" target="_blank">API Docs</a>
-                <a th:href="@{/admin-ui/logout}">Logout</a>
-            </div>
-        </aside>
-        <div class="content">
-            <div class="topbar">
-                <div class="search"><input type="text" placeholder="Search..." /></div>
-                <div class="actions">
-                    <span th:if="${currentAdmin}" class="admin-info">
-                        Welcome, <strong th:text="${currentAdmin.username}">admin</strong>
-                    </span>
-                    <a href="#" class="btn ghost">Help</a>
+    <div th:fragment="layout(content)">
+        <div class="layout">
+            <aside class="sidebar">
+                <div class="brand"><span class="dot"></span> <span>Admin Center</span></div>
+                <div class="menu">
+                    <a th:href="@{/admin-ui}">Dashboard</a>
+                    <a th:href="@{/admin-ui/users}">Users</a>
+                    <a th:href="@{/admin-ui/orders}">Orders</a>
+                    <a th:href="@{/admin-ui/trades}">Trades</a>
+                    <a th:href="@{/admin-ui/disputes}">Disputes</a>
+                    <a th:href="@{/swagger-ui/index.html}" target="_blank">API Docs</a>
+                    <a th:href="@{/admin-ui/logout}">Logout</a>
                 </div>
-            </div>
-            <div class="main">
-                <div th:insert="${content}"></div>
+            </aside>
+            <div class="content">
+                <div class="topbar">
+                    <div class="search"><input type="text" placeholder="Search..." /></div>
+                    <div class="actions">
+                        <span th:if="${currentAdmin}" class="admin-info">
+                            Welcome, <strong th:text="${currentAdmin.username}">admin</strong>
+                        </span>
+                        <a href="#" class="btn ghost">Help</a>
+                    </div>
+                </div>
+                <div class="main">
+                    <div th:insert="${content}"></div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </body>
+
 </html>
-
-

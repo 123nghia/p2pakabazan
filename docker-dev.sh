@@ -88,13 +88,13 @@ echo ""
 # Dừng và xóa containers cũ nếu có (tùy chọn)
 if [ "$1" == "--clean" ]; then
     print_info "Dọn dẹp containers và volumes cũ..."
-    docker-compose down -v
+    docker compose down -v
     print_success "Đã dọn dẹp xong"
 fi
 
 # Build và khởi động các services
 print_info "Đang build và khởi động các services..."
-docker-compose up -d --build
+docker compose up -d --build
 
 # Đợi database sẵn sàng
 print_info "Đợi PostgreSQL khởi động..."
@@ -160,7 +160,7 @@ echo ""
 echo "📝 Lệnh hữu ích:"
 echo "  - Xem logs app:       docker logs -f p2p-app"
 echo "  - Xem logs database:  docker logs -f p2p-postgres"
-echo "  - Dừng tất cả:        docker-compose down"
-echo "  - Khởi động lại:      docker-compose restart"
+echo "  - Dừng tất cả:        docker compose down"
+echo "  - Khởi động lại:      docker compose restart"
 echo "  - Reset hoàn toàn:    ./docker-dev.sh --clean"
 echo ""

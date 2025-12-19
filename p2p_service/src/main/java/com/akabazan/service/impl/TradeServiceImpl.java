@@ -52,29 +52,29 @@ import java.util.stream.Collectors;
 public class TradeServiceImpl implements TradeService {
 
     private static final Logger log = LoggerFactory.getLogger(TradeServiceImpl.class);
-    private static final String TRADE_CREATED_BUYER_TEMPLATE =
+    private static final String TRADE_CREATED_BUYER_TEMPLATE = 
             "Hệ thống (gửi người mua): Giao dịch #%s đã được tạo thành công với số lượng %s %s. Vui lòng chờ người bán cung cấp thông tin thanh toán.";
-    private static final String TRADE_CREATED_SELLER_TEMPLATE =
+    private static final String TRADE_CREATED_SELLER_TEMPLATE = 
             "Hệ thống (gửi người bán): Bạn vừa nhận yêu cầu giao dịch #%s với số lượng %s %s. Vui lòng gửi thông tin thanh toán cho người mua.";
-    private static final String PAYMENT_CONFIRMED_BUYER_TEMPLATE =
+    private static final String PAYMENT_CONFIRMED_BUYER_TEMPLATE = 
             "Hệ thống (gửi người mua): Bạn đã xác nhận đã chuyển tiền cho giao dịch #%s. Vui lòng chờ người bán kiểm tra và giải phóng tài sản.";
-    private static final String PAYMENT_CONFIRMED_SELLER_TEMPLATE =
+    private static final String PAYMENT_CONFIRMED_SELLER_TEMPLATE = 
             "Hệ thống (gửi người bán): Người mua đã xác nhận đã chuyển tiền cho giao dịch #%s. Vui lòng kiểm tra và xác nhận khi nhận đủ tiền.";
-    private static final String TRADE_COMPLETED_BUYER_TEMPLATE =
+    private static final String TRADE_COMPLETED_BUYER_TEMPLATE = 
             "Hệ thống (gửi người mua): Người bán đã giải phóng %s %s cho giao dịch #%s. Tài sản đã về ví của bạn.";
-    private static final String TRADE_COMPLETED_SELLER_TEMPLATE =
+    private static final String TRADE_COMPLETED_SELLER_TEMPLATE = 
             "Hệ thống (gửi người bán): Bạn đã hoàn tất giao dịch #%s và đã giải phóng %s %s cho người mua.";
-    private static final String TRADE_CANCELLED_BY_BUYER_FOR_BUYER_TEMPLATE =
+    private static final String TRADE_CANCELLED_BY_BUYER_FOR_BUYER_TEMPLATE = 
             "Hệ thống (gửi người mua): Bạn đã hủy giao dịch #%s. Nếu vẫn muốn giao dịch, vui lòng tạo lệnh mới.";
-    private static final String TRADE_CANCELLED_BY_BUYER_FOR_SELLER_TEMPLATE =
+    private static final String TRADE_CANCELLED_BY_BUYER_FOR_SELLER_TEMPLATE = 
             "Hệ thống (gửi người bán): Người mua đã hủy giao dịch #%s. Số tài sản liên quan đã được hoàn trả.";
-    private static final String TRADE_CANCELLED_BY_SELLER_FOR_SELLER_TEMPLATE =
+    private static final String TRADE_CANCELLED_BY_SELLER_FOR_SELLER_TEMPLATE = 
             "Hệ thống (gửi người bán): Bạn đã hủy giao dịch #%s. Tài sản đã được trả lại ví của bạn.";
-    private static final String TRADE_CANCELLED_BY_SELLER_FOR_BUYER_TEMPLATE =
+    private static final String TRADE_CANCELLED_BY_SELLER_FOR_BUYER_TEMPLATE = 
             "Hệ thống (gửi người mua): Người bán đã hủy giao dịch #%s. Bạn có thể chọn lệnh khác để tiếp tục.";
-    private static final String TRADE_AUTO_CANCELLED_BUYER_TEMPLATE =
+    private static final String TRADE_AUTO_CANCELLED_BUYER_TEMPLATE = 
             "Hệ thống (gửi người mua): Giao dịch #%s đã bị hủy tự động do quá hạn xử lý. Vui lòng tạo giao dịch mới nếu vẫn có nhu cầu.";
-    private static final String TRADE_AUTO_CANCELLED_SELLER_TEMPLATE =
+    private static final String TRADE_AUTO_CANCELLED_SELLER_TEMPLATE = 
             "Hệ thống (gửi người bán): Giao dịch #%s đã bị hủy tự động do quá hạn xử lý. Tài sản tạm giữ đã được giải phóng.";
 
     private enum RecipientRole {
@@ -92,7 +92,7 @@ public class TradeServiceImpl implements TradeService {
     private final WalletTransactionService walletTransactionService;
     private final TradeEventPublisher tradeEventPublisher;
     private final ChatEventPublisher chatEventPublisher;
-    
+
     @Value("${app.trade.auto-cancel-minutes:15}")
     private long autoCancelMinutes;
     public TradeServiceImpl(EntityManager entityManager,
@@ -101,12 +101,11 @@ public class TradeServiceImpl implements TradeService {
             TradeChatRepository tradeChatRepository,
             WalletRepository walletRepository,
             SellerFundsManager sellerFundsManager,
-            NotificationService  notificationService,
+            NotificationService notificationService,
             FiatAccountRepository fiatAccountRepository,
             WalletTransactionService walletTransactionService,
             TradeEventPublisher tradeEventPublisher,
-            ChatEventPublisher chatEventPublisher
-            ) {
+            ChatEventPublisher chatEventPublisher) {
         this.entityManager = entityManager;
         this.orderRepository = orderRepository;
         this.tradeRepository = tradeRepository;
@@ -124,18 +123,18 @@ public class TradeServiceImpl implements TradeService {
     @Transactional
     public TradeResult createTrade(TradeCreateCommand command) {
         log.info("Creating trade for order: {} with amount: {}", command.getOrderId(), command.getAmount());
-        
+
         User actor = getCurrentUser();
         Order order = validateAndLockOrder(command.getOrderId());
         if (order.getUser() != null && order.getUser().getId().equals(actor.getId())) {
             throw new ApplicationException(ErrorCode.FORBIDDEN);
         }
         validateTradeAmount(command, order);
-        
+
         Trade trade = buildTrade(command, order, actor);
         FiatAccount sellerAccount = resolveSellerAccount(trade.getSeller(), order, command);
         setSellerAccountInfo(trade, sellerAccount);
-        
+
         Trade savedTrade = tradeRepository.save(trade);
         publishTradeEvent(savedTrade);
         createInitialChatMessage(savedTrade);
@@ -247,9 +246,11 @@ public class TradeServiceImpl implements TradeService {
 
         if ("BUY".equalsIgnoreCase(order.getType())) {
             // For BUY orders, seller is actor (person creating trade)
-            // Get fiatAccount from order (as per requirement: don't require fiatAccountId in request)
+            // Get fiatAccount from order (as per requirement: don't require fiatAccountId
+            // in request)
             FiatAccount account = order.getFiatAccount();
-            // For BUY orders, we use the order's fiatAccount without checking seller ownership
+            // For BUY orders, we use the order's fiatAccount without checking seller
+            // ownership
             // since the order's fiatAccount belongs to the buyer, not the seller
             return account;
         }
@@ -291,7 +292,7 @@ public class TradeServiceImpl implements TradeService {
                         resolveTokenSymbol(trade)),
                 RecipientRole.SELLER);
     }
-    
+
     @Override
     @Transactional
     public TradeResult confirmPayment(UUID tradeId) {
@@ -442,7 +443,7 @@ public class TradeServiceImpl implements TradeService {
         log.debug("Starting auto-cancel expired trades process");
         LocalDateTime threshold = LocalDateTime.now().minusMinutes(autoCancelMinutes);
         List<Trade> expiredTrades = tradeRepository.findByStatusAndCreatedAtBefore(TradeStatus.PENDING, threshold);
-        
+
         log.info("Found {} expired trades to cancel", expiredTrades.size());
         int cancelled = 0;
         for (Trade trade : expiredTrades) {
@@ -454,7 +455,7 @@ public class TradeServiceImpl implements TradeService {
             cancelTradeInternal(trade, trade.getSeller().getId(), false);
             cancelled++;
         }
-        
+
         log.info("Auto-cancel process completed. Cancelled {} trades", cancelled);
         return cancelled;
     }
@@ -500,25 +501,23 @@ public class TradeServiceImpl implements TradeService {
                 .collect(Collectors.toList());
     }
 
-
-
     @Override
     @Transactional
     public TradeInfoResult getTradeInfo(UUID tradeId) {
         Trade t = tradeRepository.findById(tradeId)
-            .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
+                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
 
         // Chỉ buyer/seller của trade mới được xem
         User current = getCurrentUser();
         if (!t.getBuyer().getId().equals(current.getId()) && !t.getSeller().getId().equals(current.getId())) {
-              throw new ApplicationException(ErrorCode.FORBIDDEN);
+            throw new ApplicationException(ErrorCode.FORBIDDEN);
         }
 
         TradeInfoResult r = new TradeInfoResult();
         r.setTradeId(t.getId());
         r.setTradeCode(t.getTradeCode());
-        r.setOrderType(t.getOrder().getType());     // "BUY"/"SELL"
-        r.setStatus(t.getStatus().name());          // enum -> string
+        r.setOrderType(t.getOrder().getType()); // "BUY"/"SELL"
+        r.setStatus(t.getStatus().name()); // enum -> string
         r.setAmount(t.getAmount());
 
         if (t.getStatus() == TradeStatus.PENDING) {
@@ -533,9 +532,9 @@ public class TradeServiceImpl implements TradeService {
 
         // 👇 Thêm logic xác định vai trò
         if (t.getBuyer().getId().equals(current.getId())) {
-        r.setRole("BUYER");
+            r.setRole("BUYER");
         } else if (t.getSeller().getId().equals(current.getId())) {
-        r.setRole("SELLER");
+            r.setRole("SELLER");
         }
 
         if (t.getSellerFiatAccount() != null) {
@@ -547,26 +546,21 @@ public class TradeServiceImpl implements TradeService {
         r.setBankBranch(t.getSellerBankBranch());
         r.setPaymentType(t.getSellerPaymentType());
 
-  
         String orderType = t.getOrder().getType();
-                UUID creatorId = "SELL".equalsIgnoreCase(orderType)
-                        ? t.getBuyer().getId()
-                        : t.getSeller().getId();
-                boolean canCancel = t.getStatus() == TradeStatus.PENDING
-                        && creatorId.equals(current.getId());
-                r.setCanCancel(canCancel);
-   
-
+        UUID creatorId = "SELL".equalsIgnoreCase(orderType)
+                ? t.getBuyer().getId()
+                : t.getSeller().getId();
+        boolean canCancel = t.getStatus() == TradeStatus.PENDING
+                && creatorId.equals(current.getId());
+        r.setCanCancel(canCancel);
 
         var orderInfor = t.getOrder();
 
-        if(orderInfor != null)
-        {
+        if (orderInfor != null) {
             r.setPrice(orderInfor.getPrice());
-          
+
         }
 
-        
         return r;
     }
 
@@ -585,9 +579,31 @@ public class TradeServiceImpl implements TradeService {
         }
 
         double refundAmount = trade.getAmount();
-        if ("BUY".equalsIgnoreCase(orderType)) {
-            sellerFundsManager.unlockBuyTrade(trade);
-        }
+
+        Wallet sellerWallet = walletRepository.findByUserIdAndToken(
+                trade.getSeller().getId(),
+                trade.getOrder().getToken())
+                .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+
+        double balanceBefore = sellerWallet.getBalance();
+        double availableBefore = sellerWallet.getAvailableBalance();
+        sellerWallet.setAvailableBalance(availableBefore + refundAmount);
+        walletRepository.save(sellerWallet);
+
+        UUID performerId = actorId != null ? actorId : trade.getSeller().getId();
+
+        walletTransactionService.record(
+                sellerWallet,
+                WalletTransactionType.UNLOCK,
+                refundAmount,
+                balanceBefore,
+                sellerWallet.getBalance(),
+                availableBefore,
+                sellerWallet.getAvailableBalance(),
+                performerId,
+                "TRADE_CANCELLED",
+                trade.getId(),
+                "Cancel trade and unlock funds");
 
         Order order = trade.getOrder();
         order.setAvailableAmount(order.getAvailableAmount() + refundAmount);
@@ -683,29 +699,29 @@ public class TradeServiceImpl implements TradeService {
         chat.setTimestamp(LocalDateTime.now());
         chat.setRecipientRole(recipient != null ? recipient.name() : RecipientRole.ALL.name());
         TradeChat savedChat = tradeChatRepository.save(chat);
-        
+
         // Publish system message event
         publishSystemChatEvent(savedChat);
     }
-    
+
     private void publishSystemChatEvent(TradeChat chat) {
         if (chat == null || chat.getTrade() == null) {
             return;
         }
-        Instant timestamp = chat.getTimestamp() != null 
-            ? chat.getTimestamp().atZone(java.time.ZoneId.systemDefault()).toInstant()
-            : Instant.now();
-        
+        Instant timestamp = chat.getTimestamp() != null
+                ? chat.getTimestamp().atZone(java.time.ZoneId.systemDefault()).toInstant()
+                : Instant.now();
+
         ChatMessageEvent event = new ChatMessageEvent(
-            chat.getTrade().getId(),
-            chat.getId(),
-            chat.getSenderId(),
-            chat.getMessage(),
-            chat.getRecipientRole(),
-            true, // isSystemMessage = true
-            timestamp,
-            Instant.now()
-        );
+                chat.getTrade().getId(),
+                chat.getId(),
+                chat.getSenderId(),
+                chat.getMessage(),
+                null, // image
+                chat.getRecipientRole(),
+                true, // isSystemMessage = true
+                timestamp,
+                Instant.now());
         chatEventPublisher.publish(event);
     }
 
@@ -765,8 +781,7 @@ public class TradeServiceImpl implements TradeService {
                 trade.getAmount(),
                 trade.getBuyer() != null ? trade.getBuyer().getId() : null,
                 trade.getSeller() != null ? trade.getSeller().getId() : null,
-                java.time.Instant.now()
-        );
+                java.time.Instant.now());
         tradeEventPublisher.publish(event);
     }
 }

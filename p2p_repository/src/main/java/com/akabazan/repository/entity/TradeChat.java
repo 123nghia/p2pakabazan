@@ -29,6 +29,9 @@ public class TradeChat extends AbstractEntity {
     @Column(name = "recipient_role")
     private String recipientRole;
 
+    @Column(name = "image")
+    private String image;
+
     // Getters & Setters
     public Trade getTrade() { return trade; }
     public void setTrade(Trade trade) { this.trade = trade; }
@@ -40,4 +43,6 @@ public class TradeChat extends AbstractEntity {
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
     public String getRecipientRole() { return recipientRole; }
     public void setRecipientRole(String recipientRole) { this.recipientRole = recipientRole; }
+    public String getImage() { return image; }
+    public void setImage(String image) { this.image = image; }
 }

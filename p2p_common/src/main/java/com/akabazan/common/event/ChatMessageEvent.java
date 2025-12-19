@@ -10,6 +10,7 @@ public class ChatMessageEvent implements Serializable {
     private UUID chatId;
     private UUID senderId;
     private String message;
+    private String image;
     private String recipientRole; // BUYER, SELLER, ALL
     private boolean isSystemMessage;
     private Instant timestamp;
@@ -19,17 +20,19 @@ public class ChatMessageEvent implements Serializable {
     }
 
     public ChatMessageEvent(UUID tradeId,
-                           UUID chatId,
-                           UUID senderId,
-                           String message,
-                           String recipientRole,
-                           boolean isSystemMessage,
-                           Instant timestamp,
-                           Instant occurredAt) {
+            UUID chatId,
+            UUID senderId,
+            String message,
+            String image,
+            String recipientRole,
+            boolean isSystemMessage,
+            Instant timestamp,
+            Instant occurredAt) {
         this.tradeId = tradeId;
         this.chatId = chatId;
         this.senderId = senderId;
         this.message = message;
+        this.image = image;
         this.recipientRole = recipientRole;
         this.isSystemMessage = isSystemMessage;
         this.timestamp = timestamp;
@@ -68,6 +71,14 @@ public class ChatMessageEvent implements Serializable {
         this.message = message;
     }
 
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
     public String getRecipientRole() {
         return recipientRole;
     }
@@ -100,4 +111,3 @@ public class ChatMessageEvent implements Serializable {
         this.occurredAt = occurredAt;
     }
 }
-

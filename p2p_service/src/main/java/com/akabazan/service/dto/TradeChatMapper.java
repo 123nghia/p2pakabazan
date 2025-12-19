@@ -13,6 +13,7 @@ public class TradeChatMapper {
         result.setTradeId(entity.getTrade().getId());
         result.setSenderId(entity.getSenderId());
         result.setMessage(entity.getMessage());
+        result.setImage(entity.getImage());
         result.setTimestamp(entity.getTimestamp());
         result.setRecipientRole(entity.getRecipientRole());
         return result;

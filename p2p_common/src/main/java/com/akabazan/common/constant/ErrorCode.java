@@ -26,9 +26,8 @@ public enum ErrorCode {
     SELLER_PAYMENT_METHOD_REQUIRED("FIAT_002", "Seller payment method is required"),
     FIAT_ACCOUNT_ALREADY_EXISTS("FIAT_003", "Fiat account already exists"),
     INVALID_FIAT_ACCOUNT_INPUT("FIAT_004", "Fiat account information is invalid"),
-    INVALID_PAYMENT_METHOD_TYPE("PAYMENT_METHOD_001", "Payment method type is invalid");
-   
-   
+    INVALID_PAYMENT_METHOD_TYPE("PAYMENT_METHOD_001", "Payment method type is invalid"),
+    INVALID_INPUT("COMMON_001", "Invalid input");
 
     private final String code;
     private final String message;
@@ -38,6 +37,11 @@ public enum ErrorCode {
         this.message = message;
     }
 
-    public String getCode() { return code; }
-    public String getMessage() { return message; }
+    public String getCode() {
+        return code;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 }

@@ -19,6 +19,6 @@ public interface DisputeRepository extends JpaRepository<Dispute, UUID> {
 
     List<Dispute> findByAssignedAdminOrderByCreatedAtDesc(AdminUser assignedAdmin);
 
-    @Query("SELECT d FROM Dispute d JOIN FETCH d.trade t JOIN FETCH t.buyer JOIN FETCH t.seller WHERE d.id = :id")
+    @Query("SELECT d FROM Dispute d JOIN FETCH d.trade t JOIN FETCH t.buyer JOIN FETCH t.seller LEFT JOIN FETCH d.evidenceImages WHERE d.id = :id")
     Optional<Dispute> findByIdWithTrade(@Param("id") UUID id);
 }
