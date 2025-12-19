@@ -47,6 +47,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/market/**").permitAll()
                         .requestMatchers("/api/integration/**").permitAll()
+                        .requestMatchers("/api/docs", "/api/docs/").permitAll()
                         .requestMatchers("/api/auth/**").permitAll() // login/register không cần token
                         .requestMatchers("/api/sso/**").permitAll() // partner SSO (HMAC) + code exchange
                         .requestMatchers("/api/v1/media/upload/**").permitAll() // media upload không cần token
