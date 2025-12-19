@@ -17,7 +17,11 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper;
+
+    public JwtAuthenticationEntryPoint(ObjectMapper mapper) {
+        this.mapper = mapper;
+    }
 
     @Override
     public void commence(HttpServletRequest request,
@@ -32,6 +36,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         );
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
         mapper.writeValue(response.getOutputStream(), error);
     }
