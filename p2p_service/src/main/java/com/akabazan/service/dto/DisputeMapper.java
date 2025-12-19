@@ -1,6 +1,8 @@
 package com.akabazan.service.dto;
 
 import com.akabazan.repository.entity.Dispute;
+import com.akabazan.repository.entity.DisputeEvidence;
+import java.util.stream.Collectors;
 
 public class DisputeMapper {
 
@@ -16,6 +18,11 @@ public class DisputeMapper {
         result.setTradeId(dispute.getTrade().getId());
         result.setReason(dispute.getReason());
         result.setEvidence(dispute.getEvidence());
+        if (dispute.getEvidenceImages() != null) {
+            result.setEvidenceImages(dispute.getEvidenceImages().stream()
+                    .map(DisputeEvidence::getUrl)
+                    .collect(Collectors.toList()));
+        }
         result.setStatus(dispute.getStatus().name());
         if (dispute.getAssignedAdmin() != null) {
             result.setAssignedAdminId(dispute.getAssignedAdmin().getId());

@@ -1,6 +1,7 @@
 package com.akabazan.service.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 public class DisputeResult {
@@ -8,6 +9,7 @@ public class DisputeResult {
     private UUID tradeId;
     private String reason;
     private String evidence;
+    private List<String> evidenceImages;
     private String status;
     private UUID assignedAdminId;
     private String assignedAdminEmail;
@@ -47,6 +49,14 @@ public class DisputeResult {
 
     public void setEvidence(String evidence) {
         this.evidence = evidence;
+    }
+
+    public List<String> getEvidenceImages() {
+        return evidenceImages;
+    }
+
+    public void setEvidenceImages(List<String> evidenceImages) {
+        this.evidenceImages = evidenceImages;
     }
 
     public String getStatus() {
