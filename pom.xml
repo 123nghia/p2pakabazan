@@ -28,6 +28,8 @@
     <module>p2p_admin</module>
     <module>p2p_framework_data</module>
     <module>p2p_websocket</module>
+    <module>partner_mock</module>
+    <module>p2p_ui_mock</module>
     </modules>
   <dependencies>
  
@@ -70,5 +72,20 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <!-- Default: skip spring-boot:run for non-boot modules (library jars). -->
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <configuration>
+            <skip>true</skip>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
 </project>

@@ -59,6 +59,21 @@ services:
     networks:
       - p2p-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: p2p-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - p2p-network
+
   app:
     build:
       context: .
@@ -79,12 +94,21 @@ services:
       SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT:-5672}
       SPRING_RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       SPRING_RABBITMQ_PASS: ${RABBITMQ_PASSWORD:-guest}
+      SPRING_REDIS_HOST: ${SPRING_REDIS_HOST:-redis}
+      SPRING_REDIS_PORT: ${SPRING_REDIS_PORT:-6379}
+      APP_SSO_PARTNERS: ${APP_SSO_PARTNERS:-}
+      APP_SSO_CODE_TTL_SECONDS: ${APP_SSO_CODE_TTL_SECONDS:-60}
+      APP_SSO_NONCE_TTL_SECONDS: ${APP_SSO_NONCE_TTL_SECONDS:-300}
+      APP_SSO_TIMESTAMP_SKEW_SECONDS: ${APP_SSO_TIMESTAMP_SKEW_SECONDS:-300}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-}
       SERVER_PORT: ${SERVER_PORT:-9000}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this-in-production-min-256-bits}
     depends_on:
       db:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - p2p-network
@@ -94,6 +118,7 @@ volumes:
   postgres_data:
   pgadmin_data:
   rabbitmq_data:
+  redis_data:
 
 networks:
   p2p-network:

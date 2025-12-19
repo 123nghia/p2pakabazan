@@ -58,15 +58,16 @@ public class CreateOrderService implements CreateOrderUseCase {
         String orderType = normalizeOrderType(command.getType());
         FiatAccount fiatAccount = resolveFiatAccount(user, command);
 
-        if (isSellOrder(orderType)) {
-            sellerFundsManager.lock(user, command.getToken(), command.getAmount());
-        }
-
         if (fiatAccount == null && (command.getPaymentMethod() == null || command.getPaymentMethod().isBlank())) {
             throw new ApplicationException(ErrorCode.INVALID_FIAT_ACCOUNT_INPUT);
         }
 
         Order savedOrder = orderRepository.save(buildOrder(command, user, orderType, fiatAccount));
+
+        if (isSellOrder(orderType)) {
+            sellerFundsManager.lockForSellOrder(savedOrder);
+            orderRepository.save(savedOrder);
+        }
         notificationService.notifyUser(user.getId(), NotificationType.ORDER_CREATED, orderType);
         return enrichWithFiatAccount(OrderMapper.toResult(savedOrder), fiatAccount);
     }

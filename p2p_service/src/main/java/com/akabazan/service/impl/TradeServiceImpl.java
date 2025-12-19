@@ -139,6 +139,11 @@ public class TradeServiceImpl implements TradeService {
         Trade savedTrade = tradeRepository.save(trade);
         publishTradeEvent(savedTrade);
         createInitialChatMessage(savedTrade);
+
+        if ("BUY".equalsIgnoreCase(order.getType())) {
+            sellerFundsManager.lockForBuyTrade(savedTrade);
+            tradeRepository.save(savedTrade);
+        }
         
         log.info("Trade created successfully with ID: {} for order: {}", savedTrade.getId(), command.getOrderId());
         return TradeMapper.toResult(savedTrade);
@@ -193,7 +198,7 @@ public class TradeServiceImpl implements TradeService {
             // Người tạo trade là seller
             seller = actor;
             buyer = order.getUser();
-            sellerFundsManager.lock(seller, order.getToken(), command.getAmount());
+            // lock handled after trade is persisted (supports partner users)
             escrow = false; // buyer chưa có coin lock
         } else {
             throw new ApplicationException(ErrorCode.INVALID_ORDER_TYPE);
@@ -315,6 +320,10 @@ public class TradeServiceImpl implements TradeService {
         if (trade.getStatus() != TradeStatus.PAID)
             throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
         Order order = trade.getOrder();
+
+        if (isPartnerUser(trade.getSeller()) || isPartnerUser(trade.getBuyer())) {
+            sellerFundsManager.settleTrade(trade);
+        } else {
         User buyer = trade.getBuyer();
         User seller = trade.getSeller();
         // Buyer nhận token
@@ -364,6 +373,7 @@ public class TradeServiceImpl implements TradeService {
                 "TRADE_COMPLETED",
                 trade.getId(),
                 "Seller releases tokens");
+        }
 
         // Hoàn tất trade
         trade.setStatus(TradeStatus.COMPLETED);
@@ -385,6 +395,14 @@ public class TradeServiceImpl implements TradeService {
         }
         orderRepository.save(order);
         return TradeMapper.toResult(trade);
+    }
+
+    private static boolean isPartnerUser(User user) {
+        if (user == null) {
+            return false;
+        }
+        return (user.getType() != null && !user.getType().isBlank())
+                || (user.getRelId() != null && !user.getRelId().isBlank());
     }
 
     private User getCurrentUser() {
@@ -567,31 +585,9 @@ public class TradeServiceImpl implements TradeService {
         }
 
         double refundAmount = trade.getAmount();
-
-        Wallet sellerWallet = walletRepository.findByUserIdAndToken(
-                        trade.getSeller().getId(),
-                        trade.getOrder().getToken())
-                .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-
-        double balanceBefore = sellerWallet.getBalance();
-        double availableBefore = sellerWallet.getAvailableBalance();
-        sellerWallet.setAvailableBalance(availableBefore + refundAmount);
-        walletRepository.save(sellerWallet);
-
-        UUID performerId = actorId != null ? actorId : trade.getSeller().getId();
-
-        walletTransactionService.record(
-                sellerWallet,
-                WalletTransactionType.UNLOCK,
-                refundAmount,
-                balanceBefore,
-                sellerWallet.getBalance(),
-                availableBefore,
-                sellerWallet.getAvailableBalance(),
-                performerId,
-                "TRADE_CANCELLED",
-                trade.getId(),
-                "Cancel trade and unlock funds");
+        if ("BUY".equalsIgnoreCase(orderType)) {
+            sellerFundsManager.unlockBuyTrade(trade);
+        }
 
         Order order = trade.getOrder();
         order.setAvailableAmount(order.getAvailableAmount() + refundAmount);

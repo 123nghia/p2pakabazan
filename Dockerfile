@@ -18,6 +18,8 @@ COPY p2p_scheduler/pom.xml p2p_scheduler/
 COPY p2p_admin/pom.xml p2p_admin/
 COPY p2p_websocket/pom.xml p2p_websocket/
 COPY p2p_p2p/pom.xml p2p_p2p/
+COPY partner_mock/pom.xml partner_mock/
+COPY p2p_ui_mock/pom.xml p2p_ui_mock/
 
 RUN mvn -pl p2p_p2p -am dependency:go-offline
 

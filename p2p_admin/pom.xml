@@ -93,6 +93,10 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <mainClass>com.akabazan.admin.AdminApplication</mainClass>
+          <skip>false</skip>
+        </configuration>
       </plugin>
     </plugins>
   </build>

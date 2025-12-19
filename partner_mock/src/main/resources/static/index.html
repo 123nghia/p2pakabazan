@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Partner Mock - Redirect SSO</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 32px; background: #f6f7fb; }
+    .card { max-width: 760px; background: #fff; border-radius: 12px; padding: 20px 22px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+    h1 { margin: 0 0 6px; font-size: 20px; }
+    p { margin: 0 0 16px; color: #555; }
+    label { display: block; margin: 10px 0 6px; font-weight: 600; }
+    input, select { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .actions { margin-top: 16px; display: flex; gap: 10px; align-items: center; }
+    button { padding: 10px 14px; border: 0; border-radius: 10px; cursor: pointer; background: #1f6feb; color: #fff; font-weight: 700; }
+    button.secondary { background: #eef2ff; color: #1f2937; }
+    a { color: #1f6feb; text-decoration: none; }
+    code { background: #f1f3f8; padding: 2px 6px; border-radius: 6px; }
+    pre { white-space: pre-wrap; word-break: break-word; background:#f6f7fb; padding:12px; border-radius:10px; border:1px solid #e5e7eb; margin-top:14px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>Partner Mock (Sàn) → P2P Redirect SSO</h1>
+  <p>UI sàn gọi API của sàn (<code>POST /api/p2p/start</code>) → backend sàn gọi <code>POST /api/sso/issue</code> (HMAC) → nhận one-time <code>code</code> → trả về <code>redirectUrl</code> để browser chuyển sang P2P.</p>
+
+  <div class="row">
+    <div>
+      <label for="externalUserId">externalUserId</label>
+      <input id="externalUserId" value="user_1001" required/>
+    </div>
+    <div>
+      <label for="kycStatus">kycStatus</label>
+      <select id="kycStatus">
+        <option value="UNVERIFIED">UNVERIFIED</option>
+        <option value="PENDING">PENDING</option>
+        <option value="VERIFIED" selected>VERIFIED</option>
+        <option value="REJECTED">REJECTED</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div>
+      <label for="email">email (optional)</label>
+      <input id="email" value="user1001@example.com"/>
+    </div>
+    <div>
+      <label for="username">username (optional)</label>
+      <input id="username" value="user1001"/>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="btnSaveSession" class="secondary" type="button">Save session</button>
+    <button id="btnP2p" type="button">P2P</button>
+    <button id="btnMe" class="secondary" type="button">Session /me</button>
+    <span style="color:#666">P2P UI mock: <a href="http://localhost:9898/sso" target="_blank">http://localhost:9898/sso</a></span>
+  </div>
+
+  <pre id="out">Ready.</pre>
+</div>
+
+<script>
+  const out = document.getElementById('out');
+  const externalUserId = document.getElementById('externalUserId');
+  const email = document.getElementById('email');
+  const username = document.getElementById('username');
+  const kycStatus = document.getElementById('kycStatus');
+
+  function setOut(obj) {
+    out.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+  }
+
+  function readIdentity() {
+    return {
+      externalUserId: (externalUserId.value || '').trim(),
+      email: (email.value || '').trim() || null,
+      username: (username.value || '').trim() || null
+    };
+  }
+
+  async function saveSession() {
+    const payload = readIdentity();
+    if (!payload.externalUserId) { setOut('Missing externalUserId'); return; }
+
+    const resp = await fetch('/api/session/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await resp.json().catch(() => null);
+    setOut({ step: 'session.login', http: resp.status, body: json });
+  }
+
+  async function sessionMe() {
+    const resp = await fetch('/api/session/me');
+    const json = await resp.json().catch(() => null);
+    setOut({ step: 'session.me', http: resp.status, body: json });
+  }
+
+  async function startP2p() {
+    const payload = {
+      ...readIdentity(),
+      kycStatus: (kycStatus.value || '').trim() || null
+    };
+    if (!payload.externalUserId) { setOut('Missing externalUserId'); return; }
+
+    setOut('Calling /api/p2p/start…');
+    const resp = await fetch('/api/p2p/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await resp.json().catch(() => null);
+    if (!resp.ok) {
+      setOut({ step: 'p2p.start', http: resp.status, body: json });
+      return;
+    }
+
+    setOut({ step: 'p2p.start', http: resp.status, body: json, note: 'Redirecting…' });
+    window.location.href = json.redirectUrl;
+  }
+
+  document.getElementById('btnSaveSession').addEventListener('click', () => saveSession().catch(e => setOut(String(e))));
+  document.getElementById('btnP2p').addEventListener('click', () => startP2p().catch(e => setOut(String(e))));
+  document.getElementById('btnMe').addEventListener('click', () => sessionMe().catch(e => setOut(String(e))));
+</script>
+</body>
+</html>

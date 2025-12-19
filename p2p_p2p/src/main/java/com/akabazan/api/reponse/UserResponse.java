@@ -7,8 +7,11 @@ import java.util.UUID;
 public class UserResponse {
 
     private UUID id;
+    private String username;
     private String email;
     private String phone;
+    private String type;
+    private String relId;
     private KycStatus kycStatus;
     private List<WalletResponse> wallets;
     private List<LoginHistoryResponse> loginHistory;
@@ -19,6 +22,14 @@ public class UserResponse {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getEmail() {
@@ -35,6 +46,22 @@ public class UserResponse {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getRelId() {
+        return relId;
+    }
+
+    public void setRelId(String relId) {
+        this.relId = relId;
     }
 
     public KycStatus getKycStatus() {

@@ -57,6 +57,9 @@ public class Trade extends AuditEntity {
     @Column(nullable = false)
     private boolean escrow;
 
+    @Column(name = "funds_lock_id")
+    private String fundsLockId;
+
     @ElementCollection
     @CollectionTable(name = "trade_chat", joinColumns = @JoinColumn(name = "trade_id"))
     private List<ChatMessage> chat = new ArrayList<>();
@@ -183,6 +186,14 @@ public class Trade extends AuditEntity {
 
     public void setEscrow(boolean escrow) {
         this.escrow = escrow;
+    }
+
+    public String getFundsLockId() {
+        return fundsLockId;
+    }
+
+    public void setFundsLockId(String fundsLockId) {
+        this.fundsLockId = fundsLockId;
     }
 
     public List<ChatMessage> getChat() {

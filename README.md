@@ -100,7 +100,7 @@ docker-compose up -d
 mvn clean install
 
 # Khởi động ứng dụng (module p2p_p2p)
-mvn -pl p2p_p2p -am spring-boot:run
+mvn -pl p2p_p2p spring-boot:run
 
 # Hoặc chạy từ jar đã build
 java -jar p2p_p2p/target/p2p_p2p-1.0-SNAPSHOT.jar
