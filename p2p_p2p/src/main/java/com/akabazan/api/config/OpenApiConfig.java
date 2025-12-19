@@ -20,14 +20,20 @@ public class OpenApiConfig {
                         .version("1.0")
                         .description("Interactive documentation for the P2P Trading System endpoints.")
                         .contact(new Contact().name("Akabazan Team").email("support@akabazan.com")))
-                .servers(List.of(new Server().url("/api").description("Default API base path")));
+                .servers(List.of(new Server().url("/").description("Default API base path")));
     }
 
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public")
-                .pathsToMatch("/market/**", "/p2p/**", "/auth/**", "/integration/**")
+                .pathsToMatch(
+                        "/api/market/**",
+                        "/api/p2p/**",
+                        "/api/auth/**",
+                        "/api/integration/**",
+                        "/api/sso/**",
+                        "/api/v1/media/upload/**")
                 .build();
     }
 }
