@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/market/**").permitAll()
                         .requestMatchers("/api/integration/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll() // login/register không cần token
+                        .requestMatchers("/api/sso/**").permitAll() // partner SSO (HMAC) + code exchange
                         .requestMatchers("/api/v1/media/upload/**").permitAll() // media upload không cần token
                         .requestMatchers("/image/**").permitAll() // public image access
                         .requestMatchers(
