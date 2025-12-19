@@ -8,6 +8,6 @@ public class DocsController {
 
     @GetMapping({"/docs", "/docs/"})
     public String docs() {
-        return "redirect:/api/swagger-ui/index.html";
+        return "redirect:/swagger-ui/index.html";
     }
 }

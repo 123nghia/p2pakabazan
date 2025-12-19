@@ -25,7 +25,7 @@ public class RootController {
         info.put("status", "running");
         
         Map<String, String> documentation = new HashMap<>();
-        documentation.put("Swagger UI", "/api/swagger-ui/index.html");
+        documentation.put("Swagger UI", "/swagger-ui/index.html");
         documentation.put("API Docs", "/api/v3/api-docs");
         documentation.put("Health Check", "/api/health");
         
