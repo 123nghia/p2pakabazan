@@ -1,6 +1,7 @@
 package com.akabazan.api.sso.security;
 
 import com.akabazan.api.sso.config.SsoProperties;
+import com.akabazan.service.PartnerSsoClientService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -9,7 +10,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Locale;
-import java.util.Map;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,19 +27,23 @@ public class PartnerHmacAuthenticator {
     private static final String HMAC_ALGORITHM = "HmacSHA256";
 
     private final SsoProperties ssoProperties;
+    private final PartnerSsoClientService partnerSsoClientService;
     private final StringRedisTemplate stringRedisTemplate;
     private final Clock clock;
 
     @Autowired
     public PartnerHmacAuthenticator(SsoProperties ssoProperties,
+                                   PartnerSsoClientService partnerSsoClientService,
                                    StringRedisTemplate stringRedisTemplate) {
-        this(ssoProperties, stringRedisTemplate, Clock.systemUTC());
+        this(ssoProperties, partnerSsoClientService, stringRedisTemplate, Clock.systemUTC());
     }
 
     PartnerHmacAuthenticator(SsoProperties ssoProperties,
+                             PartnerSsoClientService partnerSsoClientService,
                              StringRedisTemplate stringRedisTemplate,
                              Clock clock) {
         this.ssoProperties = ssoProperties;
+        this.partnerSsoClientService = partnerSsoClientService;
         this.stringRedisTemplate = stringRedisTemplate;
         this.clock = clock;
     }
@@ -63,8 +67,8 @@ public class PartnerHmacAuthenticator {
             return PartnerAuthResult.unauthorized("Missing header: " + HEADER_SIGNATURE);
         }
 
-        Map<String, String> partnerSecrets = ssoProperties.getPartnerSecrets();
-        String secret = partnerSecrets.get(partnerId);
+        String secret = partnerSsoClientService.findSharedSecret(partnerId)
+                .orElseGet(() -> ssoProperties.getPartnerSecrets().get(partnerId));
         if (secret == null || secret.isBlank()) {
             return PartnerAuthResult.unauthorized("Unknown partner");
         }

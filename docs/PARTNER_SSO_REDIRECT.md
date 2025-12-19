@@ -36,6 +36,15 @@ From the partner exchange (sàn), when the user clicks the P2P menu, redirect th
   - Body example: `{ "code": "<oneTimeCode>" }`
   - Response `200` (wrapped in `BaseResponse.result`): `{ token, userId }`
 
+## Internal admin endpoint (P2P)
+
+Use this to onboard a new partner and generate `partnerId` + `sharedSecret`.
+
+- `POST /api/integration/partners`
+  - Header: `X-Admin-Token: <APP_SSO_ADMIN_TOKEN>`
+  - Body example: `{ "partnerId": "SAN_B" }`
+  - Response `200`: `{ partnerId, sharedSecret }` (wrapped in `BaseResponse.result`)
+
 ## Endpoints (Partner internal funds API)
 
 These endpoints are called by P2P backend (server-to-server) when the user is a partner user (user has `type`/`relId`).
