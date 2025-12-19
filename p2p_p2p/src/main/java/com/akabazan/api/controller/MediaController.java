@@ -40,13 +40,10 @@ public class MediaController extends BaseController {
         public ResponseEntity<MediaUploadResponse> uploadImage(
                         @Parameter(description = "Image file to upload", required = true, content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)) @RequestParam("file") MultipartFile file,
 
-                        @Parameter(description = "Folder type for organizing uploads (e.g., 'avatar', 'trade', 'chat', 'default')", example = "default") @RequestHeader(value = "folder-type", defaultValue = "default") String folderType) {
+                @Parameter(description = "Folder type for organizing uploads (e.g., 'avatar', 'trade', 'chat', 'default')", example = "default") @RequestHeader(value = "folder-type", defaultValue = "default") String folderType) {
                 if (file.isEmpty()) {
                         return ResponseEntity.badRequest()
-                                        .body(MediaUploadResponse.builder()
-                                                        .success(false)
-                                                        .message("File must not be empty")
-                                                        .build());
+                                        .body(new MediaUploadResponse(false, null, "File must not be empty"));
                 }
 
                 try {
@@ -78,30 +75,22 @@ public class MediaController extends BaseController {
                                         .path(filename)
                                         .toUriString();
 
-                        MediaUploadResponse.MediaData mediaData = MediaUploadResponse.MediaData.builder()
-                                        .id(UUID.randomUUID().toString())
-                                        .filename(filename)
-                                        .originalName(originalFilename)
-                                        .url(fileUrl)
-                                        .mimeType(file.getContentType())
-                                        .size(file.getSize())
-                                        .build();
+                        MediaUploadResponse.MediaData mediaData = new MediaUploadResponse.MediaData();
+                        mediaData.setId(UUID.randomUUID().toString());
+                        mediaData.setFilename(filename);
+                        mediaData.setOriginalName(originalFilename);
+                        mediaData.setUrl(fileUrl);
+                        mediaData.setMimeType(file.getContentType());
+                        mediaData.setSize(file.getSize());
 
-                        MediaUploadResponse response = MediaUploadResponse.builder()
-                                        .success(true)
-                                        .data(mediaData)
-                                        .message("Image uploaded successfully")
-                                        .build();
+                        MediaUploadResponse response = new MediaUploadResponse(true, mediaData, "Image uploaded successfully");
 
                         return ResponseEntity.ok(response);
 
                 } catch (IOException e) {
                         e.printStackTrace();
                         return ResponseEntity.internalServerError()
-                                        .body(MediaUploadResponse.builder()
-                                                        .success(false)
-                                                        .message("Failed to store file: " + file.getOriginalFilename())
-                                                        .build());
+                                        .body(new MediaUploadResponse(false, null, "Failed to store file: " + file.getOriginalFilename()));
                 }
         }
 }

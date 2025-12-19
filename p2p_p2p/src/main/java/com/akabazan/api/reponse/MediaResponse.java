@@ -1,24 +1,11 @@
 package com.akabazan.api.reponse;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.io.Serializable;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class MediaResponse implements Serializable {
 
     private MediaData data;
 
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class MediaData implements Serializable {
         private String id;
         private String filename;
@@ -26,5 +13,80 @@ public class MediaResponse implements Serializable {
         private String url;
         private String mimeType;
         private long size;
+
+        public MediaData() {
+        }
+
+        public MediaData(String id, String filename, String originalName, String url, String mimeType, long size) {
+            this.id = id;
+            this.filename = filename;
+            this.originalName = originalName;
+            this.url = url;
+            this.mimeType = mimeType;
+            this.size = size;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public void setFilename(String filename) {
+            this.filename = filename;
+        }
+
+        public String getOriginalName() {
+            return originalName;
+        }
+
+        public void setOriginalName(String originalName) {
+            this.originalName = originalName;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public String getMimeType() {
+            return mimeType;
+        }
+
+        public void setMimeType(String mimeType) {
+            this.mimeType = mimeType;
+        }
+
+        public long getSize() {
+            return size;
+        }
+
+        public void setSize(long size) {
+            this.size = size;
+        }
+    }
+
+    public MediaResponse() {
+    }
+
+    public MediaResponse(MediaData data) {
+        this.data = data;
+    }
+
+    public MediaData getData() {
+        return data;
+    }
+
+    public void setData(MediaData data) {
+        this.data = data;
     }
 }
