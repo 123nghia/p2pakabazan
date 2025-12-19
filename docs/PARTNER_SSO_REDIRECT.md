@@ -24,12 +24,17 @@ From the partner exchange (sàn), when the user clicks the P2P menu, redirect th
 
 - `POST /api/sso/issue` (partner backend -> P2P)
   - Auth: HMAC (server-to-server)
+  - Required headers:
+    - `Content-Type: application/json`
+    - `X-Partner-Id`, `X-Timestamp`, `X-Nonce`, `X-Signature`
   - Body example:
     - `{ "externalUserId": "user_1001", "email": "user1001@example.com", "username": "user1001", "kycStatus": "VERIFIED" }`
-  - Response: `{ code, expiresIn }`
+  - Response `200` (wrapped in `BaseResponse.result`): `{ code, expiresIn }`
+  - Response `401` (missing/invalid signature): `{ status:"error", code:401, message:"..." }`
 - `POST /api/sso/exchange` (browser -> P2P)
   - Auth: one-time code
-  - Response: `{ token, userId }`
+  - Body example: `{ "code": "<oneTimeCode>" }`
+  - Response `200` (wrapped in `BaseResponse.result`): `{ token, userId }`
 
 ## Endpoints (Partner internal funds API)
 
@@ -87,12 +92,51 @@ METHOD + "\n" + PATH + "\n" + timestamp + "\n" + nonce + "\n" + sha256Hex(body)
 Notes:
 
 - `PATH` must be the request URI (example: `/api/sso/issue`)
-- `body` is the raw JSON bytes sent over the wire (UTF-8)
+- `body` is the raw JSON bytes sent over the wire (UTF-8) — whitespace/field order matters because we hash the exact bytes.
 
 ### Anti-replay
 
 - Reject if `abs(now - X-Timestamp) > APP_SSO_TIMESTAMP_SKEW_SECONDS`
 - Reject if `X-Nonce` already exists in Redis (nonce is stored with TTL = `APP_SSO_NONCE_TTL_SECONDS`)
+
+### Example call (PowerShell)
+
+```powershell
+$partnerId = "SAN_A"
+$secret = "change-me"
+$path = "/api/sso/issue"
+$method = "POST"
+$timestamp = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds().ToString()
+$nonce = [Guid]::NewGuid().ToString()
+
+$body = '{"externalUserId":"user_1001","email":"user1001@example.com","username":"user1001","kycStatus":"VERIFIED"}'
+
+$sha256 = [System.Security.Cryptography.SHA256]::Create()
+$bodyHash = $sha256.ComputeHash([Text.Encoding]::UTF8.GetBytes($body))
+$bodySha256Hex = ($bodyHash | ForEach-Object { $_.ToString("x2") }) -join ""
+
+$canonical = "$method`n$path`n$timestamp`n$nonce`n$bodySha256Hex"
+$hmac = New-Object System.Security.Cryptography.HMACSHA256([Text.Encoding]::UTF8.GetBytes($secret))
+$sigBytes = $hmac.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonical))
+$signature = [Convert]::ToBase64String($sigBytes)
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri ("http://localhost:9999" + $path) `
+  -ContentType "application/json" `
+  -Headers @{
+    "X-Partner-Id" = $partnerId
+    "X-Timestamp" = $timestamp
+    "X-Nonce"     = $nonce
+    "X-Signature" = $signature
+  } `
+  -Body $body
+```
+
+Java reference implementation in this repo:
+
+- `partner_mock/src/main/java/com/akabazan/partner/sso/PartnerHmacSigner.java`
+- `partner_mock/src/main/java/com/akabazan/partner/sso/P2pSsoClient.java`
 
 ## HMAC authentication (for partner internal funds API)
 
@@ -142,7 +186,8 @@ This repo includes a tiny partner app to simulate the exchange UI/backend:
      - `$env:APP_SSO_PARTNERS='SAN_A:change-me'`
      - `$env:SPRING_REDIS_HOST='localhost'`
      - `mvn -pl p2p_p2p spring-boot:run`
-   - P2P Swagger: `http://localhost:9999/api/swagger-ui/index.html`
+   - P2P Swagger UI: `http://localhost:9999/swagger-ui/index.html`
+   - P2P docs alias: `http://localhost:9999/api/docs`
 
 3) Start partner mock app:
    - PowerShell:
