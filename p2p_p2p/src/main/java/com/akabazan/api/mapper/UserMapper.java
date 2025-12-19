@@ -9,6 +9,19 @@ public class UserMapper {
     private UserMapper() {
     }
 
+    private static boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private static boolean isPartnerUser(User user) {
+        if (user == null) {
+            return false;
+        }
+        // Native P2P user => type=NULL and relId=NULL.
+        // Any non-blank value indicates an external/partner-sourced user.
+        return !isBlank(user.getType()) || !isBlank(user.getRelId());
+    }
+
     public static UserResponse toResponse(User user) {
         if (user == null) {
             return null;
@@ -16,9 +29,17 @@ public class UserMapper {
 
         UserResponse dto = new UserResponse();
         dto.setId(user.getId());
+        dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setPhone(user.getPhone());
+        dto.setType(user.getType());
+        dto.setRelId(user.getRelId());
         dto.setKycStatus(user.getKycStatus());
+
+        // Partner users: only return identity info coming from partner (wallets are provisioned later).
+        if (isPartnerUser(user)) {
+            return dto;
+        }
 
         dto.setWallets(user.getWallets().stream().map(wallet -> {
             UserResponse.WalletResponse w = new UserResponse.WalletResponse();

@@ -32,7 +32,7 @@ public class ExpireOrdersService implements ExpireOrdersUseCase {
         for (Order order : expiredOrders) {
             if (isSellOrder(order) && order.getAvailableAmount() > 0) {
                 // Trả lại coin cho seller
-                sellerFundsManager.release(order.getUser().getId(), order.getToken(), order.getAvailableAmount());
+                sellerFundsManager.unlockSellOrderRemainder(order, order.getAvailableAmount());
                 order.setAvailableAmount(0.0); // reset vì order đã hết hạn
             }
 

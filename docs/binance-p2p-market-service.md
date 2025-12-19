@@ -14,7 +14,7 @@ Tài liệu mô tả luồng xử lý và các tham số của `BinanceP2PMarket
 
 1. Bật PostgreSQL và cập nhật `application.properties` nếu cần.
 2. Chạy lệnh `mvn clean install` ở root để build toàn bộ modules.
-3. Khởi động backend: `mvn -pl p2p_p2p -am spring-boot:run`.
+3. Khởi động backend: `mvn -pl p2p_p2p spring-boot:run`.
 4. Endpoint sử dụng service này: `GET /api/market/price` (hoặc các API lấy giá).
 
 

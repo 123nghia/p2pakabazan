@@ -11,7 +11,9 @@ import org.springframework.data.repository.query.Param;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT u FROM User u LEFT JOIN FETCH u.wallets WHERE u.id = :id")
+    Optional<User> findByTypeAndRelId(String type, String relId);
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.wallets WHERE u.id = :id")
     Optional<User> findByIdWithWallets(@Param("id") UUID id);
 
     List<User> findByRole(User.Role role);

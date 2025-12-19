@@ -30,7 +30,7 @@ public class CloseOrderService implements CloseOrderUseCase {
 
         if (isSellOrder(order) && order.getAvailableAmount() > 0) {
             // Trả lại coin chưa khớp cho seller
-            sellerFundsManager.release(order.getUser().getId(), order.getToken(), order.getAvailableAmount());
+            sellerFundsManager.unlockSellOrderRemainder(order, order.getAvailableAmount());
             order.setAvailableAmount(0.0); // reset để nhất quán
         }
 

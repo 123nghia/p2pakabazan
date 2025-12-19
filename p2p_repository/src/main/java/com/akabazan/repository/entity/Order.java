@@ -50,6 +50,9 @@ public class Order extends AuditEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @Column(name = "funds_lock_id")
+    private String fundsLockId;
+
     // Tổng fiat = amount * price
     public double getTotalFiat() {
         return this.amount * this.price;
@@ -104,6 +107,9 @@ public class Order extends AuditEntity {
 
     public Double getAvailableAmount() { return availableAmount; }
     public void setAvailableAmount(Double availableAmount) { this.availableAmount = availableAmount; }
+
+    public String getFundsLockId() { return fundsLockId; }
+    public void setFundsLockId(String fundsLockId) { this.fundsLockId = fundsLockId; }
 
     public LocalDateTime getExpireAt() { return expireAt; }
     public void setExpireAt(LocalDateTime expireAt) { this.expireAt = expireAt; }

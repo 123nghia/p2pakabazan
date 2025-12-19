@@ -1,0 +1,19 @@
+
+pgAdmin đã hoạt động!
+
+Bây giờ bạn có thể truy cập:
+
+URL: http://localhost:5050
+
+Đăng nhập:
+
+Email: admin@example.com
+Password: admin123
+Sau khi đăng nhập, server PostgreSQL đã được cấu hình sẵn:
+
+Server name: P2P Trading DB
+Host: db
+Port: 5432
+Database: p2p_trading_dev
+Username: postgres
+Password: postgres123

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>P2P SSO Demo</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 32px; background: #0b1220; color: #e6edf3; }
+    .card { max-width: 920px; background: #111a2b; border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 18px 18px; }
+    h1 { margin: 0 0 8px; font-size: 20px; }
+    p { margin: 0 0 14px; color: rgba(230,237,243,.78); }
+    .row { display: grid; grid-template-columns: 160px 1fr; gap: 10px; align-items: center; margin: 8px 0; }
+    code { background: rgba(255,255,255,.06); padding: 2px 6px; border-radius: 8px; }
+    input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: #e6edf3; }
+    button { padding: 10px 12px; border-radius: 10px; border: 0; background: #1f6feb; color: #fff; font-weight: 700; cursor: pointer; }
+    .btn-secondary { background: rgba(255,255,255,.10); color: #e6edf3; }
+    pre { white-space: pre-wrap; word-break: break-word; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); padding: 12px; border-radius: 12px; margin: 10px 0 0; }
+    a { color: #7db4ff; text-decoration: none; }
+    .hint { font-size: 13px; color: rgba(230,237,243,.72); margin-top: 12px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>P2P SSO Demo (exchange code → JWT)</h1>
+  <p>Trang này nhận <code>?code=...</code>, gọi <code>POST /api/sso/exchange</code> để lấy JWT, sau đó gọi thử <code>GET /api/me</code>.</p>
+
+  <div class="row">
+    <div>One-time code</div>
+    <input id="code" placeholder="Paste code here (or from ?code=...)" />
+  </div>
+
+  <div class="row">
+    <div></div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap">
+      <button id="btnExchange">Exchange</button>
+      <button id="btnClear" class="btn-secondary">Clear</button>
+      <a href="/api/swagger-ui/index.html" target="_blank" style="align-self:center">Swagger</a>
+    </div>
+  </div>
+
+  <pre id="out">Waiting…</pre>
+  <div class="hint">
+    Tip: One-time code chỉ dùng 1 lần. Reload trang sau khi exchange sẽ báo expired (đúng logic).
+  </div>
+</div>
+
+<script>
+  const out = document.getElementById('out');
+  const codeInput = document.getElementById('code');
+
+  function setOut(obj) {
+    out.textContent = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+  }
+
+  function parseCodeFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    if (code) codeInput.value = code;
+  }
+
+  async function exchange() {
+    const code = (codeInput.value || '').trim();
+    if (!code) {
+      setOut('Missing code');
+      return;
+    }
+
+    setOut('Exchanging code…');
+    const exchangeResp = await fetch('/api/sso/exchange', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+
+    const exchangeJson = await exchangeResp.json().catch(() => null);
+    if (!exchangeResp.ok) {
+      setOut({ step: 'exchange', http: exchangeResp.status, body: exchangeJson });
+      return;
+    }
+
+    const token = exchangeJson?.result?.token;
+    const userId = exchangeJson?.result?.userId;
+    if (!token) {
+      setOut({ step: 'exchange', error: 'Missing token in response', body: exchangeJson });
+      return;
+    }
+
+    localStorage.setItem('p2p_jwt', token);
+
+    setOut({
+      step: 'exchange',
+      userId,
+      token,
+      note: 'Saved to localStorage key: p2p_jwt'
+    });
+
+    const meResp = await fetch('/api/me', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const meJson = await meResp.json().catch(() => null);
+
+    setOut({
+      exchange: exchangeJson,
+      me: { http: meResp.status, body: meJson }
+    });
+  }
+
+  document.getElementById('btnExchange').addEventListener('click', () => exchange().catch(e => setOut(String(e))));
+  document.getElementById('btnClear').addEventListener('click', () => { codeInput.value = ''; setOut('Cleared'); });
+  parseCodeFromUrl();
+</script>
+</body>
+</html>
+

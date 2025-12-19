@@ -1,0 +1,15 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "P2P Trading DB (Dev)",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "MaintenanceDB": "p2p_trading_dev",
+      "Username": "postgres",
+      "Password": "postgres123",
+      "SSLMode": "prefer",
+      "Comment": "P2P Trading Development Database"
+    }
+  }
+}

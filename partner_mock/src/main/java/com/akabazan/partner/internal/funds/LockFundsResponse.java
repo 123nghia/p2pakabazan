@@ -1,0 +1,11 @@
+package com.akabazan.partner.internal.funds;
+
+public record LockFundsResponse(
+        String requestId,
+        String lockId,
+        String status,
+        String lockedAmount,
+        String availableAfter,
+        String lockedAfter
+) {}
+

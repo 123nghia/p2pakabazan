@@ -15,7 +15,7 @@ Tài liệu mô tả các endpoint REST hiện có trong hệ thống. Mọi URL
 1. Đảm bảo PostgreSQL đang chạy với cấu hình trong `p2p_p2p/src/main/resources/application.properties`.
 2. Tạo schema nếu chưa có: `createdb p2p_trading` (hoặc tương đương).
 3. Cài đặt dependencies: `mvn clean install`.
-4. Khởi chạy ứng dụng: `mvn -pl p2p_p2p -am spring-boot:run`.
+4. Khởi chạy ứng dụng: `mvn -pl p2p_p2p spring-boot:run`.
 5. Truy cập Swagger UI: `http://localhost:8080/api/swagger-ui/index.html`.
 
 

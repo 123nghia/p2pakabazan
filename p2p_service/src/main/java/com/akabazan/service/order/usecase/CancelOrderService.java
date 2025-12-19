@@ -60,7 +60,8 @@ public class CancelOrderService implements CancelOrderUseCase {
         }
 
         if (isSellOrder(order) && order.getAvailableAmount() > 0) {
-            sellerFundsManager.release(order.getUser().getId(), order.getToken(), order.getAvailableAmount());
+            sellerFundsManager.unlockSellOrderRemainder(order, order.getAvailableAmount());
+            order.setAvailableAmount(0.0);
         }
 
         order.setStatus(OrderStatus.CANCELLED.name());

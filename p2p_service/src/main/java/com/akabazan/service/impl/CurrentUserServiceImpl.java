@@ -22,7 +22,7 @@ public class CurrentUserServiceImpl implements CurrentUserService {
     @Override
     public Optional<User> getCurrentUser() {
         
-        return getCurrentUserId().flatMap(userRepository::findById);
+        return getCurrentUserId().flatMap(userRepository::findByIdWithWallets);
     }
 
     @Override

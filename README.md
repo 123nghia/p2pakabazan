@@ -63,17 +63,55 @@ export JWT_SECRET=mysupersecuresecretkey_which_is_at_least_32_chars
 > **Lưu ý:** giữ `spring.jpa.hibernate.ddl-auto=none` để tránh xung đột với Flyway.
 
 ## 6. Cách chạy & luồng hoạt động
+
+### 🚀 Khởi động nhanh với Docker (Khuyến nghị)
+```bash
+# Windows
+start-dev.bat
+
+# Linux/Mac
+./docker-dev.sh
+
+# Hoặc dùng docker-compose trực tiếp
+docker-compose up -d
+```
+
+**Tự động thực hiện:**
+- ✅ Khởi tạo PostgreSQL database (`p2p_trading_dev`)
+- ✅ **Chạy 28 migrations Flyway tự động** (schema + seed data)
+- ✅ Khởi động RabbitMQ message broker
+- ✅ Khởi động pgAdmin web UI
+- ✅ Build và deploy Spring Boot application
+
+**Các dịch vụ được khởi động:**
+- Application API: `http://localhost:9000/api`
+- Swagger UI: `http://localhost:9000/api/swagger-ui/index.html`
+- pgAdmin: `http://localhost:5050` (admin@example.com / admin123)
+- RabbitMQ Management: `http://localhost:15672` (guest / guest)
+- PostgreSQL: `localhost:5432` (postgres / postgres123)
+
+**Truy cập từ máy khác trong LAN:**
+- Thay `localhost` bằng IP máy bạn (ví dụ: `192.168.1.17`)
+- Firewall đã được mở cho ports 9000 và 5050
+
+### Chạy trực tiếp với Maven (không dùng Docker)
 ```bash
 # Đóng gói toàn bộ modules
 mvn clean install
 
 # Khởi động ứng dụng (module p2p_p2p)
-mvn -pl p2p_p2p -am spring-boot:run
+mvn -pl p2p_p2p spring-boot:run
 
 # Hoặc chạy từ jar đã build
 java -jar p2p_p2p/target/p2p_p2p-1.0-SNAPSHOT.jar
 ```
 Ứng dụng lắng nghe tại `http://localhost:8080/api`.
+
+> **Lưu ý về Migration:** Flyway được bật mặc định (`spring.flyway.enabled=true`). Mỗi khi ứng dụng khởi động, nó sẽ:
+> - Tự động kiểm tra schema version hiện tại
+> - Chạy các migration mới (nếu có) từ `classpath:db/migration`
+> - Cập nhật bảng `flyway_schema_history` để tracking
+> - **Không cần chạy migration thủ công!**
 
 ### Luồng khởi động nội bộ
 1. Spring Boot nạp cấu hình datasource, JWT, servlet path `/api`.

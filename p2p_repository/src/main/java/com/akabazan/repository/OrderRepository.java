@@ -17,7 +17,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
             WHERE (:status IS NULL OR o.status = :status)
               AND (:type IS NULL OR UPPER(o.type) = :type)
               AND (:token IS NULL OR UPPER(o.token) = :token)
-              AND (:paymentFilterEnabled = false OR UPPER(o.paymentMethod) IN :paymentMethods)
+              AND (:paymentFilterEnabled = false OR UPPER(o.paymentMethod) IN (:paymentMethods))
               AND (:fiat IS NULL OR UPPER(o.fiat) = :fiat)
               AND (:excludeUserId IS NULL OR o.user.id <> :excludeUserId)
               AND (o.availableAmount IS NOT NULL AND o.availableAmount > 0)
