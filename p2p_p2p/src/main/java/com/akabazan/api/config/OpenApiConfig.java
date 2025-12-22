@@ -27,13 +27,7 @@ public class OpenApiConfig {
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public")
-                .pathsToMatch(
-                        "/api/market/**",
-                        "/api/p2p/**",
-                        "/api/auth/**",
-                        "/api/integration/**",
-                        "/api/sso/**",
-                        "/api/v1/media/upload/**")
+                .packagesToScan("com.akabazan.api.controller")
                 .build();
     }
 }
