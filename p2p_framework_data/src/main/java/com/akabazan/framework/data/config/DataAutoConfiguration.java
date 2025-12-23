@@ -20,6 +20,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 @AutoConfiguration
 @EnableConfigurationProperties(P2PDataProperties.class)
@@ -48,6 +49,7 @@ public class DataAutoConfiguration {
                 // Enforce JDBC timezone
                 String tz = props.getTimezone() == null ? "UTC" : props.getTimezone();
                 hibernateProperties.put("hibernate.jdbc.time_zone", tz);
+                hibernateProperties.put("hibernate.type.preferred_uuid_jdbc_type", "varchar");
 
                 // Enable snake_case naming strategy if requested
                 if (props.isNamingSnakeCase()) {

@@ -30,8 +30,15 @@ public class UsernameOnlyAuthenticationProvider implements AuthenticationProvide
         if (!admin.isEnabled()) {
             throw new BadCredentialsException("User disabled");
         }
-        return new UsernamePasswordAuthenticationToken(username, null,
-                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        // Store admin id as the principal to align with downstream services that expect UUID principals
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                admin.getId(),
+                null,
+                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+        );
+        // Keep username in details for display purposes if needed
+        token.setDetails(admin.getUsername());
+        return token;
     }
 
     @Override

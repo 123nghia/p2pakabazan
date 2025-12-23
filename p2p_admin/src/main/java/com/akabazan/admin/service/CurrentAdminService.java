@@ -18,10 +18,27 @@ public class CurrentAdminService {
 
     public Optional<UserAdmin> getCurrentAdmin() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || auth.getName() == null) {
+        if (auth == null || auth.getPrincipal() == null) {
             return Optional.empty();
         }
-        return userAdminRepository.findByUsername(auth.getName());
+        Object principal = auth.getPrincipal();
+
+        // Preferred: principal is UUID (set by UsernameOnlyAuthenticationProvider)
+        if (principal instanceof java.util.UUID uuid) {
+            return userAdminRepository.findById(uuid);
+        }
+
+        // Fallback: principal is String -> try to parse as UUID, else treat as username
+        if (principal instanceof String str) {
+            try {
+                java.util.UUID uuid = java.util.UUID.fromString(str);
+                return userAdminRepository.findById(uuid);
+            } catch (IllegalArgumentException ignored) {
+                return userAdminRepository.findByUsername(str);
+            }
+        }
+
+        return Optional.empty();
     }
 }
 

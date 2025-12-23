@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "trades")
@@ -222,6 +224,7 @@ public class Trade extends AuditEntity {
 
     @Embeddable
     public static class ChatMessage {
+        @JdbcTypeCode(SqlTypes.UUID)
         private UUID senderId;
         private String message;
         private LocalDateTime timestamp;
