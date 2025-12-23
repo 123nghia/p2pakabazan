@@ -29,7 +29,7 @@
     <module>p2p_framework_data</module>
     <module>p2p_websocket</module>
     <module>partner_mock</module>
-    <module>p2p_ui_mock</module>
+  
     </modules>
   <dependencies>
  

@@ -3,10 +3,12 @@ package com.akabazan.service.impl;
 import com.akabazan.common.constant.ErrorCode;
 import com.akabazan.common.event.ChatMessageEvent;
 import com.akabazan.common.exception.ApplicationException;
+import com.akabazan.repository.TradeChatReadRepository;
 import com.akabazan.repository.TradeChatRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.entity.Trade;
 import com.akabazan.repository.entity.TradeChat;
+import com.akabazan.repository.entity.TradeChatRead;
 import com.akabazan.repository.entity.User;
 import com.akabazan.service.TradeChatService;
 import com.akabazan.service.dto.TradeChatResult;
@@ -25,6 +27,7 @@ import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,7 @@ public class TradeChatServiceImpl implements TradeChatService {
     private final TradeRepository tradeRepository;
     private final TradeChatRepository tradeChatRepository;
     private final ChatEventPublisher chatEventPublisher;
+    private final TradeChatReadRepository tradeChatReadRepository;
 
     private enum RecipientRole {
         BUYER, SELLER, ALL
@@ -41,10 +45,12 @@ public class TradeChatServiceImpl implements TradeChatService {
 
     public TradeChatServiceImpl(TradeRepository tradeRepository,
             TradeChatRepository tradeChatRepository,
-            ChatEventPublisher chatEventPublisher) {
+            ChatEventPublisher chatEventPublisher,
+            TradeChatReadRepository tradeChatReadRepository) {
         this.tradeRepository = tradeRepository;
         this.tradeChatRepository = tradeChatRepository;
         this.chatEventPublisher = chatEventPublisher;
+        this.tradeChatReadRepository = tradeChatReadRepository;
     }
 
     @Override
@@ -99,7 +105,12 @@ public class TradeChatServiceImpl implements TradeChatService {
     public List<TradeChatResult> getMessages(UUID tradeId, LocalDateTime since) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
-        RecipientRole viewerRole = determineUserRoleForTrade(trade, getCurrentUserId());
+        UUID currentUserId = getCurrentUserId();
+        RecipientRole viewerRole = determineUserRoleForTrade(trade, currentUserId);
+        LocalDateTime lastReadAtBefore = Optional.ofNullable(
+                        tradeChatReadRepository.findExisting(tradeId, currentUserId).orElse(null))
+                .map(TradeChatRead::getLastReadAt)
+                .orElse(LocalDateTime.MIN);
 
         List<TradeChat> chats;
         if (since != null) {
@@ -108,10 +119,32 @@ public class TradeChatServiceImpl implements TradeChatService {
             chats = tradeChatRepository.findByTradeIdOrderByTimestampAsc(tradeId);
         }
 
-        return chats.stream()
+        List<TradeChatResult> results = chats.stream()
                 .filter(chat -> isVisibleForRecipient(chat.getRecipientRole(), viewerRole))
-                .map(TradeChatMapper::toResult)
+                .map(chat -> {
+                    TradeChatResult dto = TradeChatMapper.toResult(chat);
+                    boolean read = currentUserId.equals(chat.getSenderId())
+                            || (chat.getTimestamp() != null && !chat.getTimestamp().isAfter(lastReadAtBefore));
+                    dto.setRead(read);
+                    return dto;
+                })
                 .collect(Collectors.toList());
+
+        // auto mark all fetched as read for current user
+        upsertReadMark(trade, currentUserId);
+        return results;
+    }
+
+    private void upsertReadMark(Trade trade, UUID userId) {
+        TradeChatRead record = tradeChatReadRepository.findExisting(trade.getId(), userId)
+                .orElseGet(() -> {
+                    TradeChatRead r = new TradeChatRead();
+                    r.setTrade(trade);
+                    r.setUserId(userId);
+                    return r;
+                });
+        record.setLastReadAt(LocalDateTime.now());
+        tradeChatReadRepository.save(record);
     }
 
     @Override

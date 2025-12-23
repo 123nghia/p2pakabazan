@@ -12,6 +12,7 @@ public class TradeChatResponse {
     private String image;
     private LocalDateTime timestamp;
     private String recipientRole;
+    private boolean read;
 
     public UUID getId() {
         return id;
@@ -67,5 +68,13 @@ public class TradeChatResponse {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public boolean isRead() {
+        return read;
+    }
+
+    public void setRead(boolean read) {
+        this.read = read;
     }
 }

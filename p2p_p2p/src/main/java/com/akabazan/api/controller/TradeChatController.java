@@ -5,7 +5,10 @@ import com.akabazan.api.mapper.TradeChatThreadResponseMapper;
 import com.akabazan.api.reponse.TradeChatResponse;
 import com.akabazan.api.reponse.TradeChatThreadResponse;
 import com.akabazan.api.request.ChatRequest;
+import com.akabazan.api.reponse.DashboardCountResponse;
 import com.akabazan.service.TradeChatService;
+import com.akabazan.service.DashboardService;
+import com.akabazan.service.dto.DashboardCounts;
 import com.akabazan.service.dto.TradeChatResult;
 import com.akabazan.service.dto.TradeChatThreadResult;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,9 +24,11 @@ import java.util.UUID;
 public class TradeChatController extends BaseController {
 
     private final TradeChatService tradeChatService;
+    private final DashboardService dashboardService;
 
-    public TradeChatController(TradeChatService tradeChatService) {
+    public TradeChatController(TradeChatService tradeChatService, DashboardService dashboardService) {
         this.tradeChatService = tradeChatService;
+        this.dashboardService = dashboardService;
     }
 
     @PostMapping("/{tradeId}/chat")
@@ -45,5 +50,20 @@ public class TradeChatController extends BaseController {
     public ResponseEntity<List<TradeChatThreadResponse>> getChatThreads() {
         List<TradeChatThreadResult> threads = tradeChatService.getChatThreadsForCurrentUser();
         return ResponseEntity.ok(TradeChatThreadResponseMapper.fromList(threads));
+    }
+
+    @GetMapping("/dashboard/counts")
+    public ResponseEntity<DashboardCountResponse> getDashboardCounts() {
+        DashboardCounts counts = dashboardService.getCountsForCurrentUser();
+        DashboardCountResponse resp = new DashboardCountResponse();
+        resp.setActiveTrades(counts.getActiveTrades());
+        resp.setIncomingChats(counts.getIncomingChats());
+        return ResponseEntity.ok(resp);
+    }
+
+    @PutMapping("/{tradeId}/chat/read")
+    public ResponseEntity<Void> markChatRead(@PathVariable UUID tradeId) {
+        dashboardService.markTradeChatRead(tradeId);
+        return ResponseEntity.ok().build();
     }
 }

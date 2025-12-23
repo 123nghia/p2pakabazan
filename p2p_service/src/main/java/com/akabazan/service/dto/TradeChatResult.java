@@ -11,6 +11,7 @@ public class TradeChatResult {
     private String image;
     private LocalDateTime timestamp;
     private String recipientRole;
+    private boolean read;
 
     public UUID getId() {
         return id;
@@ -66,5 +67,13 @@ public class TradeChatResult {
 
     public void setRecipientRole(String recipientRole) {
         this.recipientRole = recipientRole;
+    }
+
+    public boolean isRead() {
+        return read;
+    }
+
+    public void setRead(boolean read) {
+        this.read = read;
     }
 }

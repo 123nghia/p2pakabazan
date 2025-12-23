@@ -16,6 +16,7 @@ public class TradeChatMapper {
         result.setImage(entity.getImage());
         result.setTimestamp(entity.getTimestamp());
         result.setRecipientRole(entity.getRecipientRole());
+        // read flag will be set in service based on user's last read timestamp
         return result;
     }
 }
