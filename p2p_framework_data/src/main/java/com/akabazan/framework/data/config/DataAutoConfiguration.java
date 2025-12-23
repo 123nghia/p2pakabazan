@@ -49,7 +49,11 @@ public class DataAutoConfiguration {
                 // Enforce JDBC timezone
                 String tz = props.getTimezone() == null ? "UTC" : props.getTimezone();
                 hibernateProperties.put("hibernate.jdbc.time_zone", tz);
-                hibernateProperties.put("hibernate.type.preferred_uuid_jdbc_type", "varchar");
+                if (!hibernateProperties.containsKey("hibernate.type.preferred_uuid_jdbc_type")) {
+                    String vendor = props.getVendor() == null ? "postgres" : props.getVendor();
+                    String uuidJdbcType = "postgres".equalsIgnoreCase(vendor) ? "uuid" : "varchar";
+                    hibernateProperties.put("hibernate.type.preferred_uuid_jdbc_type", uuidJdbcType);
+                }
 
                 // Enable snake_case naming strategy if requested
                 if (props.isNamingSnakeCase()) {
@@ -80,4 +84,3 @@ public class DataAutoConfiguration {
     // It will be instantiated by Hibernate via @GenericGenerator and will use
     // BeanFactoryAware to access Spring context
 }
-

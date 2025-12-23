@@ -11,6 +11,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import org.springframework.beans.factory.annotation.Value;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -30,8 +31,9 @@ public class SecurityConfig {
 
     @Bean
     public SecretKey secretKey() {
-        // Key phải >= 32 ký tự (256 bits)
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        // Use Keys.secretKeyFor to generate a key with proper size (256 bits minimum)
+        // This method automatically generates a secure key for HMAC-SHA256
+        return Keys.secretKeyFor(SignatureAlgorithm.HS256);
     }
 
     @Bean

@@ -22,10 +22,12 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component
+@ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true")
 public class DataSeeder implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataSeeder.class);
@@ -135,8 +137,8 @@ public class DataSeeder implements CommandLineRunner {
 
     private FiatAccount ensureFiatAccount(User user, SeedUser seedUser) {
         return fiatAccountRepository
-                .findByUserAndBankNameAndAccountNumberAndAccountHolder(
-                        user, seedUser.bankName(), seedUser.accountNumber(), seedUser.accountHolder())
+                .findByUserIdAndBankNameAndAccountNumberAndAccountHolder(
+                        user.getId(), seedUser.bankName(), seedUser.accountNumber(), seedUser.accountHolder())
                 .orElseGet(() -> {
                     FiatAccount account = new FiatAccount();
                     account.setUser(user);
