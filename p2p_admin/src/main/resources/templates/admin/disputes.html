@@ -70,10 +70,16 @@
                         <td th:text="${d.reason}">Seller not confirm</td>
                         <td th:text="${d.createdAt}">2025-01-01</td>
                         <td>
-                            <button th:onclick="|resolveDispute('${d.id}', 'BUYER_FAVORED')|">Buyer favored</button>
-                            <button th:onclick="|resolveDispute('${d.id}', 'SELLER_FAVORED')|">Seller favored</button>
-                            <button th:onclick="|rejectDispute('${d.id}')|">Reject</button>
-                            <button th:onclick="|assignDispute('${d.id}')|">Assign</button>
+                            <button th:attr="data-id=${d.id}"
+                                onclick="resolveDispute(this.getAttribute('data-id'), 'BUYER_FAVORED')">Buyer
+                                favored</button>
+                            <button th:attr="data-id=${d.id}"
+                                onclick="resolveDispute(this.getAttribute('data-id'), 'SELLER_FAVORED')">Seller
+                                favored</button>
+                            <button th:attr="data-id=${d.id}"
+                                onclick="rejectDispute(this.getAttribute('data-id'))">Reject</button>
+                            <button th:attr="data-id=${d.id}"
+                                onclick="assignDispute(this.getAttribute('data-id'))">Assign</button>
                         </td>
                     </tr>
                 </tbody>

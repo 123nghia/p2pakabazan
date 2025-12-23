@@ -1,0 +1,203 @@
+OpenJDK 64-Bit Server VM warning: The Windows job object has enabled multiple processor groups (2) but only 1 is supported on this Windows version. Some processors might not be used.
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldBase has been called by com.google.inject.internal.aop.HiddenClassDefiner (file:/C:/Users/Nghia/Desktop/apache-maven-3.9.11/lib/guice-5.1.0-classes.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.inject.internal.aop.HiddenClassDefiner
+WARNING: sun.misc.Unsafe::staticFieldBase will be removed in a future release
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ------------------------< com.akabazan:p2p_p2p >------------------------
+[INFO] Building p2p_p2p 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.1.0:run (default-cli) > test-compile @ p2p_p2p >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ p2p_p2p ---
+[INFO] Copying 4 resources from src\main\resources to target\classes
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ p2p_p2p ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ p2p_p2p ---
+[INFO] skip non existing resourceDirectory C:\Users\Nghia\Desktop\Nghia\p2pakabazan\p2p_p2p\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ p2p_p2p ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] <<< spring-boot:3.1.0:run (default-cli) < test-compile @ p2p_p2p <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.1.0:run (default-cli) @ p2p_p2p ---
+[INFO] Attaching agents: []
+OpenJDK 64-Bit Server VM warning: The Windows job object has enabled multiple processor groups (2) but only 1 is supported on this Windows version. Some processors might not be used.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.1.0)
+
+2025-12-23T03:44:15.069Z  INFO 20388 --- [  restartedMain] c.akabazan.P2PTradingSystemApplication   : Starting P2PTradingSystemApplication using Java 25.0.1 with PID 20388 (C:\Users\Nghia\Desktop\Nghia\p2pakabazan\p2p_p2p\target\classes started by Nghia in C:\Users\Nghia\Desktop\Nghia\p2pakabazan\p2p_p2p)
+2025-12-23T03:44:15.073Z  INFO 20388 --- [  restartedMain] c.akabazan.P2PTradingSystemApplication   : The following 1 profile is active: "dev"
+2025-12-23T03:44:15.149Z  INFO 20388 --- [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-12-23T03:44:15.150Z  INFO 20388 --- [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-12-23T03:44:16.556Z  INFO 20388 --- [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-12-23T03:44:16.558Z  INFO 20388 --- [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-12-23T03:44:16.856Z  INFO 20388 --- [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 289 ms. Found 16 JPA repository interfaces.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.apache.tomcat.jni.Library in an unnamed module (file:/C:/Users/Nghia/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/10.1.8/tomcat-embed-core-10.1.8.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+2025-12-23T03:44:17.894Z  INFO 20388 --- [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 9999 (http)
+2025-12-23T03:44:17.913Z  INFO 20388 --- [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-12-23T03:44:17.913Z  INFO 20388 --- [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.8]
+2025-12-23T03:44:18.008Z  INFO 20388 --- [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-12-23T03:44:18.012Z  INFO 20388 --- [  restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2860 ms
+2025-12-23T03:44:18.369Z  INFO 20388 --- [  restartedMain] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 9.16.3 by Redgate
+2025-12-23T03:44:18.369Z  INFO 20388 --- [  restartedMain] o.f.c.internal.license.VersionPrinter    : See release notes here: https://rd.gt/416ObMi
+2025-12-23T03:44:18.369Z  INFO 20388 --- [  restartedMain] o.f.c.internal.license.VersionPrinter    : 
+2025-12-23T03:44:18.371Z  WARN 20388 --- [  restartedMain] o.flywaydb.core.internal.util.Locations  : Discarding location 'classpath:db/migration/postgres' as it is a sub-location of 'classpath:db/migration'
+2025-12-23T03:44:18.393Z  INFO 20388 --- [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-12-23T03:44:18.629Z  INFO 20388 --- [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@6cf97a33
+2025-12-23T03:44:18.632Z  INFO 20388 --- [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-12-23T03:44:18.654Z  INFO 20388 --- [  restartedMain] o.f.c.i.database.base.BaseDatabaseType   : Database: jdbc:postgresql://localhost:5432/p2p_trading_dev (PostgreSQL 15.15)
+2025-12-23T03:44:18.768Z  INFO 20388 --- [  restartedMain] o.f.core.internal.command.DbValidate     : Successfully validated 36 migrations (execution time 00:00.076s)
+2025-12-23T03:44:18.799Z  INFO 20388 --- [  restartedMain] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 36
+2025-12-23T03:44:18.802Z  INFO 20388 --- [  restartedMain] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2025-12-23T03:44:18.944Z  INFO 20388 --- [  restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-12-23T03:44:19.028Z  INFO 20388 --- [  restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.2.2.Final
+2025-12-23T03:44:19.031Z  INFO 20388 --- [  restartedMain] org.hibernate.cfg.Environment            : HHH000406: Using bytecode reflection optimizer
+2025-12-23T03:44:19.260Z  INFO 20388 --- [  restartedMain] o.h.b.i.BytecodeProviderInitiator        : HHH000021: Bytecode provider name : bytebuddy
+2025-12-23T03:44:19.503Z  INFO 20388 --- [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-12-23T03:44:19.561Z  INFO 20388 --- [  restartedMain] org.hibernate.orm.dialect                : HHH035001: Using dialect: org.hibernate.dialect.PostgreSQLDialect, version: org.hibernate.engine.jdbc.env.internal.JdbcEnvironmentInitiator$DialectResolutionInfoImpl@42b4deb0
+2025-12-23T03:44:19.619Z  WARN 20388 --- [  restartedMain] org.hibernate.orm.incubating             : HHH90006001: Encountered incubating setting [hibernate.type.preferred_uuid_jdbc_type].  See javadoc on corresponding `org.hibernate.cfg.AvailableSettings` constant for details.
+2025-12-23T03:44:20.011Z  WARN 20388 --- [  restartedMain] org.hibernate.orm.incubating             : HHH90006001: Encountered incubating setting [hibernate.type.preferred_uuid_jdbc_type].  See javadoc on corresponding `org.hibernate.cfg.AvailableSettings` constant for details.
+2025-12-23T03:44:20.014Z  INFO 20388 --- [  restartedMain] o.h.b.i.BytecodeProviderInitiator        : HHH000021: Bytecode provider name : bytebuddy
+2025-12-23T03:44:21.409Z  INFO 20388 --- [  restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
+2025-12-23T03:44:21.414Z  INFO 20388 --- [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-12-23T03:44:21.908Z  INFO 20388 --- [  restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by io.netty.util.internal.PlatformDependent0$4 (file:/C:/Users/Nghia/.m2/repository/io/netty/netty-common/4.1.92.Final/netty-common-4.1.92.Final.jar)
+WARNING: Please consider reporting this to the maintainers of class io.netty.util.internal.PlatformDependent0$4
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+2025-12-23T03:44:24.617Z  WARN 20388 --- [  restartedMain] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 43f9723b-ad84-4097-9c3b-5e4d6dcecb63
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2025-12-23T03:44:24.759Z  INFO 20388 --- [  restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2025-12-23T03:44:24.943Z  INFO 20388 --- [  restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@58827048, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@1daf2d0c, org.springframework.security.web.context.SecurityContextHolderFilter@676cc96e, org.springframework.security.web.header.HeaderWriterFilter@7bbdc7ae, org.springframework.web.filter.CorsFilter@42190db4, org.springframework.security.web.authentication.logout.LogoutFilter@523ba1bc, com.akabazan.security.config.JwtAuthenticationFilter@7b3d6cdd, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@708b5cb3, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@1cfbaadc, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@42c747d7, org.springframework.security.web.session.SessionManagementFilter@79e1a4e8, org.springframework.security.web.access.ExceptionTranslationFilter@74b2e604, org.springframework.security.web.access.intercept.AuthorizationFilter@3e1f7efa]
+2025-12-23T03:44:25.439Z  INFO 20388 --- [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-12-23T03:44:25.484Z  INFO 20388 --- [  restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 9999 (http) with context path ''
+2025-12-23T03:44:25.486Z  INFO 20388 --- [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2025-12-23T03:44:25.487Z  INFO 20388 --- [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@6cd39099]]
+2025-12-23T03:44:25.487Z  INFO 20388 --- [  restartedMain] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2025-12-23T03:44:25.499Z  INFO 20388 --- [  restartedMain] c.akabazan.P2PTradingSystemApplication   : Started P2PTradingSystemApplication in 10.993 seconds (process running for 11.636)
+2025-12-23T03:44:25.665Z  INFO 20388 --- [MessageBroker-2] c.a.service.impl.TradeServiceImpl        : Found 2 expired trades to cancel
+2025-12-23T03:44:25.666Z  INFO 20388 --- [MessageBroker-2] c.a.service.impl.TradeServiceImpl        : Auto-cancelling expired trade: 2680d34b-da2b-49fb-bb43-e3f60cd30962
+2025-12-23T03:44:25.690Z ERROR 20388 --- [MessageBroker-2] o.s.s.s.TaskUtils$LoggingErrorHandler    : Unexpected error occurred in scheduled task
+
+com.akabazan.common.exception.ApplicationException: wallet is not found
+	at com.akabazan.service.impl.TradeServiceImpl.lambda$cancelTradeInternal$0(TradeServiceImpl.java:592) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/java.util.Optional.orElseThrow(Optional.java:403) ~[na:na]
+	at com.akabazan.service.impl.TradeServiceImpl.cancelTradeInternal(TradeServiceImpl.java:592) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at com.akabazan.service.impl.TradeServiceImpl.autoCancelExpiredTrades(TradeServiceImpl.java:461) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:343) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:750) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:391) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:750) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:702) ~[spring-aop-6.0.9.jar:6.0.9]
+	at com.akabazan.service.impl.TradeServiceImpl$$SpringCGLIB$$0.autoCancelExpiredTrades(<generated>) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at com.akabazan.scheduler.job.TradeAutoCancelJob.cancelExpiredTrades(TradeAutoCancelJob.java:30) ~[p2p_scheduler-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:84) ~[spring-context-6.0.9.jar:6.0.9]
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:54) ~[spring-context-6.0.9.jar:6.0.9]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[na:na]
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369) ~[na:na]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[na:na]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[na:na]
+
+2025-12-23T03:45:24.395Z  INFO 20388 --- [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 5, active threads = 1, queued tasks = 2, completed tasks = 2]
+2025-12-23T03:45:25.739Z  INFO 20388 --- [MessageBroker-4] c.a.service.impl.TradeServiceImpl        : Found 2 expired trades to cancel
+2025-12-23T03:45:25.741Z  INFO 20388 --- [MessageBroker-4] c.a.service.impl.TradeServiceImpl        : Auto-cancelling expired trade: 2680d34b-da2b-49fb-bb43-e3f60cd30962
+2025-12-23T03:45:25.750Z ERROR 20388 --- [MessageBroker-4] o.s.s.s.TaskUtils$LoggingErrorHandler    : Unexpected error occurred in scheduled task
+
+com.akabazan.common.exception.ApplicationException: wallet is not found
+	at com.akabazan.service.impl.TradeServiceImpl.lambda$cancelTradeInternal$0(TradeServiceImpl.java:592) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/java.util.Optional.orElseThrow(Optional.java:403) ~[na:na]
+	at com.akabazan.service.impl.TradeServiceImpl.cancelTradeInternal(TradeServiceImpl.java:592) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at com.akabazan.service.impl.TradeServiceImpl.autoCancelExpiredTrades(TradeServiceImpl.java:461) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:343) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:750) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:391) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:750) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:702) ~[spring-aop-6.0.9.jar:6.0.9]
+	at com.akabazan.service.impl.TradeServiceImpl$$SpringCGLIB$$0.autoCancelExpiredTrades(<generated>) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at com.akabazan.scheduler.job.TradeAutoCancelJob.cancelExpiredTrades(TradeAutoCancelJob.java:30) ~[p2p_scheduler-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:84) ~[spring-context-6.0.9.jar:6.0.9]
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:54) ~[spring-context-6.0.9.jar:6.0.9]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[na:na]
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369) ~[na:na]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[na:na]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[na:na]
+
+2025-12-23T03:46:25.792Z  INFO 20388 --- [MessageBroker-5] c.a.service.impl.TradeServiceImpl        : Found 2 expired trades to cancel
+2025-12-23T03:46:25.793Z  INFO 20388 --- [MessageBroker-5] c.a.service.impl.TradeServiceImpl        : Auto-cancelling expired trade: 2680d34b-da2b-49fb-bb43-e3f60cd30962
+2025-12-23T03:46:25.801Z ERROR 20388 --- [MessageBroker-5] o.s.s.s.TaskUtils$LoggingErrorHandler    : Unexpected error occurred in scheduled task
+
+com.akabazan.common.exception.ApplicationException: wallet is not found
+	at com.akabazan.service.impl.TradeServiceImpl.lambda$cancelTradeInternal$0(TradeServiceImpl.java:592) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/java.util.Optional.orElseThrow(Optional.java:403) ~[na:na]
+	at com.akabazan.service.impl.TradeServiceImpl.cancelTradeInternal(TradeServiceImpl.java:592) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at com.akabazan.service.impl.TradeServiceImpl.autoCancelExpiredTrades(TradeServiceImpl.java:461) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:343) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:750) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:391) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:750) ~[spring-aop-6.0.9.jar:6.0.9]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:702) ~[spring-aop-6.0.9.jar:6.0.9]
+	at com.akabazan.service.impl.TradeServiceImpl$$SpringCGLIB$$0.autoCancelExpiredTrades(<generated>) ~[p2p_service-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at com.akabazan.scheduler.job.TradeAutoCancelJob.cancelExpiredTrades(TradeAutoCancelJob.java:30) ~[p2p_scheduler-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.scheduling.support.ScheduledMethodRunnable.run(ScheduledMethodRunnable.java:84) ~[spring-context-6.0.9.jar:6.0.9]
+	at org.springframework.scheduling.support.DelegatingErrorHandlingRunnable.run(DelegatingErrorHandlingRunnable.java:54) ~[spring-context-6.0.9.jar:6.0.9]
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:545) ~[na:na]
+	at java.base/java.util.concurrent.FutureTask.runAndReset(FutureTask.java:369) ~[na:na]
+	at java.base/java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:310) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1090) ~[na:na]
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:614) ~[na:na]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[na:na]
+
