@@ -28,6 +28,7 @@ public final class DisputeResponseMapper {
         response.setCreatedAt(result.getCreatedAt());
         response.setUpdatedAt(result.getUpdatedAt());
         response.setResolvedAt(result.getResolvedAt());
+        response.setCreatedByRole(result.getCreatedByRole());
         return response;
     }
 

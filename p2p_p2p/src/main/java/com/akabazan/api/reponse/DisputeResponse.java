@@ -18,6 +18,7 @@ public class DisputeResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime resolvedAt;
+    private String createdByRole;
 
     public UUID getId() {
         return id;
@@ -121,5 +122,13 @@ public class DisputeResponse {
 
     public void setResolvedAt(LocalDateTime resolvedAt) {
         this.resolvedAt = resolvedAt;
+    }
+
+    public String getCreatedByRole() {
+        return createdByRole;
+    }
+
+    public void setCreatedByRole(String createdByRole) {
+        this.createdByRole = createdByRole;
     }
 }

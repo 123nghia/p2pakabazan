@@ -35,6 +35,16 @@ public class DisputeMapper {
         result.setCreatedAt(dispute.getCreatedAt());
         result.setUpdatedAt(dispute.getUpdatedAt());
         result.setResolvedAt(dispute.getResolvedAt());
+        if (dispute.getTrade() != null && dispute.getCreatedBy() != null) {
+            java.util.UUID creatorId = dispute.getCreatedBy();
+            if (creatorId.equals(dispute.getTrade().getBuyer().getId())) {
+                result.setCreatedByRole("BUYER");
+            } else if (creatorId.equals(dispute.getTrade().getSeller().getId())) {
+                result.setCreatedByRole("SELLER");
+            } else {
+                result.setCreatedByRole("UNKNOWN");
+            }
+        }
         return result;
     }
 }

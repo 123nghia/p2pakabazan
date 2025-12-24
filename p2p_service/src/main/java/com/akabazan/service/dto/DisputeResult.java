@@ -122,4 +122,14 @@ public class DisputeResult {
     public void setResolvedAt(LocalDateTime resolvedAt) {
         this.resolvedAt = resolvedAt;
     }
+
+    private String createdByRole;
+
+    public void setCreatedByRole(String createdByRole) {
+        this.createdByRole = createdByRole;
+    }
+
+    public String getCreatedByRole() {
+        return createdByRole;
+    }
 }

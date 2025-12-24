@@ -15,4 +15,5 @@ public interface TradeChatService {
     List<TradeChatResult> getMessages(UUID tradeId, LocalDateTime since);
 
     List<TradeChatThreadResult> getChatThreadsForCurrentUser();
+    void markRead(UUID tradeId);
 }

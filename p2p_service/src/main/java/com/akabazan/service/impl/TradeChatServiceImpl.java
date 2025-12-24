@@ -108,7 +108,7 @@ public class TradeChatServiceImpl implements TradeChatService {
         UUID currentUserId = getCurrentUserId();
         RecipientRole viewerRole = determineUserRoleForTrade(trade, currentUserId);
         LocalDateTime lastReadAtBefore = Optional.ofNullable(
-                        tradeChatReadRepository.findExisting(tradeId, currentUserId).orElse(null))
+                tradeChatReadRepository.findExisting(tradeId, currentUserId).orElse(null))
                 .map(TradeChatRead::getLastReadAt)
                 .orElse(LocalDateTime.MIN);
 
