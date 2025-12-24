@@ -1,16 +1,11 @@
 package com.akabazan.admin.controller;
 
-import com.akabazan.admin.security.UserAdminRepository;
 import com.akabazan.common.dto.BaseResponse;
 import com.akabazan.common.dto.ResponseFactory;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.UserRepository;
-import com.akabazan.repository.constant.TradeStatus;
 import com.akabazan.repository.entity.User;
-import com.akabazan.service.DisputeService;
-import com.akabazan.service.TradeService;
-import com.akabazan.service.dto.DisputeResult;
 import com.akabazan.service.dto.OrderMapper;
 import com.akabazan.service.dto.OrderResult;
 import com.akabazan.service.dto.TradeResult;
@@ -18,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,22 +22,70 @@ public class AdminController {
     private final UserRepository userRepository;
     private final TradeRepository tradeRepository;
     private final OrderRepository orderRepository;
-    private final TradeService tradeService;
-    private final DisputeService disputeService;
-    private final UserAdminRepository userAdminRepository;
+    private final com.akabazan.repository.CurrencyRepository currencyRepository;
+    private final com.akabazan.repository.PaymentMethodRepository paymentMethodRepository;
 
     public AdminController(UserRepository userRepository,
             TradeRepository tradeRepository,
             OrderRepository orderRepository,
-            TradeService tradeService,
-            DisputeService disputeService,
-            UserAdminRepository userAdminRepository) {
+            com.akabazan.repository.CurrencyRepository currencyRepository,
+            com.akabazan.repository.PaymentMethodRepository paymentMethodRepository) {
         this.userRepository = userRepository;
         this.tradeRepository = tradeRepository;
         this.orderRepository = orderRepository;
-        this.tradeService = tradeService;
-        this.disputeService = disputeService;
-        this.userAdminRepository = userAdminRepository;
+        this.currencyRepository = currencyRepository;
+        this.paymentMethodRepository = paymentMethodRepository;
+    }
+
+    @GetMapping("/currencies")
+    public ResponseEntity<BaseResponse<List<com.akabazan.repository.entity.Currency>>> listCurrencies() {
+        return ResponseFactory.ok(currencyRepository.findAll());
+    }
+
+    @PostMapping("/currencies")
+    public ResponseEntity<BaseResponse<com.akabazan.repository.entity.Currency>> saveCurrency(
+            @RequestBody com.akabazan.repository.entity.Currency currency) {
+        if (currency.getId() != null) {
+            com.akabazan.repository.entity.Currency existing = currencyRepository.findById(currency.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid currency Id:" + currency.getId()));
+            existing.setType(currency.getType());
+            existing.setCode(currency.getCode());
+            existing.setName(currency.getName());
+            existing.setNetwork(currency.getNetwork());
+            existing.setIconUrl(currency.getIconUrl());
+            existing.setDecimalPlaces(currency.getDecimalPlaces());
+            existing.setDisplayOrder(currency.getDisplayOrder());
+            existing.setActive(currency.isActive());
+            existing.setUpdatedAt(java.time.LocalDateTime.now());
+            return ResponseFactory.ok(currencyRepository.save(existing));
+        }
+        return ResponseFactory.ok(currencyRepository.save(currency));
+    }
+
+    @GetMapping("/payment-methods")
+    public ResponseEntity<BaseResponse<List<com.akabazan.repository.entity.PaymentMethod>>> listPaymentMethods() {
+        return ResponseFactory.ok(paymentMethodRepository.findAll());
+    }
+
+    @PostMapping("/payment-methods")
+    public ResponseEntity<BaseResponse<com.akabazan.repository.entity.PaymentMethod>> savePaymentMethod(
+            @RequestBody com.akabazan.repository.entity.PaymentMethod paymentMethod) {
+        if (paymentMethod.getId() != null) {
+            com.akabazan.repository.entity.PaymentMethod existing = paymentMethodRepository
+                    .findById(paymentMethod.getId())
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Invalid payment method Id:" + paymentMethod.getId()));
+            existing.setType(paymentMethod.getType());
+            existing.setCode(paymentMethod.getCode());
+            existing.setName(paymentMethod.getName());
+            existing.setDescription(paymentMethod.getDescription());
+            existing.setIconUrl(paymentMethod.getIconUrl());
+            existing.setDisplayOrder(paymentMethod.getDisplayOrder());
+            existing.setActive(paymentMethod.isActive());
+            existing.setUpdatedAt(java.time.LocalDateTime.now());
+            return ResponseFactory.ok(paymentMethodRepository.save(existing));
+        }
+        return ResponseFactory.ok(paymentMethodRepository.save(paymentMethod));
     }
 
     @GetMapping("/users")
@@ -92,71 +134,5 @@ public class AdminController {
                 .map(o -> OrderMapper.toResult(o, List.of()))
                 .collect(Collectors.toList());
         return ResponseFactory.ok(orders);
-    }
-
-    @GetMapping("/disputes")
-    public ResponseEntity<BaseResponse<List<DisputeResult>>> listDisputes(
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "onlyMine", required = false, defaultValue = "false") boolean onlyMine) {
-        com.akabazan.repository.entity.Dispute.DisputeStatus disputeStatus = null;
-        if (status != null && !status.isBlank()) {
-            disputeStatus = com.akabazan.repository.entity.Dispute.DisputeStatus.valueOf(status);
-        }
-        List<DisputeResult> disputes = disputeService.getDisputes(disputeStatus, onlyMine);
-        return ResponseFactory.ok(disputes);
-    }
-
-    @GetMapping("/disputes/{disputeId}")
-    public ResponseEntity<BaseResponse<DisputeResult>> getDisputeById(@PathVariable UUID disputeId) {
-        DisputeResult result = disputeService.getDisputeById(disputeId);
-        return ResponseFactory.ok(result);
-    }
-
-    @PostMapping("/disputes/{disputeId}/resolve")
-    public ResponseEntity<BaseResponse<DisputeResult>> resolveDispute(
-            @PathVariable UUID disputeId,
-            @RequestParam("outcome") String outcome,
-            @RequestParam(value = "note", required = false) String note) {
-        DisputeResult result = disputeService.resolveDispute(disputeId, outcome, note);
-        return ResponseFactory.ok(result);
-    }
-
-    @PostMapping("/disputes/{disputeId}/reject")
-    public ResponseEntity<BaseResponse<DisputeResult>> rejectDispute(
-            @PathVariable UUID disputeId,
-            @RequestParam(value = "note", required = false) String note) {
-        DisputeResult result = disputeService.rejectDispute(disputeId, note);
-        return ResponseFactory.ok(result);
-    }
-
-    @PostMapping("/disputes/{disputeId}/assign")
-    public ResponseEntity<BaseResponse<DisputeResult>> assignDispute(
-            @PathVariable UUID disputeId,
-            @RequestParam(value = "adminId", required = false) UUID adminId) {
-        DisputeResult result;
-        if (adminId == null) {
-            // Lấy admin hiện tại từ session (username) → user_admin.id
-            // Fix: Principal is UUID (from UsernameOnlyAuthenticationProvider)
-            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            UUID currentAdminId;
-            if (principal instanceof UUID) {
-                currentAdminId = (UUID) principal;
-            } else {
-                try {
-                    currentAdminId = UUID.fromString(principal.toString());
-                } catch (IllegalArgumentException e) {
-                    // Fallback to username lookup if principal is a username string (unlikely in
-                    // this config but safe)
-                    currentAdminId = userAdminRepository.findByUsername(principal.toString())
-                            .map(u -> u.getId())
-                            .orElseThrow(() -> new com.akabazan.common.exception.ApplicationException(
-                                    com.akabazan.common.constant.ErrorCode.USER_NOT_FOUND));
-                }
-            }
-            result = disputeService.assignToAdmin(disputeId, currentAdminId);
-        } else {
-            result = disputeService.assignToAdmin(disputeId, adminId);
-        }
-        return ResponseFactory.ok(result);
     }
 }

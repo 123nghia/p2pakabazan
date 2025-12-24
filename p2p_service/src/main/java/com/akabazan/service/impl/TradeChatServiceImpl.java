@@ -135,6 +135,14 @@ public class TradeChatServiceImpl implements TradeChatService {
         return results;
     }
 
+    @Override
+    @Transactional
+    public void markRead(UUID tradeId) {
+        Trade trade = tradeRepository.findById(tradeId)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
+        upsertReadMark(trade, getCurrentUserId());
+    }
+
     private void upsertReadMark(Trade trade, UUID userId) {
         TradeChatRead record = tradeChatReadRepository.findExisting(trade.getId(), userId)
                 .orElseGet(() -> {
@@ -166,6 +174,14 @@ public class TradeChatServiceImpl implements TradeChatService {
                         chat -> TradeChatMapper.toResult(chat),
                         (existing, ignored) -> existing));
 
+        // Fetch read status for all trades
+        Map<UUID, LocalDateTime> lastReadMap = tradeChatReadRepository.findByUserIdAndTradeIdIn(userId, tradeIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        r -> r.getTrade().getId(),
+                        TradeChatRead::getLastReadAt,
+                        (exist, replace) -> exist));
+
         List<TradeChatThreadResult> threads = trades.stream()
                 .map(trade -> {
                     TradeChatThreadResult thread = new TradeChatThreadResult();
@@ -175,10 +191,20 @@ public class TradeChatServiceImpl implements TradeChatService {
                     tradeResult.setCounterparty(counterpartyName);
                     thread.setCounterpartyName(counterpartyName);
                     RecipientRole viewerRole = determineUserRoleForTrade(trade, userId);
+
                     TradeChatResult lastVisibleMessage = resolveLastVisibleMessage(
                             trade.getId(),
                             viewerRole,
                             lastMessages.get(trade.getId()));
+
+                    if (lastVisibleMessage != null) {
+                        LocalDateTime lastReadAt = lastReadMap.getOrDefault(trade.getId(), LocalDateTime.MIN);
+                        boolean read = userId.equals(lastVisibleMessage.getSenderId()) ||
+                                (lastVisibleMessage.getTimestamp() != null
+                                        && !lastVisibleMessage.getTimestamp().isAfter(lastReadAt));
+                        lastVisibleMessage.setRead(read);
+                    }
+
                     thread.setLastMessage(lastVisibleMessage);
                     return thread;
                 })

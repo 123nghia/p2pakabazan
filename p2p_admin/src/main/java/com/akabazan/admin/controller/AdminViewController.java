@@ -11,15 +11,18 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/admin-ui")
 public class AdminViewController {
 
     private final UserRepository userRepository;
-    private final OrderRepository orderRepository;
     private final TradeRepository tradeRepository;
     private final DisputeService disputeService;
+    private final OrderRepository orderRepository;
+    private final com.akabazan.repository.CurrencyRepository currencyRepository;
+    private final com.akabazan.repository.PaymentMethodRepository paymentMethodRepository;
 
     private final com.akabazan.admin.service.CurrentAdminService currentAdminService;
 
@@ -27,12 +30,66 @@ public class AdminViewController {
             OrderRepository orderRepository,
             TradeRepository tradeRepository,
             DisputeService disputeService,
+            com.akabazan.repository.CurrencyRepository currencyRepository,
+            com.akabazan.repository.PaymentMethodRepository paymentMethodRepository,
             com.akabazan.admin.service.CurrentAdminService currentAdminService) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.tradeRepository = tradeRepository;
         this.disputeService = disputeService;
+        this.currencyRepository = currencyRepository;
+        this.paymentMethodRepository = paymentMethodRepository;
         this.currentAdminService = currentAdminService;
+    }
+
+    @GetMapping("/currencies")
+    public String currencies(Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        model.addAttribute("currencies", currencyRepository.findAll());
+        return "admin/currencies";
+    }
+
+    @GetMapping("/currencies/new")
+    public String createCurrency(Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        model.addAttribute("currency", new com.akabazan.repository.entity.Currency());
+        model.addAttribute("types", com.akabazan.repository.constant.CurrencyType.values());
+        return "admin/currency-form";
+    }
+
+    @GetMapping("/currencies/{id}")
+    public String editCurrency(@PathVariable UUID id, Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        var currency = currencyRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid currency Id:" + id));
+        model.addAttribute("currency", currency);
+        model.addAttribute("types", com.akabazan.repository.constant.CurrencyType.values());
+        return "admin/currency-form";
+    }
+
+    @GetMapping("/payment-methods")
+    public String paymentMethods(Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        model.addAttribute("paymentMethods", paymentMethodRepository.findAll());
+        return "admin/payment-methods";
+    }
+
+    @GetMapping("/payment-methods/new")
+    public String createPaymentMethod(Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        model.addAttribute("paymentMethod", new com.akabazan.repository.entity.PaymentMethod());
+        model.addAttribute("types", com.akabazan.repository.constant.PaymentMethodType.values());
+        return "admin/payment-method-form";
+    }
+
+    @GetMapping("/payment-methods/{id}")
+    public String editPaymentMethod(@PathVariable UUID id, Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        var paymentMethod = paymentMethodRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid payment method Id:" + id));
+        model.addAttribute("paymentMethod", paymentMethod);
+        model.addAttribute("types", com.akabazan.repository.constant.PaymentMethodType.values());
+        return "admin/payment-method-form";
     }
 
     @GetMapping
@@ -53,32 +110,58 @@ public class AdminViewController {
     }
 
     @GetMapping("/orders")
-    public String orders(Model model) {
+    public String orders(
+            @RequestParam(value = "status", required = false) String status,
+            Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("orders", orderRepository.findAll());
+        var orders = orderRepository.findAll().stream()
+                .filter(o -> status == null
+                        || (o.getStatus() != null && o.getStatus().equalsIgnoreCase(status)))
+                .toList();
+        model.addAttribute("orders", orders);
+        model.addAttribute("currentStatus", status);
         return "admin/orders";
     }
 
     @GetMapping("/users/{userId}/orders")
-    public String ordersOfUser(@PathVariable UUID userId, Model model) {
+    public String ordersOfUser(
+            @PathVariable UUID userId,
+            @RequestParam(value = "status", required = false) String status,
+            Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("orders", orderRepository.findOrdersByUserAndOptionalFilters(userId, null, null));
+        model.addAttribute("orders", orderRepository.findOrdersByUserAndOptionalFilters(userId, status, null));
         model.addAttribute("selectedUserId", userId);
+        model.addAttribute("currentStatus", status);
         return "admin/orders";
     }
 
     @GetMapping("/trades")
-    public String trades(Model model) {
+    public String trades(
+            @RequestParam(value = "status", required = false) String status,
+            Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("trades", tradeRepository.findAll());
+        var trades = tradeRepository.findAll().stream()
+                .filter(t -> status == null
+                        || (t.getStatus() != null && t.getStatus().name().equalsIgnoreCase(status)))
+                .toList();
+        model.addAttribute("trades", trades);
+        model.addAttribute("currentStatus", status);
         return "admin/trades";
     }
 
     @GetMapping("/users/{userId}/trades")
-    public String tradesOfUser(@PathVariable UUID userId, Model model) {
+    public String tradesOfUser(
+            @PathVariable UUID userId,
+            @RequestParam(value = "status", required = false) String status,
+            Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("trades", tradeRepository.findByUser(userId));
+        var trades = tradeRepository.findByUser(userId).stream()
+                .filter(t -> status == null
+                        || (t.getStatus() != null && t.getStatus().name().equalsIgnoreCase(status)))
+                .toList();
+        model.addAttribute("trades", trades);
         model.addAttribute("selectedUserId", userId);
+        model.addAttribute("currentStatus", status);
         return "admin/trades";
     }
 

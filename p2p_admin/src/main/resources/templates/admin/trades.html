@@ -20,16 +20,56 @@
     th {
       background: #f4f4f4
     }
+
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .filter-btn {
+      padding: 6px 16px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      background: #f8f9fa;
+      color: #333;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: #e9ecef;
+    }
+
+    .filter-btn.active {
+      background: #007bff;
+      color: white;
+      border-color: #007bff;
+    }
   </style>
 </head>
 
 <body>
-  <div th:replace="admin/layout :: layout(~{::section})">
+  <div th:replace="~{admin/layout :: layout(~{::section})}">
     <section>
       <header>
         <div class="title">Trades</div>
-        <div th:if="${selectedUserId != null}" class="actions">
-          <a class="btn" th:href="@{'/admin-ui/users/' + ${selectedUserId} + '/orders'}">View orders of this user</a>
+        <div class="actions">
+          <div class="filter-group">
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId})} : @{/admin-ui/trades}"
+              class="filter-btn" th:classappend="${currentStatus == null ? 'active' : ''}">ALL</a>
+            <!-- <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='PENDING')} : @{/admin-ui/trades(status='PENDING')}"
+              class="filter-btn" th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">PENDING</a>
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='PAID')} : @{/admin-ui/trades(status='PAID')}"
+              class="filter-btn" th:classappend="${currentStatus == 'PAID' ? 'active' : ''}">PAID</a> -->
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='COMPLETED')} : @{/admin-ui/trades(status='COMPLETED')}"
+              class="filter-btn" th:classappend="${currentStatus == 'COMPLETED' ? 'active' : ''}">COMPLETED</a>
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='CANCELLED')} : @{/admin-ui/trades(status='CANCELLED')}"
+              class="filter-btn" th:classappend="${currentStatus == 'CANCELLED' ? 'active' : ''}">CANCELLED</a>
+          </div>
+          <a th:if="${selectedUserId != null}" class="btn"
+            th:href="@{'/admin-ui/users/' + ${selectedUserId} + '/orders'}">View orders of this user</a>
         </div>
       </header>
       <table>

@@ -63,7 +63,7 @@ public class TradeChatController extends BaseController {
 
     @PutMapping("/{tradeId}/chat/read")
     public ResponseEntity<Void> markChatRead(@PathVariable UUID tradeId) {
-        dashboardService.markTradeChatRead(tradeId);
+        tradeChatService.markRead(tradeId);
         return ResponseEntity.ok().build();
     }
 }

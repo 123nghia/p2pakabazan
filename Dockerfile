@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
+# syntax=docker/dockerfile:1.4
+
 ARG MAVEN_VERSION=3.9.6
 ARG JDK_VERSION=17
 

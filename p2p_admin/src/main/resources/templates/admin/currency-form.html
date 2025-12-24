@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${currency.id == null ? 'Add Currency' : 'Edit Currency'}">Currency Form</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        .form-container {
+            max-width: 600px;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-submit {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 10px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{admin/layout :: layout(~{::section})}">
+        <section>
+            <header>
+                <div class="title" th:text="${currency.id == null ? 'Thêm Currency mới' : 'Chỉnh sửa Currency'}">Form
+                </div>
+            </header>
+
+            <div class="form-container">
+                <form id="currencyForm">
+                    <input type="hidden" id="id" th:value="${currency.id}" />
+
+                    <div class="form-group">
+                        <label for="type">Loại (Type)</label>
+                        <select id="type" class="form-control" required>
+                            <option th:each="t : ${types}" th:value="${t}" th:text="${t}"
+                                th:selected="${t == currency.type}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="code">Mã (Code)</label>
+                        <input type="text" id="code" class="form-control" th:value="${currency.code}" required
+                            placeholder="VD: USDT, VND..." />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Tên (Name)</label>
+                        <input type="text" id="name" class="form-control" th:value="${currency.name}" required
+                            placeholder="VD: Tether USD, Vietnam Dong..." />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="network">Mạng (Network) - Chỉ dành cho Token</label>
+                        <input type="text" id="network" class="form-control" th:value="${currency.network}"
+                            placeholder="VD: TRC20, ERC20..." />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="iconUrl">Icon URL</label>
+                        <input type="text" id="iconUrl" class="form-control" th:value="${currency.iconUrl}"
+                            placeholder="URL hình ảnh" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="decimalPlaces">Số thập phân (Decimal Places)</label>
+                        <input type="number" id="decimalPlaces" class="form-control"
+                            th:value="${currency.decimalPlaces}" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="displayOrder">Thứ tự hiển thị (Display Order)</label>
+                        <input type="number" id="displayOrder" class="form-control" th:value="${currency.displayOrder}"
+                            required />
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="active" th:checked="${currency.active}" />
+                        <label for="active">Kích hoạt (Active)</label>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button type="submit" class="btn-submit"
+                            th:text="${currency.id == null ? 'Thêm' : 'Thay đổi'}">Lưu</button>
+                        <a th:href="@{/admin-ui/currencies}" class="btn-cancel">Hủy</a>
+                    </div>
+                </form>
+            </div>
+
+            <script>
+                document.getElementById('currencyForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const data = {
+                        id: document.getElementById('id').value || null,
+                        type: document.getElementById('type').value,
+                        code: document.getElementById('code').value,
+                        name: document.getElementById('name').value,
+                        network: document.getElementById('network').value || null,
+                        iconUrl: document.getElementById('iconUrl').value || null,
+                        decimalPlaces: parseInt(document.getElementById('decimalPlaces').value),
+                        displayOrder: parseInt(document.getElementById('displayOrder').value),
+                        active: document.getElementById('active').checked
+                    };
+
+                    try {
+                        const response = await fetch('/admin/currencies', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (response.ok) {
+                            window.location.href = '/admin-ui/currencies';
+                        } else {
+                            const error = await response.json();
+                            alert('Lỗi: ' + (error.message || 'Không thể lưu currency'));
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Đã xảy ra lỗi khi gửi dữ liệu');
+                    }
+                });
+            </script>
+        </section>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Currencies</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px
+        }
+
+        th {
+            background: #f4f4f4
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{admin/layout :: layout(~{::section})}">
+        <section>
+            <header>
+                <div class="title">Currencies</div>
+                <div class="actions">
+                    <a th:href="@{/admin-ui/currencies/new}" class="btn primary">Thêm</a>
+                </div>
+            </header>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Active</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="c: ${currencies}">
+                        <td th:text="${c.id}">1</td>
+                        <td th:text="${c.type}">TOKEN</td>
+                        <td>
+                            <strong th:text="${c.code}">USDT</strong>
+                        </td>
+                        <td th:text="${c.name}">Tether USD</td>
+                        <td>
+                            <span th:if="${c.active}" style="color: #10b981;">● Active</span>
+                            <span th:unless="${c.active}" style="color: #ef4444;">● Inactive</span>
+                        </td>
+                        <td th:text="${c.createdAt}">2025-01-01</td>
+                        <td>
+                            <a th:href="@{'/admin-ui/currencies/' + ${c.id}}" class="btn primary">Edit</a>
+                            <a href="#" class="btn" style="color: #ef4444;"
+                                onclick="alert('Chức năng xóa chưa được triển khai')">Delete</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+
+</html>
