@@ -24,10 +24,10 @@ public class AdminViewController {
     private final com.akabazan.admin.service.CurrentAdminService currentAdminService;
 
     public AdminViewController(UserRepository userRepository,
-                               OrderRepository orderRepository,
-                               TradeRepository tradeRepository,
-                               DisputeService disputeService,
-                               com.akabazan.admin.service.CurrentAdminService currentAdminService) {
+            OrderRepository orderRepository,
+            TradeRepository tradeRepository,
+            DisputeService disputeService,
+            com.akabazan.admin.service.CurrentAdminService currentAdminService) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.tradeRepository = tradeRepository;
@@ -89,6 +89,12 @@ public class AdminViewController {
         model.addAttribute("disputes", disputes);
         return "admin/disputes";
     }
+
+    @GetMapping("/disputes/{disputeId}")
+    public String disputeDetail(@PathVariable UUID disputeId, Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        DisputeResult dispute = disputeService.getDisputeById(disputeId);
+        model.addAttribute("dispute", dispute);
+        return "admin/dispute-detail";
+    }
 }
-
-

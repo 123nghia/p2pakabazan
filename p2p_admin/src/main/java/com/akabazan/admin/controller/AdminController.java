@@ -33,11 +33,11 @@ public class AdminController {
     private final UserAdminRepository userAdminRepository;
 
     public AdminController(UserRepository userRepository,
-                           TradeRepository tradeRepository,
-                           OrderRepository orderRepository,
-                           TradeService tradeService,
-                           DisputeService disputeService,
-                           UserAdminRepository userAdminRepository) {
+            TradeRepository tradeRepository,
+            OrderRepository orderRepository,
+            TradeService tradeService,
+            DisputeService disputeService,
+            UserAdminRepository userAdminRepository) {
         this.userRepository = userRepository;
         this.tradeRepository = tradeRepository;
         this.orderRepository = orderRepository;
@@ -106,6 +106,12 @@ public class AdminController {
         return ResponseFactory.ok(disputes);
     }
 
+    @GetMapping("/disputes/{disputeId}")
+    public ResponseEntity<BaseResponse<DisputeResult>> getDisputeById(@PathVariable UUID disputeId) {
+        DisputeResult result = disputeService.getDisputeById(disputeId);
+        return ResponseFactory.ok(result);
+    }
+
     @PostMapping("/disputes/{disputeId}/resolve")
     public ResponseEntity<BaseResponse<DisputeResult>> resolveDispute(
             @PathVariable UUID disputeId,
@@ -130,10 +136,23 @@ public class AdminController {
         DisputeResult result;
         if (adminId == null) {
             // Lấy admin hiện tại từ session (username) → user_admin.id
-            String username = SecurityContextHolder.getContext().getAuthentication().getName();
-            UUID currentAdminId = userAdminRepository.findByUsername(username)
-                    .map(user -> user.getId())
-                    .orElseThrow(() -> new com.akabazan.common.exception.ApplicationException(com.akabazan.common.constant.ErrorCode.USER_NOT_FOUND));
+            // Fix: Principal is UUID (from UsernameOnlyAuthenticationProvider)
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            UUID currentAdminId;
+            if (principal instanceof UUID) {
+                currentAdminId = (UUID) principal;
+            } else {
+                try {
+                    currentAdminId = UUID.fromString(principal.toString());
+                } catch (IllegalArgumentException e) {
+                    // Fallback to username lookup if principal is a username string (unlikely in
+                    // this config but safe)
+                    currentAdminId = userAdminRepository.findByUsername(principal.toString())
+                            .map(u -> u.getId())
+                            .orElseThrow(() -> new com.akabazan.common.exception.ApplicationException(
+                                    com.akabazan.common.constant.ErrorCode.USER_NOT_FOUND));
+                }
+            }
             result = disputeService.assignToAdmin(disputeId, currentAdminId);
         } else {
             result = disputeService.assignToAdmin(disputeId, adminId);
@@ -141,5 +160,3 @@ public class AdminController {
         return ResponseFactory.ok(result);
     }
 }
-
-

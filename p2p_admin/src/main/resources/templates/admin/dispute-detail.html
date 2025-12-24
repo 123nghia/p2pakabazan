@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Dispute Detail</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        .detail-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .info-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-card h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            width: 180px;
+            color: #666;
+        }
+
+        .info-value {
+            flex: 1;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status-OPEN {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .status-IN_REVIEW {
+            background: #17a2b8;
+            color: #fff;
+        }
+
+        .status-RESOLVED {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .status-REJECTED {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .evidence-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .evidence-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .evidence-item img {
+            max-width: 200px;
+            max-height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .actions-card {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .actions-card h3 {
+            margin-top: 0;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: #fff;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .reason-text {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
+    <script>
+        async function resolveDispute(id, outcome) {
+            const note = prompt('Resolution note (optional):', '');
+            const params = new URLSearchParams({ outcome, note: note || '' });
+            const res = await fetch(`/admin/disputes/${id}/resolve`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+            if (res.ok) location.reload(); else alert('Failed');
+        }
+
+        async function rejectDispute(id) {
+            const note = prompt('Reject note (optional):', '');
+            const params = new URLSearchParams({ note: note || '' });
+            const res = await fetch(`/admin/disputes/${id}/reject`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+            if (res.ok) location.reload(); else alert('Failed');
+        }
+
+        async function assignDispute(id) {
+            const adminId = prompt('Assign to adminId (để trống = current admin):', '');
+            const params = new URLSearchParams({});
+            if (adminId) params.append('adminId', adminId);
+
+            const res = await fetch(`/admin/disputes/${id}/assign`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: params
+            });
+            if (res.ok) location.reload(); else alert('Failed');
+        }
+    </script>
+</head>
+
+<body>
+    <div th:replace="admin/layout :: layout(~{::section})">
+        <section>
+            <a class="back-link" th:href="@{/admin-ui/disputes}">&larr; Back to Disputes</a>
+
+            <header>
+                <div class="title">Dispute Detail</div>
+            </header>
+
+            <div class="detail-container">
+                <!-- Dispute Info -->
+                <div class="info-card">
+                    <h3>Dispute Information</h3>
+                    <div class="info-row">
+                        <span class="info-label">ID:</span>
+                        <span class="info-value" th:text="${dispute.id}">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Trade ID:</span>
+                        <span class="info-value" th:text="${dispute.tradeId}">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value">
+                            <span class="status-badge" th:classappend="'status-' + ${dispute.status}"
+                                th:text="${dispute.status}">OPEN</span>
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Created At:</span>
+                        <span class="info-value" th:text="${dispute.createdAt}">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Assigned Admin:</span>
+                        <span class="info-value"
+                            th:text="${dispute.assignedAdminEmail != null ? dispute.assignedAdminEmail : 'Not assigned'}">-</span>
+                    </div>
+                    <div class="info-row" th:if="${dispute.resolvedAt != null}">
+                        <span class="info-label">Resolved At:</span>
+                        <span class="info-value" th:text="${dispute.resolvedAt}">-</span>
+                    </div>
+                    <div class="info-row" th:if="${dispute.resolutionOutcome != null}">
+                        <span class="info-label">Resolution Outcome:</span>
+                        <span class="info-value" th:text="${dispute.resolutionOutcome}">-</span>
+                    </div>
+                </div>
+
+                <!-- Reason -->
+                <div class="info-card">
+                    <h3>Reason</h3>
+                    <div class="reason-text" th:text="${dispute.reason}">No reason provided</div>
+                </div>
+
+                <!-- Resolution Note -->
+                <div class="info-card" th:if="${dispute.resolutionNote != null}">
+                    <h3>Resolution Note</h3>
+                    <div class="reason-text" th:text="${dispute.resolutionNote}">-</div>
+                </div>
+
+                <!-- Evidence Images -->
+                <div class="info-card">
+                    <h3>Evidence Images</h3>
+                    <div th:if="${dispute.evidenceImages == null or dispute.evidenceImages.isEmpty()}">
+                        <p>No evidence images uploaded.</p>
+                    </div>
+                    <div class="evidence-gallery"
+                        th:if="${dispute.evidenceImages != null and !dispute.evidenceImages.isEmpty()}">
+                        <div class="evidence-item" th:each="img : ${dispute.evidenceImages}">
+                            <a th:href="${img}" target="_blank">
+                                <img th:src="${img}" alt="Evidence" />
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="actions-card" th:if="${dispute.status != 'RESOLVED' and dispute.status != 'REJECTED'}">
+                    <h3>Actions</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" th:attr="data-id=${dispute.id}"
+                            onclick="assignDispute(this.getAttribute('data-id'))">
+                            Assign to Admin
+                        </button>
+                        <button class="btn btn-success" th:attr="data-id=${dispute.id}"
+                            onclick="resolveDispute(this.getAttribute('data-id'), 'BUYER_FAVORED')">
+                            Resolve: Buyer Favored
+                        </button>
+                        <button class="btn btn-warning" th:attr="data-id=${dispute.id}"
+                            onclick="resolveDispute(this.getAttribute('data-id'), 'SELLER_FAVORED')">
+                            Resolve: Seller Favored
+                        </button>
+                        <button class="btn btn-danger" th:attr="data-id=${dispute.id}"
+                            onclick="rejectDispute(this.getAttribute('data-id'))">
+                            Reject Dispute
+                        </button>
+                    </div>
+                </div>
+
+                <div class="info-card" th:if="${dispute.status == 'RESOLVED' or dispute.status == 'REJECTED'}">
+                    <h3>This dispute has been <span th:text="${dispute.status.toLowerCase()}">resolved</span>.</h3>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

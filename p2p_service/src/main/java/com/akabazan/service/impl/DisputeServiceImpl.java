@@ -271,6 +271,13 @@ public class DisputeServiceImpl implements DisputeService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.DISPUTE_NOT_FOUND));
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public DisputeResult getDisputeById(UUID disputeId) {
+        Dispute dispute = loadDispute(disputeId);
+        return DisputeMapper.toResult(dispute);
+    }
+
     private boolean isParticipant(Trade trade, User user) {
         return trade.getBuyer().getId().equals(user.getId()) || trade.getSeller().getId().equals(user.getId());
     }

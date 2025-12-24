@@ -21,4 +21,6 @@ public interface DisputeService {
     DisputeResult resolveDispute(UUID disputeId, String outcome, String resolutionNote);
 
     DisputeResult rejectDispute(UUID disputeId, String resolutionNote);
+
+    DisputeResult getDisputeById(UUID disputeId);
 }

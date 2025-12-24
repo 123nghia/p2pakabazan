@@ -64,7 +64,7 @@
                 </thead>
                 <tbody>
                     <tr th:each="d: ${disputes}">
-                        <td th:text="${d.id}">1</td>
+                        <td><a th:href="@{'/admin-ui/disputes/' + ${d.id}}" th:text="${d.id}">1</a></td>
                         <td th:text="${d.tradeId}">1001</td>
                         <td th:text="${d.status}">OPEN</td>
                         <td th:text="${d.reason}">Seller not confirm</td>
