@@ -5,7 +5,6 @@ import com.akabazan.repository.entity.DisputeReason;
 import com.akabazan.service.DisputeReasonService;
 import com.akabazan.service.dto.response.DisputeReasonResponse;
 import com.akabazan.service.mapper.DisputeReasonMapper;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -13,12 +12,18 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class DisputeReasonServiceImpl implements DisputeReasonService {
 
     private final DisputeReasonRepository disputeReasonRepository;
     private final DisputeReasonMapper disputeReasonMapper;
+
+    public DisputeReasonServiceImpl(DisputeReasonRepository disputeReasonRepository,
+                                    DisputeReasonMapper disputeReasonMapper) {
+        this.disputeReasonRepository = disputeReasonRepository;
+        this.disputeReasonMapper = disputeReasonMapper;
+    }
+
 
     @Override
     public List<DisputeReasonResponse> getDisputeReasons(String role) {

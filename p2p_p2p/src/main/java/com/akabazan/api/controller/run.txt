@@ -1,0 +1,5 @@
+mvn -pl p2p_p2p "-Dspring-boot.run.profiles=dev" "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" spring-boot:run
+
+
+
+mvn -pl partner_mock "-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5006" spring-boot:run
