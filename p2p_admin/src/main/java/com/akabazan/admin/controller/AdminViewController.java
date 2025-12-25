@@ -3,6 +3,7 @@ package com.akabazan.admin.controller;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.UserRepository;
+import com.akabazan.repository.DisputeReasonRepository;
 import com.akabazan.service.DisputeService;
 import com.akabazan.service.dto.DisputeResult;
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class AdminViewController {
     private final TradeRepository tradeRepository;
     private final DisputeService disputeService;
     private final OrderRepository orderRepository;
+    private final DisputeReasonRepository disputeReasonRepository;
     private final com.akabazan.repository.CurrencyRepository currencyRepository;
     private final com.akabazan.repository.PaymentMethodRepository paymentMethodRepository;
 
@@ -29,6 +31,7 @@ public class AdminViewController {
     public AdminViewController(UserRepository userRepository,
             OrderRepository orderRepository,
             TradeRepository tradeRepository,
+            DisputeReasonRepository disputeReasonRepository,
             DisputeService disputeService,
             com.akabazan.repository.CurrencyRepository currencyRepository,
             com.akabazan.repository.PaymentMethodRepository paymentMethodRepository,
@@ -39,6 +42,7 @@ public class AdminViewController {
         this.disputeService = disputeService;
         this.currencyRepository = currencyRepository;
         this.paymentMethodRepository = paymentMethodRepository;
+        this.disputeReasonRepository = disputeReasonRepository;
         this.currentAdminService = currentAdminService;
     }
 
@@ -179,5 +183,30 @@ public class AdminViewController {
         DisputeResult dispute = disputeService.getDisputeById(disputeId);
         model.addAttribute("dispute", dispute);
         return "admin/dispute-detail";
+    }
+
+    @GetMapping("/dispute-reasons")
+    public String disputeReasons(Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        model.addAttribute("disputeReasons", disputeReasonRepository.findAll());
+        return "admin/dispute-reasons";
+    }
+
+    @GetMapping("/dispute-reasons/new")
+    public String createDisputeReason(Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        model.addAttribute("disputeReason", new com.akabazan.repository.entity.DisputeReason());
+        model.addAttribute("priorities", com.akabazan.repository.constant.DisputePriority.values());
+        return "admin/dispute-reason-form";
+    }
+
+    @GetMapping("/dispute-reasons/{id}")
+    public String editDisputeReason(@PathVariable UUID id, Model model) {
+        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+        var disputeReason = disputeReasonRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid dispute reason Id:" + id));
+        model.addAttribute("disputeReason", disputeReason);
+        model.addAttribute("priorities", com.akabazan.repository.constant.DisputePriority.values());
+        return "admin/dispute-reason-form";
     }
 }

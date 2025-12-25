@@ -13,6 +13,8 @@ import com.akabazan.repository.constant.PaymentMethodType;
 import com.akabazan.service.MasterDataService;
 import com.akabazan.service.dto.CurrencyResult;
 import com.akabazan.service.dto.PaymentMethodResult;
+import com.akabazan.service.DisputeReasonService;
+import com.akabazan.service.dto.response.DisputeReasonResponse;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,9 +30,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class MasterDataController extends BaseController {
 
     private final MasterDataService masterDataService;
+    private final DisputeReasonService disputeReasonService;
 
-    public MasterDataController(MasterDataService masterDataService) {
+    public MasterDataController(MasterDataService masterDataService,
+            DisputeReasonService disputeReasonService) {
         this.masterDataService = masterDataService;
+        this.disputeReasonService = disputeReasonService;
+    }
+
+    @GetMapping("/dispute-reasons")
+    public ResponseEntity<BaseResponse<List<DisputeReasonResponse>>> getDisputeReasons(
+            @RequestParam(required = false) String role) {
+        return ResponseFactory.ok(disputeReasonService.getDisputeReasons(role));
     }
 
     @GetMapping("/currencies")

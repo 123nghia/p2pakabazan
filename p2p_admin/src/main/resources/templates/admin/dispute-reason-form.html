@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${disputeReason.id == null ? 'Add Dispute Reason' : 'Edit Dispute Reason'}">Form</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        .form-container {
+            max-width: 600px;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-submit {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #374151;
+            padding: 10px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{admin/layout :: layout(~{::section})}">
+        <section>
+            <header>
+                <div class="title"
+                    th:text="${disputeReason.id == null ? 'Thêm Lý do khiếu nại mới' : 'Chỉnh sửa Lý do khiếu nại'}">
+                    Form</div>
+            </header>
+
+            <div class="form-container">
+                <form id="disputeReasonForm">
+                    <input type="hidden" id="id" th:value="${disputeReason.id}" />
+
+                    <div class="form-group">
+                        <label for="role">Vai trò (Role)</label>
+                        <select id="role" class="form-control" required>
+                            <option value="BUYER" th:selected="${disputeReason.role == 'BUYER'}">Người Mua (Buyer)
+                            </option>
+                            <option value="SELLER" th:selected="${disputeReason.role == 'SELLER'}">Người Bán (Seller)
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Mô tả lý do (Description)</label>
+                        <textarea id="description" class="form-control" th:text="${disputeReason.description}" required
+                            rows="3"
+                            placeholder="VD: Đã thanh toán nhưng Người bán không giải phóng crypto..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priority">Mức độ ưu tiên (Priority)</label>
+                        <select id="priority" class="form-control" required>
+                            <option th:each="p : ${priorities}" th:value="${p}" th:text="${p}"
+                                th:selected="${p == disputeReason.priority}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="requiredEvidence">Bằng chứng cần thiết (Required Evidence)</label>
+                        <textarea id="requiredEvidence" class="form-control" th:text="${disputeReason.requiredEvidence}"
+                            rows="3" placeholder="VD: Biên lai chuyển khoản ngân hàng, ảnh chụp màn hình..."></textarea>
+                    </div>
+
+                    <div style="margin-top: 24px;">
+                        <button type="submit" class="btn-submit"
+                            th:text="${disputeReason.id == null ? 'Thêm' : 'Thay đổi'}">Lưu</button>
+                        <a th:href="@{/admin-ui/dispute-reasons}" class="btn-cancel">Hủy</a>
+                    </div>
+                </form>
+            </div>
+
+            <script>
+                document.getElementById('disputeReasonForm').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const data = {
+                        id: document.getElementById('id').value || null,
+                        role: document.getElementById('role').value,
+                        description: document.getElementById('description').value,
+                        priority: document.getElementById('priority').value,
+                        requiredEvidence: document.getElementById('requiredEvidence').value
+                    };
+
+                    try {
+                        const response = await fetch('/admin/dispute-reasons', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (response.ok) {
+                            window.location.href = '/admin-ui/dispute-reasons';
+                        } else {
+                            const error = await response.json();
+                            alert('Lỗi: ' + (error.message || 'Không thể lưu lý do khiếu nại'));
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Đã xảy ra lỗi khi gửi dữ liệu');
+                    }
+                });
+            </script>
+        </section>
+    </div>
+</body>
+
+</html>

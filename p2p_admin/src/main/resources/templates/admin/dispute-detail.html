@@ -413,14 +413,17 @@
                             Assign to Admin
                         </button>
                         <button class="btn btn-success" th:attr="data-id=${dispute.id}"
+                            th:if="${dispute.assignedAdminEmail != null}"
                             onclick="resolveDispute(this.getAttribute('data-id'), 'BUYER_FAVORED')">
                             Resolve: Buyer Favored
                         </button>
                         <button class="btn btn-warning" th:attr="data-id=${dispute.id}"
+                            th:if="${dispute.assignedAdminEmail != null}"
                             onclick="resolveDispute(this.getAttribute('data-id'), 'SELLER_FAVORED')">
                             Resolve: Seller Favored
                         </button>
                         <button class="btn btn-danger" th:attr="data-id=${dispute.id}"
+                            th:if="${dispute.assignedAdminEmail != null}"
                             onclick="rejectDispute(this.getAttribute('data-id'))">
                             Reject Dispute
                         </button>

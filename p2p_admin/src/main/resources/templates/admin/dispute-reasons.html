@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Dispute Reasons</title>
+    <link rel="stylesheet" th:href="@{/css/admin.css}" />
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px
+        }
+
+        th {
+            background: #f4f4f4
+        }
+
+        .priority-high {
+            color: #f59e0b;
+            font-weight: bold;
+        }
+
+        .priority-urgent {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .priority-medium {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{admin/layout :: layout(~{::section})}">
+        <section>
+            <header>
+                <div class="title">Dispute Reasons</div>
+                <div class="actions">
+                    <a th:href="@{/admin-ui/dispute-reasons/new}" class="btn primary">Thêm</a>
+                </div>
+            </header>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Role</th>
+                        <th>Description</th>
+                        <th>Priority</th>
+                        <th>Evidence</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="dr: ${disputeReasons}">
+                        <td th:text="${dr.id}">1</td>
+                        <td th:text="${dr.role}">BUYER</td>
+                        <td th:text="${dr.description}">Reason description</td>
+                        <td>
+                            <span th:class="${'priority-' + dr.priority.name().toLowerCase()}"
+                                th:text="${dr.priority}">HIGH</span>
+                        </td>
+                        <td th:text="${dr.requiredEvidence}">Required evidence</td>
+                        <td>
+                            <a th:href="@{'/admin-ui/dispute-reasons/' + ${dr.id}}" class="btn primary">Edit</a>
+                            <a href="#" class="btn" style="color: #ef4444;"
+                                onclick="alert('Chức năng xóa chưa được triển khai')">Delete</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+</body>
+
+</html>

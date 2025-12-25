@@ -24,17 +24,20 @@ public class AdminController {
     private final OrderRepository orderRepository;
     private final com.akabazan.repository.CurrencyRepository currencyRepository;
     private final com.akabazan.repository.PaymentMethodRepository paymentMethodRepository;
+    private final com.akabazan.repository.DisputeReasonRepository disputeReasonRepository;
 
     public AdminController(UserRepository userRepository,
             TradeRepository tradeRepository,
             OrderRepository orderRepository,
             com.akabazan.repository.CurrencyRepository currencyRepository,
-            com.akabazan.repository.PaymentMethodRepository paymentMethodRepository) {
+            com.akabazan.repository.PaymentMethodRepository paymentMethodRepository,
+            com.akabazan.repository.DisputeReasonRepository disputeReasonRepository) {
         this.userRepository = userRepository;
         this.tradeRepository = tradeRepository;
         this.orderRepository = orderRepository;
         this.currencyRepository = currencyRepository;
         this.paymentMethodRepository = paymentMethodRepository;
+        this.disputeReasonRepository = disputeReasonRepository;
     }
 
     @GetMapping("/currencies")
@@ -60,6 +63,39 @@ public class AdminController {
             return ResponseFactory.ok(currencyRepository.save(existing));
         }
         return ResponseFactory.ok(currencyRepository.save(currency));
+    }
+
+    @GetMapping("/dispute-reasons")
+    public ResponseEntity<BaseResponse<List<com.akabazan.repository.entity.DisputeReason>>> listDisputeReasons() {
+        return ResponseFactory.ok(disputeReasonRepository.findAll());
+    }
+
+    @PostMapping("/dispute-reasons")
+    public ResponseEntity<BaseResponse<com.akabazan.repository.entity.DisputeReason>> saveDisputeReason(
+            @RequestBody com.akabazan.repository.entity.DisputeReason disputeReason) {
+        if (disputeReason.getId() != null) {
+            com.akabazan.repository.entity.DisputeReason existing = disputeReasonRepository
+                    .findById(disputeReason.getId())
+                    .orElseThrow(
+                            () -> new IllegalArgumentException("Invalid dispute reason Id:" + disputeReason.getId()));
+            existing.setRole(disputeReason.getRole());
+            existing.setDescription(disputeReason.getDescription());
+            existing.setPriority(disputeReason.getPriority());
+            existing.setRequiredEvidence(disputeReason.getRequiredEvidence());
+            // existing.setUpdatedAt(java.time.LocalDateTime.now()); // AuditEntity handles
+            // this?
+            // If AuditEntity is used, we might rely on JPA Auditing or manual set if
+            // needed.
+            // Following Currency pattern which manually sets UpdatedAt (if it has it).
+            // DisputeReason extends AuditEntity which has updatedBy/createdBy but maybe not
+            // updatedAt in the entity definition viewed earlier?
+            // Actually DisputeReason inherited AuditEntity, let me check AuditEntity again
+            // or just save like Currency.
+            // Currency in AdminController sets updatedAt manually.
+            // AuditEntity usually handles this but let's stick to safe save.
+            return ResponseFactory.ok(disputeReasonRepository.save(existing));
+        }
+        return ResponseFactory.ok(disputeReasonRepository.save(disputeReason));
     }
 
     @GetMapping("/payment-methods")
