@@ -28,7 +28,11 @@
             </aside>
             <div class="content">
                 <div class="topbar">
-                    <div class="search"><input type="text" placeholder="Search..." /></div>
+                    <div class="search">
+                        <form action="" method="get">
+                            <input type="text" name="search" placeholder="Search..." th:value="${search}" />
+                        </form>
+                    </div>
                     <div class="actions">
                         <span th:if="${currentAdmin}" class="admin-info">
                             Welcome, <strong th:text="${currentAdmin.username}">admin</strong>

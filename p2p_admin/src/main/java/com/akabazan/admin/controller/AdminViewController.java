@@ -107,23 +107,34 @@ public class AdminViewController {
     }
 
     @GetMapping("/users")
-    public String users(Model model) {
+    public String users(@RequestParam(required = false) String search, Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("users", userRepository.findAll());
+        var users = userRepository.findAll().stream()
+                .filter(u -> search == null || search.isBlank()
+                        || (u.getEmail() != null && u.getEmail().toLowerCase().contains(search.toLowerCase())))
+                .toList();
+        model.addAttribute("users", users);
+        model.addAttribute("search", search);
         return "admin/users";
     }
 
     @GetMapping("/orders")
     public String orders(
             @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "search", required = false) String search,
             Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
         var orders = orderRepository.findAll().stream()
                 .filter(o -> status == null
                         || (o.getStatus() != null && o.getStatus().equalsIgnoreCase(status)))
+                .filter(o -> search == null || search.isBlank()
+                        || (o.getUser() != null && o.getUser().getEmail() != null
+                                && o.getUser().getEmail().toLowerCase().contains(search.toLowerCase()))
+                        || (o.getId() != null && o.getId().toString().contains(search)))
                 .toList();
         model.addAttribute("orders", orders);
         model.addAttribute("currentStatus", status);
+        model.addAttribute("search", search);
         return "admin/orders";
     }
 
@@ -131,25 +142,40 @@ public class AdminViewController {
     public String ordersOfUser(
             @PathVariable UUID userId,
             @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "search", required = false) String search,
             Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("orders", orderRepository.findOrdersByUserAndOptionalFilters(userId, status, null));
+        var orders = orderRepository.findOrdersByUserAndOptionalFilters(userId, status, null).stream()
+                .filter(o -> search == null || search.isBlank()
+                        || (o.getId() != null && o.getId().toString().contains(search)))
+                .toList();
+        model.addAttribute("orders", orders);
         model.addAttribute("selectedUserId", userId);
         model.addAttribute("currentStatus", status);
+        model.addAttribute("search", search);
         return "admin/orders";
     }
 
     @GetMapping("/trades")
     public String trades(
             @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "search", required = false) String search,
             Model model) {
         currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
         var trades = tradeRepository.findAll().stream()
                 .filter(t -> status == null
                         || (t.getStatus() != null && t.getStatus().name().equalsIgnoreCase(status)))
+                .filter(t -> search == null || search.isBlank()
+                        || (t.getBuyer() != null && t.getBuyer().getEmail() != null
+                                && t.getBuyer().getEmail().toLowerCase().contains(search.toLowerCase()))
+                        || (t.getSeller() != null && t.getSeller().getEmail() != null
+                                && t.getSeller().getEmail().toLowerCase().contains(search.toLowerCase()))
+                        || (t.getTradeCode() != null && t.getTradeCode().toLowerCase().contains(search.toLowerCase()))
+                        || (t.getId() != null && t.getId().toString().contains(search)))
                 .toList();
         model.addAttribute("trades", trades);
         model.addAttribute("currentStatus", status);
+        model.addAttribute("search", search);
         return "admin/trades";
     }
 

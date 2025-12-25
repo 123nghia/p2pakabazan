@@ -63,6 +63,10 @@
               class="filter-btn" th:classappend="${currentStatus == 'OPEN' ? 'active' : ''}">OPEN</a>
             <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/orders(userId=${selectedUserId}, status='CANCELLED')} : @{/admin-ui/orders(status='CANCELLED')}"
               class="filter-btn" th:classappend="${currentStatus == 'CANCELLED' ? 'active' : ''}">CANCELLED</a>
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/orders(userId=${selectedUserId}, status='CLOSED')} : @{/admin-ui/orders(status='CLOSED')}"
+              class="filter-btn" th:classappend="${currentStatus == 'CLOSED' ? 'active' : ''}">CLOSED</a>
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/orders(userId=${selectedUserId}, status='EXPIRED')} : @{/admin-ui/orders(status='EXPIRED')}"
+              class="filter-btn" th:classappend="${currentStatus == 'EXPIRED' ? 'active' : ''}">EXPIRED</a>
           </div>
           <a th:if="${selectedUserId != null}" class="btn"
             th:href="@{'/admin-ui/users/' + ${selectedUserId} + '/trades'}">View trades of this user</a>

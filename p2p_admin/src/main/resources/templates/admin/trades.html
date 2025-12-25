@@ -59,10 +59,14 @@
           <div class="filter-group">
             <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId})} : @{/admin-ui/trades}"
               class="filter-btn" th:classappend="${currentStatus == null ? 'active' : ''}">ALL</a>
-            <!-- <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='PENDING')} : @{/admin-ui/trades(status='PENDING')}"
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='PENDING')} : @{/admin-ui/trades(status='PENDING')}"
               class="filter-btn" th:classappend="${currentStatus == 'PENDING' ? 'active' : ''}">PENDING</a>
             <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='PAID')} : @{/admin-ui/trades(status='PAID')}"
-              class="filter-btn" th:classappend="${currentStatus == 'PAID' ? 'active' : ''}">PAID</a> -->
+              class="filter-btn" th:classappend="${currentStatus == 'PAID' ? 'active' : ''}">PAID</a>
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='CONFIRMED')} : @{/admin-ui/trades(status='CONFIRMED')}"
+              class="filter-btn" th:classappend="${currentStatus == 'CONFIRMED' ? 'active' : ''}">CONFIRMED</a>
+            <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='DISPUTED')} : @{/admin-ui/trades(status='DISPUTED')}"
+              class="filter-btn" th:classappend="${currentStatus == 'DISPUTED' ? 'active' : ''}">DISPUTED</a>
             <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='COMPLETED')} : @{/admin-ui/trades(status='COMPLETED')}"
               class="filter-btn" th:classappend="${currentStatus == 'COMPLETED' ? 'active' : ''}">COMPLETED</a>
             <a th:href="${selectedUserId != null} ? @{/admin-ui/users/{userId}/trades(userId=${selectedUserId}, status='CANCELLED')} : @{/admin-ui/trades(status='CANCELLED')}"
