@@ -1,4 +1,5 @@
 package com.akabazan.api.controller;
+
 import com.akabazan.api.reponse.AuthResponse;
 import com.akabazan.api.request.LoginRequest;
 import com.akabazan.api.request.RegisterRequest;
@@ -22,15 +23,16 @@ public class AuthController extends BaseController {
     }
 
     @PostMapping("/login")
-    public   ResponseEntity<BaseResponse<AuthResponse>>  login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<BaseResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResult result = authService.login(request.getEmail(), request.getPassword());
         return ResponseFactory.ok(toResponse(result));
     }
 
     @PostMapping("/register")
     public ResponseEntity<BaseResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        AuthResult result = authService.register(request.getEmail(), request.getPassword());
-        return  ResponseFactory.ok(toResponse(result));
+        AuthResult result = authService.register(request.getEmail(), request.getPassword(), request.getUsername(),
+                request.getPhone());
+        return ResponseFactory.ok(toResponse(result));
     }
 
     private AuthResponse toResponse(AuthResult result) {

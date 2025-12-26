@@ -1,6 +1,7 @@
 package com.akabazan.service.order.usecase;
 
 import com.akabazan.common.constant.ErrorCode;
+import com.akabazan.common.constant.NotificationConstants;
 import com.akabazan.common.exception.ApplicationException;
 import com.akabazan.notification.enums.NotificationType;
 import com.akabazan.notification.service.NotificationService;
@@ -27,7 +28,7 @@ public class CreateOrderService implements CreateOrderUseCase {
     private static final double DEFAULT_MIN_LIMIT = 10.0;
     private static final double DEFAULT_MAX_LIMIT = 100.0;
     private static final long ORDER_EXPIRATION_MINUTES = 15L;
-        private final NotificationService notificationService;
+    private final NotificationService notificationService;
 
     private final CurrentUserService currentUserService;
     private final FiatAccountRepository fiatAccountRepository;
@@ -35,15 +36,15 @@ public class CreateOrderService implements CreateOrderUseCase {
     private final SellerFundsManager sellerFundsManager;
 
     public CreateOrderService(CurrentUserService currentUserService,
-                              FiatAccountRepository fiatAccountRepository,
-                              OrderRepository orderRepository,
-                              SellerFundsManager sellerFundsManager,
-                              NotificationService notificationService) {
+            FiatAccountRepository fiatAccountRepository,
+            OrderRepository orderRepository,
+            SellerFundsManager sellerFundsManager,
+            NotificationService notificationService) {
         this.currentUserService = currentUserService;
         this.fiatAccountRepository = fiatAccountRepository;
         this.orderRepository = orderRepository;
         this.sellerFundsManager = sellerFundsManager;
-        this.notificationService  = notificationService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -68,7 +69,9 @@ public class CreateOrderService implements CreateOrderUseCase {
             sellerFundsManager.lockForSellOrder(savedOrder);
             orderRepository.save(savedOrder);
         }
-        notificationService.notifyUser(user.getId(), NotificationType.ORDER_CREATED, orderType);
+        String typeDisplay = "BUY".equals(orderType) ? NotificationConstants.BUY : NotificationConstants.SELL;
+        notificationService.notifyUser(user.getId(), NotificationType.ORDER_CREATED,
+                String.format(NotificationConstants.ORDER_CREATED_SUCCESS, typeDisplay));
         return enrichWithFiatAccount(OrderMapper.toResult(savedOrder), fiatAccount);
     }
 

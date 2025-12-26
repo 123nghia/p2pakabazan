@@ -20,7 +20,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @AutoConfiguration
 @EnableConfigurationProperties(P2PDataProperties.class)

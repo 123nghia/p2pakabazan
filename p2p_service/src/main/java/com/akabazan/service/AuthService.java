@@ -21,5 +21,5 @@ public interface AuthService {
     /**
      * Đăng ký user mới và trả về JWT token.
      */
-    AuthResult register(String email, String password);
+    AuthResult register(String email, String password, String username, String phone);
 }
