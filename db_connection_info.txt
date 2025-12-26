@@ -1,0 +1,13 @@
+# Database Connection Information
+
+## PostgreSQL (Backend Connection)
+- JDBC URL: jdbc:postgresql://localhost:5432/p2p_trading_dev
+- Username: postgres
+- Password: postgres123
+
+## pgAdmin (Web Database Admin UI)
+- URL: http://localhost:5050
+- Email: admin@p2p.com
+- Password: admin123
+
+> Nếu chạy trên server, thay 'localhost' bằng IP hoặc domain của server.

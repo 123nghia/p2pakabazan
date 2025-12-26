@@ -1,7 +1,5 @@
 # syntax=docker/dockerfile:1.4
 
-# syntax=docker/dockerfile:1.4
-
 ARG MAVEN_VERSION=3.9.6
 ARG JDK_VERSION=17
 
@@ -38,16 +36,11 @@ RUN apt-get update && \
     apt-get install -y netcat-openbsd && \
     rm -rf /var/lib/apt/lists/*
 
-ARG JAR_FILE=/workspace/p2p_p2p/target/p2p_p2p-1.0-SNAPSHOT.jar
-COPY --from=builder ${JAR_FILE} app.jar
+# Copy the built jar from the builder image
+COPY --from=builder /workspace/p2p_p2p/target/*.jar app.jar
 
-# Copy wait-for-it script
-COPY docker/wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
-
+# Expose port (default 9000, can be overridden by env)
 EXPOSE 9000
 
-ENV SPRING_PROFILES_ACTIVE=dev
-ENV SERVER_PORT=9000
-
-ENTRYPOINT ["/wait-for-it.sh", "db:5432", "--", "java", "-jar", "/app/app.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
