@@ -1,8 +1,8 @@
 package com.akabazan.service.impl;
 
 import com.akabazan.common.constant.ErrorCode;
+import com.akabazan.common.constant.NotificationConstants;
 import com.akabazan.common.exception.ApplicationException;
-import com.akabazan.notification.service.NotificationService;
 import com.akabazan.repository.FiatAccountRepository;
 import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
@@ -52,30 +52,6 @@ import java.util.stream.Collectors;
 public class TradeServiceImpl implements TradeService {
 
     private static final Logger log = LoggerFactory.getLogger(TradeServiceImpl.class);
-    private static final String TRADE_CREATED_BUYER_TEMPLATE = 
-            "Hệ thống (gửi người mua): Giao dịch #%s đã được tạo thành công với số lượng %s %s. Vui lòng chờ người bán cung cấp thông tin thanh toán.";
-    private static final String TRADE_CREATED_SELLER_TEMPLATE = 
-            "Hệ thống (gửi người bán): Bạn vừa nhận yêu cầu giao dịch #%s với số lượng %s %s. Vui lòng gửi thông tin thanh toán cho người mua.";
-    private static final String PAYMENT_CONFIRMED_BUYER_TEMPLATE = 
-            "Hệ thống (gửi người mua): Bạn đã xác nhận đã chuyển tiền cho giao dịch #%s. Vui lòng chờ người bán kiểm tra và giải phóng tài sản.";
-    private static final String PAYMENT_CONFIRMED_SELLER_TEMPLATE = 
-            "Hệ thống (gửi người bán): Người mua đã xác nhận đã chuyển tiền cho giao dịch #%s. Vui lòng kiểm tra và xác nhận khi nhận đủ tiền.";
-    private static final String TRADE_COMPLETED_BUYER_TEMPLATE = 
-            "Hệ thống (gửi người mua): Người bán đã giải phóng %s %s cho giao dịch #%s. Tài sản đã về ví của bạn.";
-    private static final String TRADE_COMPLETED_SELLER_TEMPLATE = 
-            "Hệ thống (gửi người bán): Bạn đã hoàn tất giao dịch #%s và đã giải phóng %s %s cho người mua.";
-    private static final String TRADE_CANCELLED_BY_BUYER_FOR_BUYER_TEMPLATE = 
-            "Hệ thống (gửi người mua): Bạn đã hủy giao dịch #%s. Nếu vẫn muốn giao dịch, vui lòng tạo lệnh mới.";
-    private static final String TRADE_CANCELLED_BY_BUYER_FOR_SELLER_TEMPLATE = 
-            "Hệ thống (gửi người bán): Người mua đã hủy giao dịch #%s. Số tài sản liên quan đã được hoàn trả.";
-    private static final String TRADE_CANCELLED_BY_SELLER_FOR_SELLER_TEMPLATE = 
-            "Hệ thống (gửi người bán): Bạn đã hủy giao dịch #%s. Tài sản đã được trả lại ví của bạn.";
-    private static final String TRADE_CANCELLED_BY_SELLER_FOR_BUYER_TEMPLATE = 
-            "Hệ thống (gửi người mua): Người bán đã hủy giao dịch #%s. Bạn có thể chọn lệnh khác để tiếp tục.";
-    private static final String TRADE_AUTO_CANCELLED_BUYER_TEMPLATE = 
-            "Hệ thống (gửi người mua): Giao dịch #%s đã bị hủy tự động do quá hạn xử lý. Vui lòng tạo giao dịch mới nếu vẫn có nhu cầu.";
-    private static final String TRADE_AUTO_CANCELLED_SELLER_TEMPLATE = 
-            "Hệ thống (gửi người bán): Giao dịch #%s đã bị hủy tự động do quá hạn xử lý. Tài sản tạm giữ đã được giải phóng.";
 
     private enum RecipientRole {
         BUYER, SELLER, ALL
@@ -87,7 +63,6 @@ public class TradeServiceImpl implements TradeService {
     private final TradeChatRepository tradeChatRepository;
     private final WalletRepository walletRepository;
     private final SellerFundsManager sellerFundsManager;
-    private final NotificationService notificationService;
     private final FiatAccountRepository fiatAccountRepository;
     private final WalletTransactionService walletTransactionService;
     private final TradeEventPublisher tradeEventPublisher;
@@ -95,13 +70,13 @@ public class TradeServiceImpl implements TradeService {
 
     @Value("${app.trade.auto-cancel-minutes:15}")
     private long autoCancelMinutes;
+
     public TradeServiceImpl(EntityManager entityManager,
             OrderRepository orderRepository,
             TradeRepository tradeRepository,
             TradeChatRepository tradeChatRepository,
             WalletRepository walletRepository,
             SellerFundsManager sellerFundsManager,
-            NotificationService notificationService,
             FiatAccountRepository fiatAccountRepository,
             WalletTransactionService walletTransactionService,
             TradeEventPublisher tradeEventPublisher,
@@ -112,7 +87,6 @@ public class TradeServiceImpl implements TradeService {
         this.tradeChatRepository = tradeChatRepository;
         this.walletRepository = walletRepository;
         this.sellerFundsManager = sellerFundsManager;
-        this.notificationService = notificationService;
         this.fiatAccountRepository = fiatAccountRepository;
         this.walletTransactionService = walletTransactionService;
         this.tradeEventPublisher = tradeEventPublisher;
@@ -143,7 +117,7 @@ public class TradeServiceImpl implements TradeService {
             sellerFundsManager.lockForBuyTrade(savedTrade);
             tradeRepository.save(savedTrade);
         }
-        
+
         log.info("Trade created successfully with ID: {} for order: {}", savedTrade.getId(), command.getOrderId());
         return TradeMapper.toResult(savedTrade);
     }
@@ -229,9 +203,17 @@ public class TradeServiceImpl implements TradeService {
             this.escrow = escrow;
         }
 
-        public User getBuyer() { return buyer; }
-        public User getSeller() { return seller; }
-        public boolean isEscrow() { return escrow; }
+        public User getBuyer() {
+            return buyer;
+        }
+
+        public User getSeller() {
+            return seller;
+        }
+
+        public boolean isEscrow() {
+            return escrow;
+        }
     }
 
     private FiatAccount resolveSellerAccount(User seller, Order order, TradeCreateCommand command) {
@@ -284,7 +266,7 @@ public class TradeServiceImpl implements TradeService {
         appendSystemMessage(
                 trade,
                 String.format(
-                        TRADE_CREATED_BUYER_TEMPLATE,
+                        NotificationConstants.TRADE_CREATED_BUYER,
                         resolveTradeCode(trade),
                         formatAmount(trade.getAmount()),
                         resolveTokenSymbol(trade)),
@@ -292,7 +274,7 @@ public class TradeServiceImpl implements TradeService {
         appendSystemMessage(
                 trade,
                 String.format(
-                        TRADE_CREATED_SELLER_TEMPLATE,
+                        NotificationConstants.TRADE_CREATED_SELLER,
                         resolveTradeCode(trade),
                         formatAmount(trade.getAmount()),
                         resolveTokenSymbol(trade)),
@@ -331,55 +313,55 @@ public class TradeServiceImpl implements TradeService {
         if (isPartnerUser(trade.getSeller()) || isPartnerUser(trade.getBuyer())) {
             sellerFundsManager.settleTrade(trade);
         } else {
-        User buyer = trade.getBuyer();
-        User seller = trade.getSeller();
-        // Buyer nhận token
-        Wallet buyerWallet = walletRepository.findByUserIdAndToken(buyer.getId(), order.getToken())
-                .orElseGet(() -> {
-                    Wallet w = new Wallet();
-                    w.setUser(buyer);
-                    w.setToken(order.getToken());
-                    w.setAddress("generated-address-" + buyer.getId());
-                    w.setBalance(0.0);
-                    w.setAvailableBalance(0.0);
-                    return walletRepository.save(w);
-                });
-        double buyerBalanceBefore = buyerWallet.getBalance();
-        double buyerAvailableBefore = buyerWallet.getAvailableBalance();
-        buyerWallet.setBalance(buyerBalanceBefore + trade.getAmount());
-        buyerWallet.setAvailableBalance(buyerAvailableBefore + trade.getAmount());
-        walletRepository.save(buyerWallet);
-        walletTransactionService.record(
-                buyerWallet,
-                WalletTransactionType.CREDIT,
-                trade.getAmount(),
-                buyerBalanceBefore,
-                buyerWallet.getBalance(),
-                buyerAvailableBefore,
-                buyerWallet.getAvailableBalance(),
-                buyer.getId(),
-                "TRADE_COMPLETED",
-                trade.getId(),
-                "Buyer receives tokens");
-        // Seller: trừ balance thực và cập nhật lại lượng lock
-        Wallet sellerWallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
-                .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-        double sellerBalanceBefore = sellerWallet.getBalance();
-        double sellerAvailableBefore = sellerWallet.getAvailableBalance();
-        sellerWallet.setBalance(sellerBalanceBefore - trade.getAmount());
-        walletRepository.save(sellerWallet);
-        walletTransactionService.record(
-                sellerWallet,
-                WalletTransactionType.DEBIT,
-                trade.getAmount(),
-                sellerBalanceBefore,
-                sellerWallet.getBalance(),
-                sellerAvailableBefore,
-                sellerWallet.getAvailableBalance(),
-                seller.getId(),
-                "TRADE_COMPLETED",
-                trade.getId(),
-                "Seller releases tokens");
+            User buyer = trade.getBuyer();
+            User seller = trade.getSeller();
+            // Buyer nhận token
+            Wallet buyerWallet = walletRepository.findByUserIdAndToken(buyer.getId(), order.getToken())
+                    .orElseGet(() -> {
+                        Wallet w = new Wallet();
+                        w.setUser(buyer);
+                        w.setToken(order.getToken());
+                        w.setAddress("generated-address-" + buyer.getId());
+                        w.setBalance(0.0);
+                        w.setAvailableBalance(0.0);
+                        return walletRepository.save(w);
+                    });
+            double buyerBalanceBefore = buyerWallet.getBalance();
+            double buyerAvailableBefore = buyerWallet.getAvailableBalance();
+            buyerWallet.setBalance(buyerBalanceBefore + trade.getAmount());
+            buyerWallet.setAvailableBalance(buyerAvailableBefore + trade.getAmount());
+            walletRepository.save(buyerWallet);
+            walletTransactionService.record(
+                    buyerWallet,
+                    WalletTransactionType.CREDIT,
+                    trade.getAmount(),
+                    buyerBalanceBefore,
+                    buyerWallet.getBalance(),
+                    buyerAvailableBefore,
+                    buyerWallet.getAvailableBalance(),
+                    buyer.getId(),
+                    "TRADE_COMPLETED",
+                    trade.getId(),
+                    "Buyer receives tokens");
+            // Seller: trừ balance thực và cập nhật lại lượng lock
+            Wallet sellerWallet = walletRepository.findByUserIdAndToken(seller.getId(), order.getToken())
+                    .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
+            double sellerBalanceBefore = sellerWallet.getBalance();
+            double sellerAvailableBefore = sellerWallet.getAvailableBalance();
+            sellerWallet.setBalance(sellerBalanceBefore - trade.getAmount());
+            walletRepository.save(sellerWallet);
+            walletTransactionService.record(
+                    sellerWallet,
+                    WalletTransactionType.DEBIT,
+                    trade.getAmount(),
+                    sellerBalanceBefore,
+                    sellerWallet.getBalance(),
+                    sellerAvailableBefore,
+                    sellerWallet.getAvailableBalance(),
+                    seller.getId(),
+                    "TRADE_COMPLETED",
+                    trade.getId(),
+                    "Seller releases tokens");
         }
 
         // Hoàn tất trade
@@ -627,11 +609,11 @@ public class TradeServiceImpl implements TradeService {
         String tradeCode = resolveTradeCode(trade);
         appendSystemMessage(
                 trade,
-                String.format(PAYMENT_CONFIRMED_BUYER_TEMPLATE, tradeCode),
+                String.format(NotificationConstants.PAYMENT_CONFIRMED_BUYER, tradeCode),
                 RecipientRole.BUYER);
         appendSystemMessage(
                 trade,
-                String.format(PAYMENT_CONFIRMED_SELLER_TEMPLATE, tradeCode),
+                String.format(NotificationConstants.PAYMENT_CONFIRMED_SELLER, tradeCode),
                 RecipientRole.SELLER);
     }
 
@@ -641,11 +623,11 @@ public class TradeServiceImpl implements TradeService {
         String amount = formatAmount(trade.getAmount());
         appendSystemMessage(
                 trade,
-                String.format(TRADE_COMPLETED_BUYER_TEMPLATE, amount, token, tradeCode),
+                String.format(NotificationConstants.TRADE_COMPLETED_BUYER, amount, token, tradeCode),
                 RecipientRole.BUYER);
         appendSystemMessage(
                 trade,
-                String.format(TRADE_COMPLETED_SELLER_TEMPLATE, tradeCode, amount, token),
+                String.format(NotificationConstants.TRADE_COMPLETED_SELLER, tradeCode, amount, token),
                 RecipientRole.SELLER);
     }
 
@@ -654,11 +636,11 @@ public class TradeServiceImpl implements TradeService {
         if (autoCancelled) {
             appendSystemMessage(
                     trade,
-                    String.format(TRADE_AUTO_CANCELLED_BUYER_TEMPLATE, tradeCode),
+                    String.format(NotificationConstants.TRADE_AUTO_CANCELLED_BUYER, tradeCode),
                     RecipientRole.BUYER);
             appendSystemMessage(
                     trade,
-                    String.format(TRADE_AUTO_CANCELLED_SELLER_TEMPLATE, tradeCode),
+                    String.format(NotificationConstants.TRADE_AUTO_CANCELLED_SELLER, tradeCode),
                     RecipientRole.SELLER);
             return;
         }
@@ -667,29 +649,29 @@ public class TradeServiceImpl implements TradeService {
         if (actorRole == RecipientRole.BUYER) {
             appendSystemMessage(
                     trade,
-                    String.format(TRADE_CANCELLED_BY_BUYER_FOR_BUYER_TEMPLATE, tradeCode),
+                    String.format(NotificationConstants.TRADE_CANCELLED_BY_BUYER_FOR_BUYER, tradeCode),
                     RecipientRole.BUYER);
             appendSystemMessage(
                     trade,
-                    String.format(TRADE_CANCELLED_BY_BUYER_FOR_SELLER_TEMPLATE, tradeCode),
+                    String.format(NotificationConstants.TRADE_CANCELLED_BY_BUYER_FOR_SELLER, tradeCode),
                     RecipientRole.SELLER);
         } else if (actorRole == RecipientRole.SELLER) {
             appendSystemMessage(
                     trade,
-                    String.format(TRADE_CANCELLED_BY_SELLER_FOR_SELLER_TEMPLATE, tradeCode),
+                    String.format(NotificationConstants.TRADE_CANCELLED_BY_SELLER_FOR_SELLER, tradeCode),
                     RecipientRole.SELLER);
             appendSystemMessage(
                     trade,
-                    String.format(TRADE_CANCELLED_BY_SELLER_FOR_BUYER_TEMPLATE, tradeCode),
+                    String.format(NotificationConstants.TRADE_CANCELLED_BY_SELLER_FOR_BUYER, tradeCode),
                     RecipientRole.BUYER);
         } else {
             appendSystemMessage(
                     trade,
-                    String.format(TRADE_AUTO_CANCELLED_BUYER_TEMPLATE, tradeCode),
+                    String.format(NotificationConstants.TRADE_AUTO_CANCELLED_BUYER, tradeCode),
                     RecipientRole.BUYER);
             appendSystemMessage(
                     trade,
-                    String.format(TRADE_AUTO_CANCELLED_SELLER_TEMPLATE, tradeCode),
+                    String.format(NotificationConstants.TRADE_AUTO_CANCELLED_SELLER, tradeCode),
                     RecipientRole.SELLER);
         }
     }

@@ -1,6 +1,7 @@
 package com.akabazan.service.impl;
 
 import com.akabazan.common.constant.ErrorCode;
+import com.akabazan.common.constant.NotificationConstants;
 import com.akabazan.common.event.TradeStatusEvent;
 import com.akabazan.common.exception.ApplicationException;
 import com.akabazan.notification.enums.NotificationType;
@@ -212,7 +213,8 @@ public class DisputeServiceImpl implements DisputeService {
         Dispute saved = disputeRepository.save(dispute);
 
         notifyParticipants(dispute,
-                String.format("Dispute #%s resolved in favour of %s", dispute.getId(), resolutionOutcome.name()));
+                String.format(NotificationConstants.DISPUTE_RESOLVED, dispute.getTrade().getTradeCode(),
+                        localizeOutcome(resolutionOutcome)));
 
         return DisputeMapper.toResult(saved);
     }
@@ -243,7 +245,8 @@ public class DisputeServiceImpl implements DisputeService {
 
         Dispute saved = disputeRepository.save(dispute);
 
-        notifyParticipants(dispute, String.format("Dispute #%s was rejected", dispute.getId()));
+        notifyParticipants(dispute,
+                String.format(NotificationConstants.DISPUTE_REJECTED, dispute.getTrade().getTradeCode()));
 
         return DisputeMapper.toResult(saved);
     }
@@ -259,9 +262,10 @@ public class DisputeServiceImpl implements DisputeService {
         Dispute saved = disputeRepository.save(dispute);
 
         notificationService.notifyUser(admin.getId(), NotificationType.ADMIN_INREVIEW,
-                String.format("Dispute #%s has been assigned to you", dispute.getId()));
+                String.format(NotificationConstants.DISPUTE_ASSIGNED_ADMIN, dispute.getTrade().getTradeCode()));
         notifyParticipants(dispute,
-                String.format("Dispute #%s is under review by %s", dispute.getId(), admin.getUsername()));
+                String.format(NotificationConstants.DISPUTE_IN_REVIEW, dispute.getTrade().getTradeCode(),
+                        admin.getUsername()));
 
         return DisputeMapper.toResult(saved);
     }
@@ -310,7 +314,7 @@ public class DisputeServiceImpl implements DisputeService {
     }
 
     private void notifyOnOpen(Trade trade, Dispute dispute) {
-        String message = String.format("Trade #%s has a new dispute (#%s)", trade.getId(), dispute.getId());
+        String message = String.format(NotificationConstants.DISPUTE_OPENED, trade.getTradeCode());
         notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()),
                 NotificationType.DISPUTE_OPENED, message);
     }
@@ -319,6 +323,16 @@ public class DisputeServiceImpl implements DisputeService {
         Trade trade = dispute.getTrade();
         notificationService.notifyUsers(List.of(trade.getBuyer().getId(), trade.getSeller().getId()),
                 NotificationType.DISPUTE_RESOLVED, message);
+    }
+
+    private String localizeOutcome(ResolutionOutcome outcome) {
+        if (outcome == null)
+            return "N/A";
+        return switch (outcome) {
+            case BUYER_FAVORED -> NotificationConstants.OUTCOME_BUYER;
+            case SELLER_FAVORED -> NotificationConstants.OUTCOME_SELLER;
+            case CANCELLED -> NotificationConstants.OUTCOME_CANCELLED;
+        };
     }
 
     private void publishTradeEvent(Trade trade) {

@@ -14,7 +14,6 @@ import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.SignatureAlgorithm;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import com.akabazan.security.JwtAuthenticationEntryPoint;
 
 @Configuration

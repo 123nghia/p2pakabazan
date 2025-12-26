@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public AuthResult register(String email, String password) {
+    public AuthResult register(String email, String password, String username, String phone) {
         String normalizedEmail = normalizeEmail(email);
 
         userRepository.findByEmail(normalizedEmail).ifPresent(existing -> {
@@ -55,6 +55,8 @@ public class AuthServiceImpl implements AuthService {
         User user = new User();
         user.setEmail(normalizedEmail);
         user.setPassword(password);
+        user.setUsername(username);
+        user.setPhone(phone);
 
         Wallet wallet = new Wallet();
         wallet.setToken("USDT");
@@ -76,8 +78,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private String authenticateAndGenerateToken(User user) {
-        UsernamePasswordAuthenticationToken auth =
-                new UsernamePasswordAuthenticationToken(user.getId().toString(), null, null);
+        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(user.getId().toString(),
+                null, null);
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         return Jwts.builder()
