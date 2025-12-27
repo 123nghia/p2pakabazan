@@ -33,8 +33,8 @@ public class PartnerFundsApiClient {
     private final ObjectMapper objectMapper;
 
     public PartnerFundsApiClient(PartnerApiProperties properties,
-                                 P2pClientHmacSigner signer,
-                                 ObjectMapper objectMapper) {
+            P2pClientHmacSigner signer,
+            ObjectMapper objectMapper) {
         this.properties = properties;
         this.signer = signer;
         this.objectMapper = objectMapper;
@@ -87,7 +87,8 @@ public class PartnerFundsApiClient {
             return response.getBody();
         } catch (RestClientResponseException e) {
             String body = e.getResponseBodyAsString();
-            throw new IllegalStateException("Partner API call failed: " + path + " HTTP " + e.getRawStatusCode() + " body=" + body, e);
+            throw new IllegalStateException(
+                    "Partner API call failed: " + path + " HTTP " + e.getRawStatusCode() + " body=" + body, e);
         } catch (Exception e) {
             throw new IllegalStateException("Partner API call failed: " + path, e);
         }
@@ -115,4 +116,3 @@ public class PartnerFundsApiClient {
         return new RestTemplate(requestFactory);
     }
 }
-

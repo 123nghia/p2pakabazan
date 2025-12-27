@@ -44,6 +44,28 @@ CREATE INDEX IF NOT EXISTS idx_partner_wallet_locks_user_asset
 INSERT INTO partner_wallet_balances (external_user_id, asset, available_balance, locked_balance)
 VALUES
     ('user_1001', 'USDT', 100, 0),
-    ('user_1001', 'BNB', 100, 0)
+    ('user_1001', 'BNB', 100, 0),
+    ('user_1002', 'USDT', 100, 0),
+    ('user_1002', 'BNB', 100, 0),
+    ('user_1003', 'USDT', 100, 0),
+    ('user_1003', 'BNB', 100, 0),
+    ('user_1004', 'USDT', 100, 0),
+    ('user_1004', 'BNB', 100, 0),
+    ('user_1005', 'USDT', 100, 0),
+    ('user_1005', 'BNB', 100, 0),
+    ('user_1006', 'USDT', 100, 0),
+    ('user_1006', 'BNB', 100, 0),
+    ('user_1007', 'USDT', 100, 0),
+    ('user_1007', 'BNB', 100, 0),
+    ('user_1008', 'USDT', 100, 0),
+    ('user_1008', 'BNB', 100, 0),
+    ('user_1009', 'USDT', 100, 0),
+    ('user_1009', 'BNB', 100, 0),
+    ('user_1010', 'USDT', 100, 0),
+    ('user_1010', 'BNB', 100, 0),
+    ('userA', 'USDT', 100, 0),
+    ('userA', 'BNB', 100, 0),
+    ('userB', 'USDT', 100, 0),
+    ('userB', 'BNB', 100, 0)
 ON CONFLICT (external_user_id, asset) DO NOTHING;
 
