@@ -61,6 +61,28 @@ services:
       - p2p-network
     restart: unless-stopped
 
+  p2p_admin:
+    build:
+      context: .
+      dockerfile: ./p2p_admin/Dockerfile
+    container_name: p2p-admin
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      DB_URL: ${DB_URL:-jdbc:postgresql://db:5432/p2p_trading_dev}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres123}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL:-false}
+      SPRING_FLYWAY_ENABLED: "true"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      SERVER_PORT: 8081
+    depends_on:
+      - db
+    networks:
+      - p2p-network
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: p2p-pgadmin
@@ -96,7 +118,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 180s
+      start_period: 300s
     networks:
       - p2p-network
     restart: unless-stopped
