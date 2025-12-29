@@ -19,9 +19,12 @@
                     <a th:href="@{/admin-ui/orders}">Orders</a>
                     <a th:href="@{/admin-ui/trades}">Trades</a>
                     <a th:href="@{/admin-ui/disputes}">Disputes</a>
-                    <a th:href="@{/admin-ui/currencies}">Currencies</a>
-                    <a th:href="@{/admin-ui/payment-methods}">Payment Methods</a>
-                    <a th:href="@{/admin-ui/dispute-reasons}">Dispute Reasons</a>
+                    <th:block
+                        th:if="${currentAdmin != null and currentAdmin.role != null and currentAdmin.role.name() == 'SUPER_ADMIN'}">
+                        <a th:href="@{/admin-ui/currencies}">Currencies</a>
+                        <a th:href="@{/admin-ui/payment-methods}">Payment Methods</a>
+                        <a th:href="@{/admin-ui/dispute-reasons}">Dispute Reasons</a>
+                    </th:block>
                     <a th:href="@{/swagger-ui/index.html}" target="_blank">API Docs</a>
                     <a th:href="@{/admin-ui/logout}">Logout</a>
                 </div>

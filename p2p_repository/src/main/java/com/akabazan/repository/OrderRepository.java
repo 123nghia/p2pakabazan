@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.UUID;
 
 public interface OrderRepository extends JpaRepository<Order, UUID> {
+  @Query("SELECT o.status, COUNT(o) FROM Order o GROUP BY o.status")
+  List<Object[]> countByStatus();
+
+  @Query("SELECT o.type, COUNT(o) FROM Order o GROUP BY o.type")
+  List<Object[]> countByType();
+
   @Query("""
       SELECT o FROM Order o
       WHERE (:status IS NULL OR o.status = :status)

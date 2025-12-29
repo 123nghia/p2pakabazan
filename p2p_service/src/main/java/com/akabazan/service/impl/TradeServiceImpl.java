@@ -566,41 +566,19 @@ public class TradeServiceImpl implements TradeService {
             throw new ApplicationException(ErrorCode.INVALID_TRADE_STATUS);
         }
 
-        double refundAmount = trade.getAmount();
+        // Refund funds to seller (handles both partner and local users)
+        sellerFundsManager.refundToSeller(trade);
 
-        Wallet sellerWallet = walletRepository.findByUserIdAndToken(
-                trade.getSeller().getId(),
-                trade.getOrder().getToken())
-                .orElseThrow(() -> new ApplicationException(ErrorCode.WALLET_NOT_FOUND));
-
-        double balanceBefore = sellerWallet.getBalance();
-        double availableBefore = sellerWallet.getAvailableBalance();
-        sellerWallet.setAvailableBalance(availableBefore + refundAmount);
-        walletRepository.save(sellerWallet);
-
-        UUID performerId = actorId != null ? actorId : trade.getSeller().getId();
-
-        walletTransactionService.record(
-                sellerWallet,
-                WalletTransactionType.UNLOCK,
-                refundAmount,
-                balanceBefore,
-                sellerWallet.getBalance(),
-                availableBefore,
-                sellerWallet.getAvailableBalance(),
-                performerId,
-                "TRADE_CANCELLED",
-                trade.getId(),
-                "Cancel trade and unlock funds");
-
-        Order order = trade.getOrder();
-        order.setAvailableAmount(order.getAvailableAmount() + refundAmount);
-        orderRepository.save(order);
-
+        // Update trade status
         trade.setStatus(TradeStatus.CANCELLED);
         tradeRepository.save(trade);
         publishTradeEvent(trade);
         addTradeCancelledMessage(trade, !enforceCreator, actorId);
+
+        // Update order available amount (funds are already unlocked in refundToSeller)
+        Order order = trade.getOrder();
+        order.setAvailableAmount(order.getAvailableAmount() + trade.getAmount());
+        orderRepository.save(order);
 
         return TradeMapper.toResult(trade);
     }

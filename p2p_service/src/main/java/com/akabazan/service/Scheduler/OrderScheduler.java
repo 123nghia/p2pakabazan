@@ -17,6 +17,6 @@ public class OrderScheduler {
     /** Chạy mỗi phút để expire order */
     @Scheduled(fixedDelay = 60000)
     public void autoExpireOrders() {
-        // orderService.expireOrders();
+        orderService.expireOrders();
     }
 }

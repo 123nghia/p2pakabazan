@@ -8,6 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import com.akabazan.repository.constant.AdminRole;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
@@ -33,6 +36,10 @@ public class UserAdmin {
 
     @Column(nullable = false)
     private boolean enabled = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 50)
+    private AdminRole role = AdminRole.SUPER_ADMIN;
 
     public UUID getId() {
         return id;
@@ -64,5 +71,13 @@ public class UserAdmin {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public AdminRole getRole() {
+        return role;
+    }
+
+    public void setRole(AdminRole role) {
+        this.role = role;
     }
 }

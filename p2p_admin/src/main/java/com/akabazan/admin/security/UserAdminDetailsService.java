@@ -23,7 +23,7 @@ public class UserAdminDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserAdmin admin = repository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Admin not found"));
-        List<GrantedAuthority> roles = List.of(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        List<GrantedAuthority> roles = List.of(new SimpleGrantedAuthority("ROLE_" + admin.getRole().name()));
         return new User(admin.getUsername(), admin.getPasswordHash(), admin.isEnabled(), true, true, true, roles);
     }
 }

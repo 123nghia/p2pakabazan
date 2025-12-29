@@ -100,22 +100,59 @@
             gap: 12px;
         }
 
-        /* Re-use existing btn styles if needed, but assuming layout already provides them */
+        /* Button styles */
         .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
+            padding: 8px 16px;
+            border: 1px solid transparent;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .btn-primary {
-            background: #007bff;
+            background-color: #007bff;
+            border-color: #007bff;
             color: #fff;
         }
 
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: #fff;
+        }
+
+        .btn-outline-secondary {
+            background-color: transparent;
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+
         .btn-secondary {
-            background: #6c757d;
+            background-color: #6c757d;
+            border-color: #6c757d;
             color: #fff;
         }
     </style>
@@ -183,11 +220,11 @@
         }
 
         async function assignDispute(id) {
-            const adminId = await showModal('Assign Dispute', 'Assign to adminId (leave empty for current admin):');
-            if (adminId === null) return;
+            const username = await showModal('Assign Dispute', 'Assign to username (leave empty for current admin):');
+            if (username === null) return;
 
             const params = new URLSearchParams({});
-            if (adminId) params.append('adminId', adminId);
+            if (username) params.append('username', username);
 
             const res = await fetch(`/admin/disputes/${id}/assign`, {
                 method: 'POST',
@@ -229,16 +266,26 @@
                         <td th:text="${d.reason}">Seller not confirm</td>
                         <td th:text="${d.createdAt}">2025-01-01</td>
                         <td>
-                            <button th:attr="data-id=${d.id}"
-                                onclick="resolveDispute(this.getAttribute('data-id'), 'BUYER_FAVORED')">Buyer
-                                favored</button>
-                            <button th:attr="data-id=${d.id}"
-                                onclick="resolveDispute(this.getAttribute('data-id'), 'SELLER_FAVORED')">Seller
-                                favored</button>
-                            <button th:attr="data-id=${d.id}"
-                                onclick="rejectDispute(this.getAttribute('data-id'))">Reject</button>
-                            <button th:attr="data-id=${d.id}"
-                                onclick="assignDispute(this.getAttribute('data-id'))">Assign</button>
+                            <button class="btn btn-secondary" th:attr="data-id=${d.id}"
+                                th:if="${currentAdmin != null and currentAdmin.role.name() == 'SUPER_ADMIN'}"
+                                onclick="assignDispute(this.getAttribute('data-id'))">
+                                Assign to Admin
+                            </button>
+                            <button class="btn btn-success" th:attr="data-id=${d.id}"
+                                th:if="${currentAdmin != null and d.assignedAdminId != null and d.assignedAdminId == currentAdmin.id}"
+                                onclick="resolveDispute(this.getAttribute('data-id'), 'BUYER_FAVORED')">
+                                Resolve: Buyer Favored
+                            </button>
+                            <button class="btn btn-warning" th:attr="data-id=${d.id}"
+                                th:if="${currentAdmin != null and d.assignedAdminId != null and d.assignedAdminId == currentAdmin.id}"
+                                onclick="resolveDispute(this.getAttribute('data-id'), 'SELLER_FAVORED')">
+                                Resolve: Seller Favored
+                            </button>
+                            <button class="btn btn-danger" th:attr="data-id=${d.id}"
+                                th:if="${currentAdmin != null and d.assignedAdminId != null and d.assignedAdminId == currentAdmin.id}"
+                                onclick="rejectDispute(this.getAttribute('data-id'))">
+                                Reject Dispute
+                            </button>
                         </td>
                     </tr>
                 </tbody>
