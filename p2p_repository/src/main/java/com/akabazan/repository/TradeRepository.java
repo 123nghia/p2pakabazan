@@ -33,6 +33,29 @@ public interface TradeRepository extends JpaRepository<Trade, UUID> {
 
   @Query("""
       SELECT t FROM Trade t
+      WHERE (
+          (:role = 'BUYER' AND t.buyer.id = :userId) OR
+          (:role = 'SELLER' AND t.seller.id = :userId) OR
+          (:role IS NULL AND (t.buyer.id = :userId OR t.seller.id = :userId))
+      )
+      AND (:token IS NULL OR t.order.token = :token)
+      AND (:fiat IS NULL OR t.order.fiat = :fiat)
+      AND (:tradeCode IS NULL OR t.tradeCode LIKE CONCAT('%', :tradeCode, '%'))
+      AND (cast(:startDate as timestamp) IS NULL OR t.createdAt >= :startDate)
+      AND (cast(:endDate as timestamp) IS NULL OR t.createdAt <= :endDate)
+      ORDER BY t.createdAt DESC
+      """)
+  List<Trade> findByUserAndFilters(
+      @Param("userId") UUID userId,
+      @Param("token") String token,
+      @Param("fiat") String fiat,
+      @Param("role") String role,
+      @Param("tradeCode") String tradeCode,
+      @Param("startDate") LocalDateTime startDate,
+      @Param("endDate") LocalDateTime endDate);
+
+  @Query("""
+      SELECT t FROM Trade t
       WHERE (t.buyer.id = :userId OR t.seller.id = :userId)
         AND EXISTS (
           SELECT 1 FROM TradeChat chat WHERE chat.trade = t

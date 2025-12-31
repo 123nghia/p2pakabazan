@@ -39,16 +39,21 @@ public class TradeController extends BaseController {
 
     // ====================== ORDER ======================
     @GetMapping("/trades/me")
-    public ResponseEntity<BaseResponse<List<TradeResponse>>> getTradesOfCurrentUser() {
+    public ResponseEntity<BaseResponse<List<TradeResponse>>> getTradesOfCurrentUser(
+            @RequestParam(required = false) String token,
+            @RequestParam(required = false) String fiat,
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String tradeCode,
+            @RequestParam(required = false) java.time.LocalDate date) {
         var userId = currentUserService.getCurrentUserId()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.UNAUTHORIZED));
 
-        List<TradeResult> trades = tradeService.getTradesByUser(userId);
+        List<TradeResult> trades = tradeService.getTradesByUser(userId, token, fiat, role, tradeCode, date);
         return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
     }
 
     @GetMapping("/orders/{orderId}/trades")
-    public  ResponseEntity < BaseResponse<List<TradeResponse>>> getTradesByOrder(@PathVariable UUID orderId) {
+    public ResponseEntity<BaseResponse<List<TradeResponse>>> getTradesByOrder(@PathVariable UUID orderId) {
         List<TradeResult> trades = tradeService.getTradesByOrder(orderId);
         return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
     }
@@ -59,9 +64,9 @@ public class TradeController extends BaseController {
         return ResponseFactory.ok(trades.stream().map(TradeResponseMapper::from).toList());
     }
 
-
     @PostMapping("/trades")
-    public ResponseEntity < BaseResponse<TradeCreatedResponse>> createTrade(@Valid @RequestBody TradeRequest tradeRequest) {
+    public ResponseEntity<BaseResponse<TradeCreatedResponse>> createTrade(
+            @Valid @RequestBody TradeRequest tradeRequest) {
         TradeCreateCommand command = TradeCommandMapper.toCommand(tradeRequest); // map từ API request sang Command
         TradeResult result = tradeService.createTrade(command);
         return ResponseFactory.ok(TradeCreatedResponseMapper.from(result));
@@ -91,7 +96,6 @@ public class TradeController extends BaseController {
         TradeResult result = tradeService.cancelTradeByCode(tradeCode);
         return ResponseFactory.ok(TradeResponseMapper.from(result));
     }
-
 
     @GetMapping("/trades/{tradeId}")
     public ResponseEntity<BaseResponse<TradeInfoResponse>> getTradeInfo(@PathVariable UUID tradeId) {

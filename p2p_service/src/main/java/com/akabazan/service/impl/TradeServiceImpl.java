@@ -462,8 +462,12 @@ public class TradeServiceImpl implements TradeService {
 
     @Override
     @Transactional
-    public List<TradeResult> getTradesByUser(UUID userId) {
-        return tradeRepository.findByUser(userId)
+    public List<TradeResult> getTradesByUser(UUID userId, String token, String fiat, String role, String tradeCode,
+            java.time.LocalDate date) {
+        java.time.LocalDateTime start = date != null ? date.atStartOfDay() : null;
+        java.time.LocalDateTime end = date != null ? date.atTime(java.time.LocalTime.MAX) : null;
+
+        return tradeRepository.findByUserAndFilters(userId, token, fiat, role, tradeCode, start, end)
                 .stream()
                 .map(trade -> {
                     TradeResult result = TradeMapper.toResult(trade);
