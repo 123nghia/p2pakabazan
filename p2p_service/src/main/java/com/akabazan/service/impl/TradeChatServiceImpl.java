@@ -97,11 +97,13 @@ public class TradeChatServiceImpl implements TradeChatService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TradeChatResult> getMessages(UUID tradeId) {
         return getMessages(tradeId, null);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TradeChatResult> getMessages(UUID tradeId, LocalDateTime since) {
         Trade trade = tradeRepository.findById(tradeId)
                 .orElseThrow(() -> new ApplicationException(ErrorCode.TRADE_NOT_FOUND));
@@ -156,6 +158,7 @@ public class TradeChatServiceImpl implements TradeChatService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<TradeChatThreadResult> getChatThreadsForCurrentUser() {
         UUID userId = getCurrentUserId();
         List<Trade> trades = tradeRepository.findTradesWithChatsByUser(userId);
@@ -289,7 +292,11 @@ public class TradeChatServiceImpl implements TradeChatService {
 
     private UUID getCurrentUserId() {
         try {
-            return UUID.fromString(SecurityContextHolder.getContext().getAuthentication().getName());
+            var auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth == null || auth.getName() == null) {
+                throw new ApplicationException(ErrorCode.UNAUTHORIZED);
+            }
+            return UUID.fromString(auth.getName());
         } catch (IllegalArgumentException ex) {
             throw new ApplicationException(ErrorCode.USER_NOT_FOUND);
         }

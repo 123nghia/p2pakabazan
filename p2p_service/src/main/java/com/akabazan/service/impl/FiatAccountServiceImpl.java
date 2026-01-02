@@ -9,6 +9,7 @@ import com.akabazan.service.CurrentUserService;
 import com.akabazan.service.FiatAccountService;
 import com.akabazan.service.dto.FiatAccountMapper;
 import com.akabazan.service.dto.FiatAccountResult;
+import com.akabazan.repository.enums.Status;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -21,7 +22,7 @@ public class FiatAccountServiceImpl implements FiatAccountService {
     private final CurrentUserService currentUserService;
 
     public FiatAccountServiceImpl(FiatAccountRepository fiatAccountRepository,
-                                  CurrentUserService currentUserService) {
+            CurrentUserService currentUserService) {
         this.fiatAccountRepository = fiatAccountRepository;
         this.currentUserService = currentUserService;
     }
@@ -31,7 +32,7 @@ public class FiatAccountServiceImpl implements FiatAccountService {
         UUID userId = currentUserService.getCurrentUserId()
                 .orElseThrow(() -> new ApplicationException(ErrorCode.UNAUTHORIZED));
 
-        return fiatAccountRepository.findByUserId(userId)
+        return fiatAccountRepository.findActiveByUserId(userId)
                 .stream()
                 .map(FiatAccountMapper::toResult)
                 .collect(Collectors.toList());
@@ -45,10 +46,10 @@ public class FiatAccountServiceImpl implements FiatAccountService {
                 .orElseThrow(() -> new ApplicationException(ErrorCode.UNAUTHORIZED));
 
         fiatAccountRepository.findByUserAndBankNameAndAccountNumberAndAccountHolder(
-                        currentUser,
-                        request.getBankName(),
-                        request.getAccountNumber(),
-                        request.getAccountHolder())
+                currentUser,
+                request.getBankName(),
+                request.getAccountNumber(),
+                request.getAccountHolder())
                 .ifPresent(acc -> {
                     throw new ApplicationException(ErrorCode.FIAT_ACCOUNT_ALREADY_EXISTS);
                 });
@@ -60,8 +61,48 @@ public class FiatAccountServiceImpl implements FiatAccountService {
         account.setAccountHolder(request.getAccountHolder());
         account.setBranch(request.getBranch());
         account.setPaymentType(request.getPaymentType());
+        account.setStatus(Status.ACTIVE);
 
         return FiatAccountMapper.toResult(fiatAccountRepository.save(account));
+    }
+
+    @Override
+    public FiatAccountResult updateFiatAccount(FiatAccountResult request) {
+        validateInput(request);
+
+        FiatAccount account = fiatAccountRepository.findActiveById(request.getId())
+                .orElseThrow(() -> new ApplicationException(ErrorCode.FIAT_ACCOUNT_NOT_FOUND));
+
+        // Check ownership
+        UUID currentUserId = currentUserService.getCurrentUserId()
+                .orElseThrow(() -> new ApplicationException(ErrorCode.UNAUTHORIZED));
+        if (!account.getUser().getId().equals(currentUserId)) {
+            throw new ApplicationException(ErrorCode.FORBIDDEN);
+        }
+
+        account.setBankName(request.getBankName());
+        account.setAccountNumber(request.getAccountNumber());
+        account.setAccountHolder(request.getAccountHolder());
+        account.setBranch(request.getBranch());
+        account.setPaymentType(request.getPaymentType());
+
+        return FiatAccountMapper.toResult(fiatAccountRepository.save(account));
+    }
+
+    @Override
+    public void deleteFiatAccount(UUID id) {
+        FiatAccount account = fiatAccountRepository.findActiveById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.FIAT_ACCOUNT_NOT_FOUND));
+
+        // Check ownership
+        UUID currentUserId = currentUserService.getCurrentUserId()
+                .orElseThrow(() -> new ApplicationException(ErrorCode.UNAUTHORIZED));
+        if (!account.getUser().getId().equals(currentUserId)) {
+            throw new ApplicationException(ErrorCode.FORBIDDEN);
+        }
+        account.setStatus(Status.INACTIVE);
+        account.setDeletedAt(java.time.LocalDateTime.now());
+        fiatAccountRepository.save(account);
     }
 
     private void validateInput(FiatAccountResult request) {
