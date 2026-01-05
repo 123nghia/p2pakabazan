@@ -282,12 +282,7 @@ public class TradeChatServiceImpl implements TradeChatService {
         if (user == null) {
             return null;
         }
-        String email = user.getEmail();
-        if (email == null) {
-            return null;
-        }
-        int atIndex = email.indexOf('@');
-        return atIndex > 0 ? email.substring(0, atIndex) : email;
+        return user.getUsername();
     }
 
     private UUID getCurrentUserId() {

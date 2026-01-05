@@ -95,6 +95,6 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private AuthResult toAuthResult(User user, String token) {
-        return new AuthResult(user.getId(), user.getEmail(), token);
+        return new AuthResult(user.getId(), user.getEmail(), user.getUsername(), token);
     }
 }

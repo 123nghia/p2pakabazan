@@ -36,6 +36,6 @@ public class AuthController extends BaseController {
     }
 
     private AuthResponse toResponse(AuthResult result) {
-        return AuthResponse.from(result.getToken(), result.getUserId(), result.getEmail());
+        return AuthResponse.from(result.getToken(), result.getUserId(), result.getEmail(), result.getUsername());
     }
 }
