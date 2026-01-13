@@ -1,8 +1,17 @@
 package com.akabazan.api.request;
 
 public class FiatAccountRequest {
-
+    private java.util.UUID id;
     private String bankName;
+
+    public java.util.UUID getId() {
+        return id;
+    }
+
+    public void setId(java.util.UUID id) {
+        this.id = id;
+    }
+
     private String accountNumber;
     private String accountHolder;
     private String branch;

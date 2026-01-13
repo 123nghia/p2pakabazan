@@ -4,6 +4,11 @@ import com.akabazan.repository.OrderRepository;
 import com.akabazan.repository.TradeRepository;
 import com.akabazan.repository.UserRepository;
 import com.akabazan.repository.DisputeReasonRepository;
+import com.akabazan.admin.security.UserAdminRepository;
+import com.akabazan.admin.security.UserAdmin;
+import com.akabazan.repository.constant.AdminRole;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.PostMapping;
 import com.akabazan.service.DisputeService;
 import com.akabazan.service.dto.DisputeResult;
 import java.util.UUID;
@@ -13,226 +18,316 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/admin-ui")
 public class AdminViewController {
 
-    private final UserRepository userRepository;
-    private final TradeRepository tradeRepository;
-    private final DisputeService disputeService;
-    private final OrderRepository orderRepository;
-    private final DisputeReasonRepository disputeReasonRepository;
-    private final com.akabazan.repository.CurrencyRepository currencyRepository;
-    private final com.akabazan.repository.PaymentMethodRepository paymentMethodRepository;
+        private final UserRepository userRepository;
+        private final TradeRepository tradeRepository;
+        private final DisputeService disputeService;
+        private final OrderRepository orderRepository;
+        private final DisputeReasonRepository disputeReasonRepository;
+        private final com.akabazan.repository.CurrencyRepository currencyRepository;
+        private final com.akabazan.repository.PaymentMethodRepository paymentMethodRepository;
 
-    private final com.akabazan.admin.service.CurrentAdminService currentAdminService;
+        private final com.akabazan.admin.service.CurrentAdminService currentAdminService;
+        private final UserAdminRepository userAdminRepository;
+        private final PasswordEncoder passwordEncoder;
+        private final ObjectMapper objectMapper;
 
-    public AdminViewController(UserRepository userRepository,
-            OrderRepository orderRepository,
-            TradeRepository tradeRepository,
-            DisputeReasonRepository disputeReasonRepository,
-            DisputeService disputeService,
-            com.akabazan.repository.CurrencyRepository currencyRepository,
-            com.akabazan.repository.PaymentMethodRepository paymentMethodRepository,
-            com.akabazan.admin.service.CurrentAdminService currentAdminService) {
-        this.userRepository = userRepository;
-        this.orderRepository = orderRepository;
-        this.tradeRepository = tradeRepository;
-        this.disputeService = disputeService;
-        this.currencyRepository = currencyRepository;
-        this.paymentMethodRepository = paymentMethodRepository;
-        this.disputeReasonRepository = disputeReasonRepository;
-        this.currentAdminService = currentAdminService;
-    }
+        public AdminViewController(UserRepository userRepository,
+                        OrderRepository orderRepository,
+                        TradeRepository tradeRepository,
+                        DisputeReasonRepository disputeReasonRepository,
+                        DisputeService disputeService,
+                        com.akabazan.repository.CurrencyRepository currencyRepository,
+                        com.akabazan.repository.PaymentMethodRepository paymentMethodRepository,
+                        com.akabazan.admin.service.CurrentAdminService currentAdminService,
+                        UserAdminRepository userAdminRepository,
+                        PasswordEncoder passwordEncoder) {
+                this.userRepository = userRepository;
+                this.orderRepository = orderRepository;
+                this.tradeRepository = tradeRepository;
+                this.disputeService = disputeService;
+                this.currencyRepository = currencyRepository;
+                this.paymentMethodRepository = paymentMethodRepository;
+                this.disputeReasonRepository = disputeReasonRepository;
+                this.currentAdminService = currentAdminService;
+                this.userAdminRepository = userAdminRepository;
+                this.passwordEncoder = passwordEncoder;
+                this.objectMapper = new ObjectMapper();
+        }
 
-    @GetMapping("/currencies")
-    public String currencies(Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("currencies", currencyRepository.findAll());
-        return "admin/currencies";
-    }
+        @GetMapping("/currencies")
+        public String currencies(Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                model.addAttribute("currencies", currencyRepository.findAll());
+                return "admin/currencies";
+        }
 
-    @GetMapping("/currencies/new")
-    public String createCurrency(Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("currency", new com.akabazan.repository.entity.Currency());
-        model.addAttribute("types", com.akabazan.repository.constant.CurrencyType.values());
-        return "admin/currency-form";
-    }
+        @GetMapping("/currencies/new")
+        public String createCurrency(Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                model.addAttribute("currency", new com.akabazan.repository.entity.Currency());
+                model.addAttribute("types", com.akabazan.repository.constant.CurrencyType.values());
+                return "admin/currency-form";
+        }
 
-    @GetMapping("/currencies/{id}")
-    public String editCurrency(@PathVariable UUID id, Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        var currency = currencyRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid currency Id:" + id));
-        model.addAttribute("currency", currency);
-        model.addAttribute("types", com.akabazan.repository.constant.CurrencyType.values());
-        return "admin/currency-form";
-    }
+        @GetMapping("/currencies/{id}")
+        public String editCurrency(@PathVariable UUID id, Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                var currency = currencyRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("Invalid currency Id:" + id));
+                model.addAttribute("currency", currency);
+                model.addAttribute("types", com.akabazan.repository.constant.CurrencyType.values());
+                return "admin/currency-form";
+        }
 
-    @GetMapping("/payment-methods")
-    public String paymentMethods(Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("paymentMethods", paymentMethodRepository.findAll());
-        return "admin/payment-methods";
-    }
+        @GetMapping("/payment-methods")
+        public String paymentMethods(Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                model.addAttribute("paymentMethods", paymentMethodRepository.findAll());
+                return "admin/payment-methods";
+        }
 
-    @GetMapping("/payment-methods/new")
-    public String createPaymentMethod(Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("paymentMethod", new com.akabazan.repository.entity.PaymentMethod());
-        model.addAttribute("types", com.akabazan.repository.constant.PaymentMethodType.values());
-        return "admin/payment-method-form";
-    }
+        @GetMapping("/payment-methods/new")
+        public String createPaymentMethod(Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                model.addAttribute("paymentMethod", new com.akabazan.repository.entity.PaymentMethod());
+                model.addAttribute("types", com.akabazan.repository.constant.PaymentMethodType.values());
+                return "admin/payment-method-form";
+        }
 
-    @GetMapping("/payment-methods/{id}")
-    public String editPaymentMethod(@PathVariable UUID id, Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        var paymentMethod = paymentMethodRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid payment method Id:" + id));
-        model.addAttribute("paymentMethod", paymentMethod);
-        model.addAttribute("types", com.akabazan.repository.constant.PaymentMethodType.values());
-        return "admin/payment-method-form";
-    }
+        @GetMapping("/payment-methods/{id}")
+        public String editPaymentMethod(@PathVariable UUID id, Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                var paymentMethod = paymentMethodRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("Invalid payment method Id:" + id));
+                model.addAttribute("paymentMethod", paymentMethod);
+                model.addAttribute("types", com.akabazan.repository.constant.PaymentMethodType.values());
+                return "admin/payment-method-form";
+        }
 
-    @GetMapping
-    public String dashboard(Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("userCount", userRepository.count());
-        model.addAttribute("orderCount", orderRepository.count());
-        model.addAttribute("tradeCount", tradeRepository.count());
-        model.addAttribute("disputeCount", disputeService.getDisputes(null, false).size());
-        return "admin/dashboard";
-    }
+        @GetMapping
+        public String dashboard(Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                model.addAttribute("userCount", userRepository.count());
+                model.addAttribute("orderCount", orderRepository.count());
+                model.addAttribute("tradeCount", tradeRepository.count());
+                model.addAttribute("disputeCount", disputeService.getDisputes(null, false).size());
 
-    @GetMapping("/users")
-    public String users(@RequestParam(required = false) String search, Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        var users = userRepository.findAll().stream()
-                .filter(u -> search == null || search.isBlank()
-                        || (u.getEmail() != null && u.getEmail().toLowerCase().contains(search.toLowerCase())))
-                .toList();
-        model.addAttribute("users", users);
-        model.addAttribute("search", search);
-        return "admin/users";
-    }
+                // Chart data
+                try {
+                        // Trade Status Stats
+                        Map<String, Long> tradeStatusStats = tradeRepository.countByStatus().stream()
+                                        .collect(Collectors.toMap(
+                                                        row -> row[0].toString(),
+                                                        row -> (Long) row[1],
+                                                        (v1, v2) -> v1,
+                                                        LinkedHashMap::new));
+                        model.addAttribute("tradeStatusJson", objectMapper.writeValueAsString(tradeStatusStats));
 
-    @GetMapping("/orders")
-    public String orders(
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "search", required = false) String search,
-            Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        var orders = orderRepository.findAll().stream()
-                .filter(o -> status == null
-                        || (o.getStatus() != null && o.getStatus().equalsIgnoreCase(status)))
-                .filter(o -> search == null || search.isBlank()
-                        || (o.getUser() != null && o.getUser().getEmail() != null
-                                && o.getUser().getEmail().toLowerCase().contains(search.toLowerCase()))
-                        || (o.getId() != null && o.getId().toString().contains(search)))
-                .toList();
-        model.addAttribute("orders", orders);
-        model.addAttribute("currentStatus", status);
-        model.addAttribute("search", search);
-        return "admin/orders";
-    }
+                        // Order Status Stats
+                        Map<String, Long> orderStatusStats = orderRepository.countByStatus().stream()
+                                        .collect(Collectors.toMap(
+                                                        row -> row[0].toString(),
+                                                        row -> (Long) row[1],
+                                                        (v1, v2) -> v1,
+                                                        LinkedHashMap::new));
+                        model.addAttribute("orderStatusJson", objectMapper.writeValueAsString(orderStatusStats));
 
-    @GetMapping("/users/{userId}/orders")
-    public String ordersOfUser(
-            @PathVariable UUID userId,
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "search", required = false) String search,
-            Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        var orders = orderRepository.findOrdersByUserAndOptionalFilters(userId, status, null).stream()
-                .filter(o -> search == null || search.isBlank()
-                        || (o.getId() != null && o.getId().toString().contains(search)))
-                .toList();
-        model.addAttribute("orders", orders);
-        model.addAttribute("selectedUserId", userId);
-        model.addAttribute("currentStatus", status);
-        model.addAttribute("search", search);
-        return "admin/orders";
-    }
+                        // Order Type Stats (as backup)
+                        Map<String, Long> orderTypeStats = orderRepository.countByType().stream()
+                                        .collect(Collectors.toMap(
+                                                        row -> row[0].toString(),
+                                                        row -> (Long) row[1],
+                                                        (v1, v2) -> v1,
+                                                        LinkedHashMap::new));
+                        model.addAttribute("orderTypeJson", objectMapper.writeValueAsString(orderTypeStats));
 
-    @GetMapping("/trades")
-    public String trades(
-            @RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "search", required = false) String search,
-            Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        var trades = tradeRepository.findAll().stream()
-                .filter(t -> status == null
-                        || (t.getStatus() != null && t.getStatus().name().equalsIgnoreCase(status)))
-                .filter(t -> search == null || search.isBlank()
-                        || (t.getBuyer() != null && t.getBuyer().getEmail() != null
-                                && t.getBuyer().getEmail().toLowerCase().contains(search.toLowerCase()))
-                        || (t.getSeller() != null && t.getSeller().getEmail() != null
-                                && t.getSeller().getEmail().toLowerCase().contains(search.toLowerCase()))
-                        || (t.getTradeCode() != null && t.getTradeCode().toLowerCase().contains(search.toLowerCase()))
-                        || (t.getId() != null && t.getId().toString().contains(search)))
-                .toList();
-        model.addAttribute("trades", trades);
-        model.addAttribute("currentStatus", status);
-        model.addAttribute("search", search);
-        return "admin/trades";
-    }
+                        // Daily Trade Stats
+                        Map<String, Long> dailyTradeStats = tradeRepository.countDailyTradesLast7Days().stream()
+                                        .collect(Collectors.toMap(
+                                                        row -> row[0].toString(),
+                                                        row -> (Long) row[1],
+                                                        (v1, v2) -> v1,
+                                                        LinkedHashMap::new));
+                        model.addAttribute("dailyTradeJson", objectMapper.writeValueAsString(dailyTradeStats));
+                } catch (Exception e) {
+                        model.addAttribute("tradeStatusJson", "{}");
+                        model.addAttribute("orderStatusJson", "{}");
+                        model.addAttribute("orderTypeJson", "{}");
+                        model.addAttribute("dailyTradeJson", "{}");
+                }
 
-    @GetMapping("/users/{userId}/trades")
-    public String tradesOfUser(
-            @PathVariable UUID userId,
-            @RequestParam(value = "status", required = false) String status,
-            Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        var trades = tradeRepository.findByUser(userId).stream()
-                .filter(t -> status == null
-                        || (t.getStatus() != null && t.getStatus().name().equalsIgnoreCase(status)))
-                .toList();
-        model.addAttribute("trades", trades);
-        model.addAttribute("selectedUserId", userId);
-        model.addAttribute("currentStatus", status);
-        return "admin/trades";
-    }
+                return "admin/dashboard";
+        }
 
-    @GetMapping("/disputes")
-    public String disputes(Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        java.util.List<DisputeResult> disputes = disputeService.getDisputes(null, false);
-        model.addAttribute("disputes", disputes);
-        return "admin/disputes";
-    }
+        @GetMapping("/users")
+        public String users(@RequestParam(required = false) String search, Model model) {
+                var currentAdmin = currentAdminService.getCurrentAdmin();
+                currentAdmin.ifPresent(a -> model.addAttribute("currentAdmin", a));
 
-    @GetMapping("/disputes/{disputeId}")
-    public String disputeDetail(@PathVariable UUID disputeId, Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        DisputeResult dispute = disputeService.getDisputeById(disputeId);
-        model.addAttribute("dispute", dispute);
-        return "admin/dispute-detail";
-    }
+                var users = userRepository.findAll().stream()
+                                .filter(u -> search == null || search.isBlank()
+                                                || (u.getEmail() != null && u.getEmail().toLowerCase()
+                                                                .contains(search.toLowerCase())))
+                                .toList();
+                model.addAttribute("users", users);
 
-    @GetMapping("/dispute-reasons")
-    public String disputeReasons(Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("disputeReasons", disputeReasonRepository.findAll());
-        return "admin/dispute-reasons";
-    }
+                // Fetch SOFT_ADMINs only for SUPER_ADMIN
+                if (currentAdmin.isPresent() && currentAdmin.get().getRole() == AdminRole.SUPER_ADMIN) {
+                        var softAdmins = userAdminRepository.findAll().stream()
+                                        .filter(a -> a.getRole() == AdminRole.SOFT_ADMIN)
+                                        .toList();
+                        model.addAttribute("softAdmins", softAdmins);
+                        model.addAttribute("newAdmin", new UserAdmin());
+                }
 
-    @GetMapping("/dispute-reasons/new")
-    public String createDisputeReason(Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        model.addAttribute("disputeReason", new com.akabazan.repository.entity.DisputeReason());
-        model.addAttribute("priorities", com.akabazan.repository.constant.DisputePriority.values());
-        return "admin/dispute-reason-form";
-    }
+                model.addAttribute("search", search);
+                return "admin/users";
+        }
 
-    @GetMapping("/dispute-reasons/{id}")
-    public String editDisputeReason(@PathVariable UUID id, Model model) {
-        currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
-        var disputeReason = disputeReasonRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid dispute reason Id:" + id));
-        model.addAttribute("disputeReason", disputeReason);
-        model.addAttribute("priorities", com.akabazan.repository.constant.DisputePriority.values());
-        return "admin/dispute-reason-form";
-    }
+        @PostMapping("/admins")
+        public String createSoftAdmin(UserAdmin newAdmin, @RequestParam String rawPassword) {
+                var currentAdmin = currentAdminService.getCurrentAdmin();
+                if (currentAdmin.isEmpty() || currentAdmin.get().getRole() != AdminRole.SUPER_ADMIN) {
+                        return "redirect:/admin-ui/users?error=unauthorized";
+                }
+
+                newAdmin.setRole(AdminRole.SOFT_ADMIN);
+                newAdmin.setPasswordHash(passwordEncoder.encode(rawPassword));
+                newAdmin.setEnabled(true);
+                userAdminRepository.save(newAdmin);
+                return "redirect:/admin-ui/users?tab=admins";
+        }
+
+        @GetMapping("/orders")
+        public String orders(
+                        @RequestParam(value = "status", required = false) String status,
+                        @RequestParam(value = "search", required = false) String search,
+                        Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                var orders = orderRepository.findAll().stream()
+                                .filter(o -> status == null
+                                                || (o.getStatus() != null && o.getStatus().equalsIgnoreCase(status)))
+                                .filter(o -> search == null || search.isBlank()
+                                                || (o.getUser() != null && o.getUser().getEmail() != null
+                                                                && o.getUser().getEmail().toLowerCase()
+                                                                                .contains(search.toLowerCase()))
+                                                || (o.getId() != null && o.getId().toString().contains(search)))
+                                .toList();
+                model.addAttribute("orders", orders);
+                model.addAttribute("currentStatus", status);
+                model.addAttribute("search", search);
+                return "admin/orders";
+        }
+
+        @GetMapping("/users/{userId}/orders")
+        public String ordersOfUser(
+                        @PathVariable UUID userId,
+                        @RequestParam(value = "status", required = false) String status,
+                        @RequestParam(value = "search", required = false) String search,
+                        Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                var orders = orderRepository.findOrdersByUserAndOptionalFilters(userId, status, null).stream()
+                                .filter(o -> search == null || search.isBlank()
+                                                || (o.getId() != null && o.getId().toString().contains(search)))
+                                .toList();
+                model.addAttribute("orders", orders);
+                model.addAttribute("selectedUserId", userId);
+                model.addAttribute("currentStatus", status);
+                model.addAttribute("search", search);
+                return "admin/orders";
+        }
+
+        @GetMapping("/trades")
+        public String trades(
+                        @RequestParam(value = "status", required = false) String status,
+                        @RequestParam(value = "search", required = false) String search,
+                        Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                var trades = tradeRepository.findAll().stream()
+                                .filter(t -> status == null
+                                                || (t.getStatus() != null
+                                                                && t.getStatus().name().equalsIgnoreCase(status)))
+                                .filter(t -> search == null || search.isBlank()
+                                                || (t.getBuyer() != null && t.getBuyer().getEmail() != null
+                                                                && t.getBuyer().getEmail().toLowerCase()
+                                                                                .contains(search.toLowerCase()))
+                                                || (t.getSeller() != null && t.getSeller().getEmail() != null
+                                                                && t.getSeller().getEmail().toLowerCase()
+                                                                                .contains(search.toLowerCase()))
+                                                || (t.getTradeCode() != null && t.getTradeCode().toLowerCase()
+                                                                .contains(search.toLowerCase()))
+                                                || (t.getId() != null && t.getId().toString().contains(search)))
+                                .toList();
+                model.addAttribute("trades", trades);
+                model.addAttribute("currentStatus", status);
+                model.addAttribute("search", search);
+                return "admin/trades";
+        }
+
+        @GetMapping("/users/{userId}/trades")
+        public String tradesOfUser(
+                        @PathVariable UUID userId,
+                        @RequestParam(value = "status", required = false) String status,
+                        Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                var trades = tradeRepository.findByUser(userId).stream()
+                                .filter(t -> status == null
+                                                || (t.getStatus() != null
+                                                                && t.getStatus().name().equalsIgnoreCase(status)))
+                                .toList();
+                model.addAttribute("trades", trades);
+                model.addAttribute("selectedUserId", userId);
+                model.addAttribute("currentStatus", status);
+                return "admin/trades";
+        }
+
+        @GetMapping("/disputes")
+        public String disputes(Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                java.util.List<DisputeResult> disputes = disputeService.getDisputes(null, false);
+                model.addAttribute("disputes", disputes);
+                return "admin/disputes";
+        }
+
+        @GetMapping("/disputes/{disputeId}")
+        public String disputeDetail(@PathVariable UUID disputeId, Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                DisputeResult dispute = disputeService.getDisputeById(disputeId);
+                model.addAttribute("dispute", dispute);
+                return "admin/dispute-detail";
+        }
+
+        @GetMapping("/dispute-reasons")
+        public String disputeReasons(Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                model.addAttribute("disputeReasons", disputeReasonRepository.findAll());
+                return "admin/dispute-reasons";
+        }
+
+        @GetMapping("/dispute-reasons/new")
+        public String createDisputeReason(Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                model.addAttribute("disputeReason", new com.akabazan.repository.entity.DisputeReason());
+                model.addAttribute("priorities", com.akabazan.repository.constant.DisputePriority.values());
+                return "admin/dispute-reason-form";
+        }
+
+        @GetMapping("/dispute-reasons/{id}")
+        public String editDisputeReason(@PathVariable UUID id, Model model) {
+                currentAdminService.getCurrentAdmin().ifPresent(a -> model.addAttribute("currentAdmin", a));
+                var disputeReason = disputeReasonRepository.findById(id)
+                                .orElseThrow(() -> new IllegalArgumentException("Invalid dispute reason Id:" + id));
+                model.addAttribute("disputeReason", disputeReason);
+                model.addAttribute("priorities", com.akabazan.repository.constant.DisputePriority.values());
+                return "admin/dispute-reason-form";
+        }
 }

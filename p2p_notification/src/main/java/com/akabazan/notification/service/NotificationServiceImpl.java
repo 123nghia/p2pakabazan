@@ -28,9 +28,9 @@ public class NotificationServiceImpl implements NotificationService {
     private final NotificationEventPublisher notificationEventPublisher;
 
     public NotificationServiceImpl(NotificationRepository notificationRepository,
-                                    UserRepository userRepository,
-                                    CurrentUserService currentUserService,
-                                    NotificationEventPublisher notificationEventPublisher) {
+            UserRepository userRepository,
+            CurrentUserService currentUserService,
+            NotificationEventPublisher notificationEventPublisher) {
         this.notificationRepository = notificationRepository;
         this.userRepository = userRepository;
         this.currentUserService = currentUserService;
@@ -39,51 +39,53 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void notifyUser(UUID userId, NotificationType type, String message) {
-      if (message == null || message.isBlank()) return;
+        if (message == null || message.isBlank())
+            return;
         userRepository.findById(userId).ifPresent(user -> {
             Notification n = new Notification();
             n.setUser(user);
             n.setType(type == null ? NotificationType.GENERIC : type);
             n.setMessage(message);
             Notification savedNotification = notificationRepository.save(n);
-            
+
             // Publish notification event
             publishNotificationEvent(savedNotification);
         });
     }
 
-       @Override
+    @Override
     public void notifyUsers(List<UUID> userIds, NotificationType type, String message) {
-        if (message == null || message.isBlank() || userIds == null || userIds.isEmpty()) return;
+        if (message == null || message.isBlank() || userIds == null || userIds.isEmpty())
+            return;
         List<User> users = userRepository.findAllById(userIds.stream().distinct().collect(Collectors.toList()));
-        if (users.isEmpty()) return;
+        if (users.isEmpty())
+            return;
         for (User u : users) {
             Notification n = new Notification();
             n.setUser(u);
             n.setType(type == null ? NotificationType.GENERIC : type);
             n.setMessage(message);
             Notification savedNotification = notificationRepository.save(n);
-            
+
             // Publish notification event
             publishNotificationEvent(savedNotification);
         }
     }
-    
+
     private void publishNotificationEvent(Notification notification) {
         if (notification == null || notification.getUser() == null) {
             return;
         }
         Instant occurredAt = notification.getCreatedAt() != null
-            ? notification.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()
-            : Instant.now();
-        
+                ? notification.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant()
+                : Instant.now();
+
         NotificationEvent event = new NotificationEvent(
-            notification.getUser().getId(),
-            notification.getId(),
-            notification.getType() != null ? notification.getType().name() : NotificationType.GENERIC.name(),
-            notification.getMessage(),
-            occurredAt
-        );
+                notification.getUser().getId(),
+                notification.getId(),
+                notification.getType() != null ? notification.getType().name() : NotificationType.GENERIC.name(),
+                notification.getMessage(),
+                occurredAt);
         notificationEventPublisher.publish(event);
     }
 
@@ -123,7 +125,14 @@ public class NotificationServiceImpl implements NotificationService {
         result.setId(notification.getId());
         result.setMessage(notification.getMessage());
         result.setRead(notification.isRead());
-        result.setCreatedAt(notification.getCreatedAt());
+        // Convert UTC to Vietnam timezone (+7)
+        if (notification.getCreatedAt() != null) {
+            java.time.ZonedDateTime utcTime = notification.getCreatedAt().atZone(java.time.ZoneOffset.UTC);
+            java.time.ZonedDateTime vietnamTime = utcTime.withZoneSameInstant(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+            result.setCreatedAt(vietnamTime.toLocalDateTime());
+        } else {
+            result.setCreatedAt(null);
+        }
         return result;
     }
 }

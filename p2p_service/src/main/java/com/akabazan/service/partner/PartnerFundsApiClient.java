@@ -7,6 +7,8 @@ import com.akabazan.service.partner.dto.TransferFundsRequest;
 import com.akabazan.service.partner.dto.TransferFundsResponse;
 import com.akabazan.service.partner.dto.UnlockFundsRequest;
 import com.akabazan.service.partner.dto.UnlockFundsResponse;
+import com.akabazan.common.exception.ApplicationException;
+import com.akabazan.common.constant.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import org.springframework.http.HttpEntity;
@@ -87,8 +89,21 @@ public class PartnerFundsApiClient {
             return response.getBody();
         } catch (RestClientResponseException e) {
             String body = e.getResponseBodyAsString();
-            throw new IllegalStateException(
-                    "Partner API call failed: " + path + " HTTP " + e.getRawStatusCode() + " body=" + body, e);
+            String message = "Partner API call failed";
+            try {
+                var errorNode = objectMapper.readTree(body);
+                if (errorNode.has("message")) {
+                    String partnerMsg = errorNode.get("message").asText();
+                    if ("AMOUNT_EXCEEDS_LOCK".equals(partnerMsg)) {
+                        message = "Số dư không đủ để thực hiện (AMOUNT_EXCEEDS_LOCK)";
+                    } else {
+                        message = partnerMsg;
+                    }
+                }
+            } catch (Exception ignored) {
+                message = "Partner API call failed";
+            }
+            throw new ApplicationException(ErrorCode.PARTNER_TRANSACTION_FAILED, message);
         } catch (Exception e) {
             throw new IllegalStateException("Partner API call failed: " + path, e);
         }

@@ -20,8 +20,8 @@ public class TradeMapper {
         result.setStatus(trade.getStatus().name());
         result.setEscrow(trade.isEscrow());
         result.setTradeCode(trade.getTradeCode());
-        result.setBuyerUserName(userBuyer.getEmail());
-        result.setSenderUserName(userSender.getEmail());
+        result.setBuyerUserName(userBuyer.getUsername());
+        result.setSenderUserName(userSender.getUsername());
         result.setCreatedAt(trade.getCreatedAt());
         result.setPrice(trade.getOrder().getPrice());
         result.setToken(order.getToken());

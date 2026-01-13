@@ -18,7 +18,7 @@ public class ExpireOrdersService implements ExpireOrdersUseCase {
     private final SellerFundsManager sellerFundsManager;
 
     public ExpireOrdersService(OrderRepository orderRepository,
-                               SellerFundsManager sellerFundsManager) {
+            SellerFundsManager sellerFundsManager) {
         this.orderRepository = orderRepository;
         this.sellerFundsManager = sellerFundsManager;
     }
@@ -39,8 +39,7 @@ public class ExpireOrdersService implements ExpireOrdersUseCase {
             order.setStatus(OrderStatus.EXPIRED.name());
             orderRepository.save(order);
         }
-}
-
+    }
 
     private boolean isSellOrder(Order order) {
         return "SELL".equalsIgnoreCase(order.getType());

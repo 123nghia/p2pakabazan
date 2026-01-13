@@ -21,8 +21,9 @@ public interface TradeService {
 
     List<TradeResult> getTradesByOrder(UUID orderId);
 
-    List<TradeResult> getTradesByUser(UUID userId);
-    
+    List<TradeResult> getTradesByUser(UUID userId, String token, String fiat, String role, String tradeCode,
+            java.time.LocalDate date);
+
     TradeInfoResult getTradeInfo(UUID tradeId);
 
     int autoCancelExpiredTrades();

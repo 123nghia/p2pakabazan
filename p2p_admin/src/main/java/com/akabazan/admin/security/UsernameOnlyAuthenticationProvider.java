@@ -30,12 +30,12 @@ public class UsernameOnlyAuthenticationProvider implements AuthenticationProvide
         if (!admin.isEnabled()) {
             throw new BadCredentialsException("User disabled");
         }
-        // Store admin id as the principal to align with downstream services that expect UUID principals
+        // Assign role from the database
+        String roleName = admin.getRole() != null ? admin.getRole().name() : "SOFT_ADMIN";
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
                 admin.getId(),
                 null,
-                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-        );
+                List.of(new SimpleGrantedAuthority("ROLE_" + roleName)));
         // Keep username in details for display purposes if needed
         token.setDetails(admin.getUsername());
         return token;
@@ -46,5 +46,3 @@ public class UsernameOnlyAuthenticationProvider implements AuthenticationProvide
         return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }
-
-

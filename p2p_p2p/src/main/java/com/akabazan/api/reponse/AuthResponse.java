@@ -7,14 +7,16 @@ public class AuthResponse {
     private String token;
     private UUID userId;
     private String email;
+    private String username;
 
     public AuthResponse() {
     }
 
-    public AuthResponse(String token, UUID userId, String email) {
+    public AuthResponse(String token, UUID userId, String email, String username) {
         this.token = token;
         this.userId = userId;
         this.email = email;
+        this.username = username;
     }
 
     public String getToken() {
@@ -41,7 +43,15 @@ public class AuthResponse {
         this.email = email;
     }
 
-    public static AuthResponse from(String token, UUID userId, String email) {
-        return new AuthResponse(token, userId, email);
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public static AuthResponse from(String token, UUID userId, String email, String username) {
+        return new AuthResponse(token, userId, email, username);
     }
 }

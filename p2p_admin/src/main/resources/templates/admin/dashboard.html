@@ -18,7 +18,32 @@
             border-radius: 8px;
             background: #fff;
         }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            /* Two columns for pie charts */
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .chart-card {
+            padding: 16px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+            /* Spans all columns */
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -45,6 +70,90 @@
                     <p th:text="${disputeCount}">0</p>
                 </div>
             </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>Orders Status Distribution</h3>
+                    <div style="height: 300px;">
+                        <canvas id="orderStatusChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Trades Status Distribution</h3>
+                    <div style="height: 300px;">
+                        <canvas id="tradeStatusChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card full-width">
+                    <h3>Trade Activity (Last 7 Days)</h3>
+                    <canvas id="dailyTradeChart"></canvas>
+                </div>
+            </div>
+
+            <script th:inline="javascript">
+                /*<![CDATA[*/
+                const orderStatusData = JSON.parse(/*[[${orderStatusJson}]]*/ '{}');
+                const tradeStatusData = JSON.parse(/*[[${tradeStatusJson}]]*/ '{}');
+                const dailyTradeData = JSON.parse(/*[[${dailyTradeJson}]]*/ '{}');
+
+                // Order Status Chart
+                new Chart(document.getElementById('orderStatusChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(orderStatusData),
+                        datasets: [{
+                            data: Object.values(orderStatusData),
+                            backgroundColor: ['#f6c23e', '#4e73df', '#1cc88a', '#e74a3b', '#858796', '#36b9cc']
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+
+                // Trade Status Chart
+                new Chart(document.getElementById('tradeStatusChart'), {
+                    type: 'pie', // Changed to pie as requested
+                    data: {
+                        labels: Object.keys(tradeStatusData),
+                        datasets: [{
+                            data: Object.values(tradeStatusData),
+                            backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', '#858796']
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+
+                // Daily Trade Activity Chart
+                new Chart(document.getElementById('dailyTradeChart'), {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(dailyTradeData),
+                        datasets: [{
+                            label: 'Number of Trades',
+                            data: Object.values(dailyTradeData),
+                            borderColor: '#4e73df',
+                            backgroundColor: 'rgba(78, 115, 223, 0.05)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        }
+                    }
+                });
+                /*]]>*/
+            </script>
         </section>
     </div>
 </body>
